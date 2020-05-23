@@ -54,7 +54,9 @@ def dunkel():
 
 
 def off():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe, Hängelampe, Lichterkette, Tischlampe, Schlafzimmer Hängelampe"], on=False)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "Hängelampe",
+                "Lichterkette", "Tischlampe", "Schlafzimmer Hängelampe"],
+               on=False, time=t)
 
 
-exec(sys.argv[1] + "()")
+exec(sys.argv[1].lower() + "()")
