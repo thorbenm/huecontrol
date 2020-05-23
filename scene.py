@@ -13,9 +13,10 @@ try:
 except:
     t = .4
 
+
 if unit_is_minutes:
     t *= 60
-t *= 10 # hue api uses 1/10 of a second as unit
+t *= 10 # hue api uses 1/10th of a second as unit
 t = int(t)
 
 
