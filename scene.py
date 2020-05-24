@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+from time import sleep
 from _phue import set_lights
 
 
@@ -24,31 +25,32 @@ t = int(t)
 
 def hell():
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=255, ct=0, time=t)
-    set_lights(["Hängelampe"], on=True, time=t)
     set_lights(["Hängelampe"], bri=255, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
 
 def wakeup():
+    set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=1, ct=454, time=4)
+    sleep(2.0)
     hell()
     set_lights(["Tischlampe"], bri=255, ct=0, time=t)
 
 
 def lesen():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=255, ct=500, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=255, ct=454, time=t)
     set_lights(["Hängelampe"], on=True, time=t)
     set_lights(["Hängelampe"], bri=255, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
 
 def gemutlich():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=153, ct=500, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=153, ct=454, time=t)
     set_lights(["Hängelampe"], on=False, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
 
 def dunkel():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=25, ct=500, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=25, ct=454, time=t)
     set_lights(["Hängelampe"], on=False, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
