@@ -24,16 +24,20 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4):
             # on first
             if current_state is False and 1.0 / 254.0 < bri:
                 b.set_light(l, 'on', True, transitiontime=time)
-            if 1.0 / 254.0 < bri:
-                b.set_light(l, 'bri', int(bri * 254), transitiontime=time)
-            else:
-                b.set_light(l, 'on', False, transitiontime=time)
+#            if 1.0 / 254.0 < bri:
+            b.set_light(l, 'bri', int(bri * 254), transitiontime=time)
+#            else:
+#                b.set_light(l, 'on', False, transitiontime=time)
         if ct is not None:
             b.set_light(l, 'ct', int(ct * (454 - 153) + 153), transitiontime=time)
         if hue is not None:
             b.set_light(l, 'hue', int(hue * 65535), transitiontime=time)
         if sat is not None:
             b.set_light(l, 'sat', int(sat * 254), transitiontime=time)
+
+
+def is_on(light):
+    return b.get_light(light, "on")
 
 
 def get_bri(light):
@@ -44,3 +48,4 @@ def get_bri(light):
 
 def get_ct(light):
     return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
+

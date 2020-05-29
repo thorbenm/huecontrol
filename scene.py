@@ -2,6 +2,7 @@
 import sys
 from time import sleep
 from _phue import set_lights
+from _phue import is_on
 
 
 if len(sys.argv) == 2:
@@ -27,10 +28,15 @@ def hell(time):
 
 
 def wakeup(time):
-    set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=1.1/254.0, ct=1.0, time=.4)
+    set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=2.0/254.0, ct=1.0, time=.4)
     sleep(1.0)
-    hell(time)
-    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time)
+    lesen(time / 2.0)
+    set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time / 2.0)
+    sleep(time / 2.0 + 1.0)
+    if is_on("Stehlampe"):
+        hell(time / 2.0)
+    if is_on("Tischlampe"):
+        set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time / 2.0)
 
 
 def lesen(time):
