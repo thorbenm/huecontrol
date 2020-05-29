@@ -15,48 +15,47 @@ if t_str.endswith("m"):
     unit_is_minutes = True
 t_str = t_str[:-1]
 t = float(t_str)
-
-
 if unit_is_minutes:
     t *= 60
+t_str = str(t)
 
 
-def hell():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=0.0, time=t)
-    set_lights(["Hängelampe"], bri=1.0, time=t)
-    set_lights(["Lichterkette"], on=True, time=t)
+def hell(time):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=0.0, time=time)
+    set_lights(["Hängelampe"], bri=1.0, time=time)
+    set_lights(["Lichterkette"], on=True, time=time)
 
 
-def wakeup():
+def wakeup(time):
     set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=1.1/254.0, ct=1.0, time=.4)
-    sleep(2.0)
-    hell()
-    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=t)
+    sleep(1.0)
+    hell(time)
+    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time)
 
 
-def lesen():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=1.0, time=t)
-    set_lights(["Hängelampe"], on=True, time=t)
-    set_lights(["Hängelampe"], bri=1.0, time=t)
-    set_lights(["Lichterkette"], on=True, time=t)
+def lesen(time):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=1.0, time=time)
+    set_lights(["Hängelampe"], on=True, time=time)
+    set_lights(["Hängelampe"], bri=1.0, time=time)
+    set_lights(["Lichterkette"], on=True, time=time)
 
 
-def gemutlich():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.6, ct=1.0, time=t)
-    set_lights(["Hängelampe"], on=False, time=t)
-    set_lights(["Lichterkette"], on=True, time=t)
+def gemutlich(time):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.6, ct=1.0, time=time)
+    set_lights(["Hängelampe"], on=False, time=time)
+    set_lights(["Lichterkette"], on=True, time=time)
 
 
-def dunkel():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.1, ct=1.0, time=t)
-    set_lights(["Hängelampe"], on=False, time=t)
-    set_lights(["Lichterkette"], on=True, time=t)
+def dunkel(time):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.1, ct=1.0, time=time)
+    set_lights(["Hängelampe"], on=False, time=time)
+    set_lights(["Lichterkette"], on=True, time=time)
 
 
-def off():
+def off(time):
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "Hängelampe",
                 "Lichterkette", "Tischlampe", "Schlafzimmer Hängelampe"],
-               on=False, time=t)
+               on=False, time=time)
 
 
-exec(sys.argv[1].lower() + "()")
+exec(sys.argv[1].lower() + "(" + t_str + ")")
