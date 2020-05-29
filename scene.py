@@ -19,38 +19,36 @@ t = float(t_str)
 
 if unit_is_minutes:
     t *= 60
-t *= 10 # hue api uses 1/10th of a second as unit
-t = int(t)
 
 
 def hell():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=255, ct=0, time=t)
-    set_lights(["Hängelampe"], bri=255, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=0.0, time=t)
+    set_lights(["Hängelampe"], bri=1.0, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
 
 def wakeup():
-    set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=1, ct=454, time=4)
+    set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=1.1/254.0, ct=1.0, time=.4)
     sleep(2.0)
     hell()
-    set_lights(["Tischlampe"], bri=255, ct=0, time=t)
+    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=t)
 
 
 def lesen():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=255, ct=454, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=1.0, time=t)
     set_lights(["Hängelampe"], on=True, time=t)
-    set_lights(["Hängelampe"], bri=255, time=t)
+    set_lights(["Hängelampe"], bri=1.0, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
 
 def gemutlich():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=153, ct=454, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.6, ct=1.0, time=t)
     set_lights(["Hängelampe"], on=False, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
 
 def dunkel():
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=25, ct=454, time=t)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.1, ct=1.0, time=t)
     set_lights(["Hängelampe"], on=False, time=t)
     set_lights(["Lichterkette"], on=True, time=t)
 
