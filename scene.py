@@ -48,6 +48,7 @@ def lesen(time):
 
 def lesen_schlafzimmer(time):
     set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time)
 
 
 def gemutlich(time):
@@ -58,6 +59,7 @@ def gemutlich(time):
 
 def gemutlich_schlafzimmer(time):
     set_lights(["Tischlampe"], bri=.6, ct=1.0, time=time)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time)
 
 
 def dunkel(time):
@@ -68,6 +70,7 @@ def dunkel(time):
 
 def dunkel_schlafzimmer(time):
     set_lights(["Tischlampe"], bri=.1, ct=1.0, time=time)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time)
 
 
 def off(time):
