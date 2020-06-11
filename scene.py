@@ -50,6 +50,15 @@ def wakeup(time):
     if not ignore_wohnzimmer and is_on("Stehlampe"):
         hell(time / 2.0)
 
+    return ignore_schlafzimmer
+
+
+def wakeup_harsh(time):
+    ignore_schlafzimmer = wakeup(time)
+    sleep(time / 2.0 + 1.0)
+    if not ignore_schlafzimmer and is_on("Tischlampe"):
+        set_lights(["Schlafzimmer Hängelampe"], bri=1.0, ct=0.0, time=.4)
+
 
 def lesen(time):
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=1.0, ct=1.0, time=time)
