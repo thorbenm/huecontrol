@@ -28,15 +28,27 @@ def hell(time):
 
 
 def wakeup(time):
-    set_lights(["Tischlampe", "Hue Go", "Stehlampe", "Fensterlampe"], bri=2.0/254.0, ct=1.0, time=.4)
+    ignore_schlafzimmer = is_on("Tischlampe")
+    ignore_wohnzimmer = is_on("Stehlampe")
+
+    if not ignore_schlafzimmer:
+        set_lights(["Tischlampe"], bri=2.0/254.0, ct=1.0, time=.4)
+    if not ignore_wohnzimmer:
+        set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=2.0/254.0, ct=1.0, time=.4)
+
     sleep(1.0)
-    lesen(time / 2.0)
-    set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time / 2.0)
+
+    if not ignore_schlafzimmer:
+        set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time / 2.0)
+    if not ignore_wohnzimmer:
+        lesen(time / 2.0)
+
     sleep(time / 2.0 + 1.0)
-    if is_on("Stehlampe"):
-        hell(time / 2.0)
-    if is_on("Tischlampe"):
+
+    if not ignore_schlafzimmer and is_on("Tischlampe"):
         set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time / 2.0)
+    if not ignore_wohnzimmer and is_on("Stehlampe"):
+        hell(time / 2.0)
 
 
 def lesen(time):
