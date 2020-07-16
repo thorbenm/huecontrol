@@ -27,8 +27,13 @@ def hell(time):
     set_lights(["Lichterkette"], on=True, time=time)
 
 
+def hell_schlafzimmer(time):
+    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time)
+    set_lights(["Schlafzimmer Hängelampe"], bri=1.0, time=time)
+
+
 def wakeup(time):
-    ignore_schlafzimmer = is_on("Tischlampe")
+    ignore_schlafzimmer = False
     ignore_wohnzimmer = is_on("Stehlampe")
 
     if not ignore_schlafzimmer:
@@ -39,25 +44,16 @@ def wakeup(time):
     sleep(1.0)
 
     if not ignore_schlafzimmer:
-        set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time / 2.0)
+        gemutlich_schlafzimmer(time / 2.0)
     if not ignore_wohnzimmer:
-        lesen(time / 2.0)
+        gemutlich(time / 2.0)
 
     sleep(time / 2.0 + 1.0)
 
     if not ignore_schlafzimmer and is_on("Tischlampe"):
-        set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time / 2.0)
+        hell_schlafzimmer(time / 2.0)
     if not ignore_wohnzimmer and is_on("Stehlampe"):
         hell(time / 2.0)
-
-    return ignore_schlafzimmer
-
-
-def wakeup_harsh(time):
-    ignore_schlafzimmer = wakeup(time)
-    sleep(time / 2.0 + 1.0)
-    if not ignore_schlafzimmer and is_on("Tischlampe"):
-        set_lights(["Schlafzimmer Hängelampe"], bri=1.0, ct=0.0, time=.4)
 
 
 def lesen(time):
