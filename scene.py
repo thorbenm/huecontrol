@@ -69,13 +69,13 @@ def lesen_schlafzimmer(time):
 
 
 def gemutlich(time):
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.6, ct=1.0, time=time)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe"], bri=.5, ct=1.0, time=time)
     set_lights(["Hängelampe"], on=False, time=time)
     set_lights(["Lichterkette"], on=True, time=time)
 
 
 def gemutlich_schlafzimmer(time):
-    set_lights(["Tischlampe"], bri=.6, ct=1.0, time=time)
+    set_lights(["Tischlampe"], bri=.5, ct=1.0, time=time)
     set_lights(["Schlafzimmer Hängelampe"], on=False, time=time)
 
 
