@@ -18,6 +18,8 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
 
     for l in lights:
         if on is not None:
+            if reduce_only and not is_on(l):
+                continue
             b.set_light(l, 'on', on, transitiontime=time)
         if bri is not None:
             if reduce_only and get_bri(l) < bri:
