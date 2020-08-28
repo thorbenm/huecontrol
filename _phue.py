@@ -9,6 +9,7 @@ ip_address = json_data[0]['internalipaddress']
 
 b = Bridge(ip_address)
 b.connect()
+# print(b.get_api())
 
 
 def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4):
