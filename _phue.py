@@ -12,13 +12,16 @@ b.connect()
 # print(b.get_api())
 
 
-def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4):
+def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
+               reduce_only=False):
     time = int(time * 10)
 
     for l in lights:
         if on is not None:
             b.set_light(l, 'on', on, transitiontime=time)
         if bri is not None:
+            if reduce_only and get_bri(l) < bri:
+                continue
             current_state = b.get_light(l, 'on')
             # if the light is currently off it will not react to
             # new brightness settings, so we have to turn it
