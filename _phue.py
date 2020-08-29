@@ -14,6 +14,9 @@ b.connect()
 
 def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
                reduce_only=False):
+    if type(lights) == str:
+        lights = [lights]
+
     time = int(time * 10)
 
     for l in lights:
