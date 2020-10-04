@@ -36,7 +36,7 @@ def wakeup(time):
     assert not args.reduce_only, "wakeup should not be called with --reduce-only"
 
     ignore_schlafzimmer = False
-    ignore_wohnzimmer = is_on("Stehlampe")
+    ignore_wohnzimmer = False
 
     if not ignore_schlafzimmer:
         set_lights(["Tischlampe"], bri=2.0/254.0, ct=1.0, time=.4)
@@ -46,16 +46,16 @@ def wakeup(time):
     sleep(1.0)
 
     if not ignore_schlafzimmer:
-        gemutlich_schlafzimmer(time / 2.0)
+        gemutlich_schlafzimmer(time)
     if not ignore_wohnzimmer:
         gemutlich(time / 2.0)
 
-    sleep(time / 2.0 + 1.0)
+    sleep(time + 1.0)
 
     if not ignore_schlafzimmer and is_on("Tischlampe"):
-        hell_schlafzimmer(time / 2.0)
+        hell_schlafzimmer(3.0 * time)
     if not ignore_wohnzimmer and is_on("Stehlampe"):
-        hell(time / 2.0)
+        hell(3.0 * time)
 
 
 def lesen(time):
