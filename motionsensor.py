@@ -11,53 +11,91 @@ json_data = requests.get("https://discovery.meethue.com").json()
 ip_address = json_data[0]['internalipaddress']
 
 class Sensor():
-    def __init__(self, sensor_id, lights, turn_off_after):
+    def __init__(self, sensor_id, lights, turn_off_after, master="Stehlampe"):
         self.sensor_id = sensor_id
         self.lights = lights
         self.turn_off_after = turn_off_after
-        self.current_state = None
         self.last_motion = inf
-        self.master = 'Stehlampe'
-        self.master_state = None
+        self.master = master
+        self.master_bri = None
+        self.master_ct = None
+
         self.minimum = 0.01
         self.maximum = 1.0
+        self.last_sensor_state_buffer = None
 
-    def get_sensor_state(self):
+    def get_master_bri(self):
+        bri = _phue.get_bri(self.master)
+        bri = max(min(bri, self.maximum), self.minimum)
+        return bri
+
+    def get_master_ct(self):
+        if not _phue.is_on(self.master):
+            return 1.0
+        try:
+            return _phue.get_ct(self.master)
+        except:
+            return 1.0
+
+    def sensor_state(self):
         response = requests.get("http://%s/api/%s/sensors/%d" % (
                                 ip_address, user_id, self.sensor_id))
         json_data = json.loads(response.text)
         return json_data['state']['presence']
 
-    def slave(self, slaves):
-        bri = _phue.get_bri(self.master)
-        bri = max(min(bri, self.maximum), self.minimum)
-        ct = _phue.get_ct(self.master)
-        
-        _phue.set_lights(slaves, bri=bri, ct=ct)
-        self.master_state = bri
+    def master_bri_changed(self):
+        new_bri = self.get_master_bri()
+        if (self.master_bri != new_bri):
+            self.master_bri = new_bri
+            return True
+        return False
 
-    def turn_lights(self, state):
-        if state != self.current_state:
-            self.current_state = state
-            if state:
-                self.slave(self.lights)
+    def master_ct_changed(self):
+        new_ct = self.get_master_ct()
+        if (self.master_ct != new_ct):
+            self.master_ct = new_ct
+            return True
+        return False
+
+    def sensor_state_buffer(self):
+        if self.last_motion + self.turn_off_after < time():
+            return False
+        return True
+
+    def sensor_state_buffer_changed(self):
+        new_state = self.sensor_state_buffer()
+        if self.last_sensor_state_buffer != new_state:
+            self.last_sensor_state_buffer = new_state
+            return True
+        return False
+
+    def slave(self):
+        bri = self.get_master_bri()
+        ct = self.get_master_ct()
+        
+        _phue.set_lights(self.lights, bri=bri, ct=ct)
+
+    def update(self):
+        if self.sensor_state():
+            self.last_motion = time()
+        if (self.sensor_state_buffer_changed() or
+                self.master_bri_changed() or self.master_ct_changed()):
+            if self.sensor_state_buffer():
+                print("slave")
+                self.slave()
             else:
                 _phue.set_lights(self.lights, on=False, time=10.0)
 
-    def update(self):
-        state = self.get_sensor_state()
-        if _phue.get_bri(self.master) != self.master_state:
-            self.current_state = None
-        if state:
-            self.last_motion = time()
-            self.turn_lights(True)
-        if self.last_motion + self.turn_off_after < time():
-            self.turn_lights(False)
 
-
-kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts"], 180.0)
+kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"], 300.0)
+#kuchen_sensor2 = Sensor(10, ["Filament"], 240.0, master="H  ngelampe")
+flur_sensor = Sensor(33, ["Kronleuchter"], 120.0)
+bad_sensor = Sensor(30, ["Badlicht"], 600.0)
 
 
 while True:
     kuchen_sensor.update()
-    sleep(0.1)
+#    kuchen_sensor2.update()
+    flur_sensor.update()
+    bad_sensor.update()
+    sleep(0.2)
