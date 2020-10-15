@@ -20,20 +20,26 @@ class Sensor():
         self.master_bri = None
         self.master_ct = None
 
-        self.minimum = 0.01
-        self.maximum = 1.0
+        self.minimum_bri = 0.01
+        self.maximum_bri = 1.0
+
+        self.minimum_ct = 0.2
+        self.maximum_ct = 1.0
+
         self.last_sensor_state_buffer = None
 
     def get_master_bri(self):
         bri = _phue.get_bri(self.master)
-        bri = max(min(bri, self.maximum), self.minimum)
+        bri = max(min(bri, self.maximum_bri), self.minimum_bri)
         return bri
 
     def get_master_ct(self):
         if not _phue.is_on(self.master):
             return 1.0
         try:
-            return _phue.get_ct(self.master)
+            ct = _phue.get_ct(self.master)
+            ct = max(min(ct, self.maximum_ct), self.minimum_ct)
+            return ct
         except:
             return 1.0
 
@@ -81,21 +87,23 @@ class Sensor():
         if (self.sensor_state_buffer_changed() or
                 self.master_bri_changed() or self.master_ct_changed()):
             if self.sensor_state_buffer():
-                print("slave")
                 self.slave()
             else:
                 _phue.set_lights(self.lights, on=False, time=10.0)
 
 
 kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"], 300.0)
-#kuchen_sensor2 = Sensor(10, ["Filament"], 240.0, master="H  ngelampe")
 flur_sensor = Sensor(33, ["Kronleuchter"], 120.0)
-bad_sensor = Sensor(30, ["Badlicht"], 600.0)
+bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0)
 
 
 while True:
-    kuchen_sensor.update()
-#    kuchen_sensor2.update()
-    flur_sensor.update()
-    bad_sensor.update()
-    sleep(0.2)
+    try:
+        kuchen_sensor.update()
+        sleep(.05)
+        flur_sensor.update()
+        sleep(.05)
+        bad_sensor.update()
+        sleep(.05)
+    except:
+        pass
