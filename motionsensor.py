@@ -37,11 +37,8 @@ class Sensor():
 
     def mock_file_exists(self):
         if self.mock_file is not None:
-            print("testing")
             if os.path.isfile(self.mock_file):
-                print ("File exist")
                 return True
-            print ("File not exist")
         return False
 
     def get_master_ct(self):
