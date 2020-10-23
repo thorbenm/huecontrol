@@ -6,24 +6,26 @@ import json
 import _phue
 from math import inf
 from user_id import user_id
+import os.path
 
 json_data = requests.get("https://discovery.meethue.com").json()
 ip_address = json_data[0]['internalipaddress']
 
 class Sensor():
-    def __init__(self, sensor_id, lights, turn_off_after, master="Stehlampe"):
+    def __init__(self, sensor_id, lights, turn_off_after, mock_file=None, master="Stehlampe"):
         self.sensor_id = sensor_id
         self.lights = lights
         self.turn_off_after = turn_off_after
-        self.last_motion = inf
+        self.last_motion = inf if _phue.is_on(lights[0]) else -inf
         self.master = master
         self.master_bri = None
         self.master_ct = None
+        self.mock_file = mock_file
 
-        self.minimum_bri = 0.01
+        self.minimum_bri = 1.1/255.0
         self.maximum_bri = 1.0
 
-        self.minimum_ct = 0.2
+        self.minimum_ct = 0.5
         self.maximum_ct = 1.0
 
         self.last_sensor_state_buffer = None
@@ -32,6 +34,15 @@ class Sensor():
         bri = _phue.get_bri(self.master)
         bri = max(min(bri, self.maximum_bri), self.minimum_bri)
         return bri
+
+    def mock_file_exists(self):
+        if self.mock_file is not None:
+            print("testing")
+            if os.path.isfile(self.mock_file):
+                print ("File exist")
+                return True
+            print ("File not exist")
+        return False
 
     def get_master_ct(self):
         if not _phue.is_on(self.master):
@@ -82,7 +93,7 @@ class Sensor():
         _phue.set_lights(self.lights, bri=bri, ct=ct)
 
     def update(self):
-        if self.sensor_state():
+        if self.sensor_state() or self.mock_file_exists():
             self.last_motion = time()
         if (self.sensor_state_buffer_changed() or
                 self.master_bri_changed() or self.master_ct_changed()):
@@ -92,7 +103,7 @@ class Sensor():
                 _phue.set_lights(self.lights, on=False, time=10.0)
 
 
-kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"], 300.0)
+kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"], 300.0, mock_file="mock_kuche")
 flur_sensor = Sensor(33, ["Kronleuchter"], 120.0)
 bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0)
 
