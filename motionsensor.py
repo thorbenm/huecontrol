@@ -84,8 +84,8 @@ class Sensor():
         return False
 
     def slave(self):
-        bri = self.get_master_bri()
-        ct = self.get_master_ct()
+        bri = self.master_bri
+        ct = self.master_ct
         
         _phue.set_lights(self.lights, bri=bri, ct=ct)
 
