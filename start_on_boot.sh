@@ -7,5 +7,6 @@ THIS_FILE=$(readlink -f "$0")
 THIS_DIR=$(dirname "${THIS_FILE}")
 cd ${THIS_DIR}
 sleep 10
+rm -rf mock_kuche
 python3 motionsensor.py
 
