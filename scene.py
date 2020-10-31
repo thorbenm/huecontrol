@@ -3,6 +3,7 @@ import sys
 from time import sleep
 from _phue import set_lights
 from _phue import is_on
+from _phue import get_bri
 import argparse
 
 
@@ -36,7 +37,7 @@ def wakeup(time):
     assert not args.reduce_only, "wakeup should not be called with --reduce-only"
 
     ignore_schlafzimmer = False
-    ignore_wohnzimmer = False
+    ignore_wohnzimmer = 0.9 < get_bri("Stehlampe")
 
     if not ignore_schlafzimmer:
         set_lights(["Tischlampe"], bri=2.0/254.0, ct=1.0, time=.4)
@@ -53,9 +54,9 @@ def wakeup(time):
     sleep(time + 1.0)
 
     if not ignore_schlafzimmer and is_on("Tischlampe"):
-        hell_schlafzimmer(3.0 * time)
+        hell_schlafzimmer(3600.0)
     if not ignore_wohnzimmer and is_on("Stehlampe"):
-        hell(3.0 * time)
+        hell(3600.0)
 
 
 def lesen(time):
