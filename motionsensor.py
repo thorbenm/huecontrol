@@ -44,6 +44,8 @@ class Sensor():
     def get_master_ct(self):
         if not _phue.is_on(self.master):
             return 1.0
+        if self.master_bri < 0.5:
+            return 1.0
         try:
             ct = _phue.get_ct(self.master)
             ct = max(min(ct, self.maximum_ct), self.minimum_ct)
