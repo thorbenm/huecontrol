@@ -66,6 +66,14 @@ def lesen(time):
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=args.reduce_only)
 
 
+def warm(time):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], ct=1.0, time=time)
+
+
+def warm_schlafzimmer(time):
+    set_lights(["Tischlampe"], ct=1.0, time=time)
+
+
 def lesen_schlafzimmer(time):
     set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time, reduce_only=args.reduce_only)
     set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=args.reduce_only)
