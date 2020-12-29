@@ -44,7 +44,7 @@ class Sensor():
     def get_master_ct(self):
         if not _phue.is_on(self.master):
             return 1.0
-        if self.master_bri < 0.5:
+        if self.master_bri < 0.51:
             return 1.0
         try:
             ct = _phue.get_ct(self.master)
