@@ -54,9 +54,9 @@ def wakeup(time):
     sleep(time + 1.0)
 
     if not ignore_schlafzimmer and is_on("Tischlampe"):
-        hell_schlafzimmer(3600.0)
+        hell_schlafzimmer(600.0)
     if not ignore_wohnzimmer and is_on("Stehlampe"):
-        hell(3600.0)
+        hell(600.0)
 
 
 def lesen(time):
