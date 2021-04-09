@@ -103,8 +103,12 @@ def dunkel_schlafzimmer(time):
 
 def off(time):
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "Hängelampe",
-                "Lichterkette", "Tischlampe", "Schlafzimmer Hängelampe",
-                "LED Streifen"],
+                "Lichterkette", "LED Streifen"],
+               on=False, time=time, reduce_only=args.reduce_only)
+
+
+def off_schlafzimmer(time):
+    set_lights(["Tischlampe", "Schlafzimmer Hängelampe"],
                on=False, time=time, reduce_only=args.reduce_only)
 
 
