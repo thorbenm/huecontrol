@@ -54,10 +54,16 @@ class Sensor():
             return 1.0
 
     def sensor_state(self):
-        response = requests.get("http://%s/api/%s/sensors/%d" % (
-                                ip_address, user_id, self.sensor_id))
-        json_data = json.loads(response.text)
-        return json_data['state']['presence']
+        try:
+            response = requests.get("http://%s/api/%s/sensors/%d" % (
+                                    ip_address, user_id, self.sensor_id))
+            json_data = json.loads(response.text)
+            return json_data['state']['presence']
+        except:
+            # requests very rarely throws an exception.
+            # mostly during the night that causes the whole thing to crash
+            # todo: catch the specific exception
+            return False
 
     def master_bri_changed(self):
         new_bri = self.get_master_bri()
