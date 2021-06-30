@@ -8,5 +8,10 @@ THIS_DIR=$(dirname "${THIS_FILE}")
 cd ${THIS_DIR}
 sleep 90
 rm -rf mock_kuche
-python3 motionsensor.py &
+echo "" >> delme_log_motionsensor.txt
+echo "" >> delme_log_motionsensor.txt
+echo "" >> delme_log_motionsensor.txt
+echo "" >> delme_log_motionsensor.txt
+echo "" >> delme_log_motionsensor.txt
+python3 motionsensor.py 1>> delme_log_motionsensor.txt 2>> delme_log_motionsensor.txt &
 python3 mock_file_deleter.py &
