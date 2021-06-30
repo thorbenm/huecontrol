@@ -114,12 +114,9 @@ bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0)
 
 
 while True:
-    try:
-        kuchen_sensor.update()
-        sleep(.05)
-        flur_sensor.update()
-        sleep(.05)
-        bad_sensor.update()
-        sleep(.05)
-    except:
-        pass
+    kuchen_sensor.update()
+    sleep(.05)
+    flur_sensor.update()
+    sleep(.05)
+    bad_sensor.update()
+    sleep(.05)
