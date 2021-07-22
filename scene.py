@@ -54,6 +54,8 @@ def wakeup(time):
     sleep(time + 1.0)
 
     if not ignore_schlafzimmer and is_on("Tischlampe"):
+        set_lights(["Schlafzimmer Hängelampe"], bri=1.1/254.0)
+        sleep(1.0)
         hell_schlafzimmer(600.0)
     if not ignore_wohnzimmer and is_on("Stehlampe"):
         hell(600.0)

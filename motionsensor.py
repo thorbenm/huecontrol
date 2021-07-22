@@ -22,7 +22,7 @@ class Sensor():
         self.master_ct = None
         self.mock_file = mock_file
 
-        self.minimum_bri = 1.1/255.0
+        self.minimum_bri = 1.1/254.0
         self.maximum_bri = 1.0
 
         self.minimum_ct = 0.5
