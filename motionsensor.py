@@ -31,9 +31,12 @@ class Sensor():
         self.last_sensor_state_buffer = None
 
     def get_master_bri(self):
-        bri = _phue.get_bri(self.master)
-        bri = max(min(bri, self.maximum_bri), self.minimum_bri)
-        return bri
+        try:
+            bri = _phue.get_bri(self.master)
+            bri = max(min(bri, self.maximum_bri), self.minimum_bri)
+            return bri
+        except:
+            return 0.5
 
     def mock_file_exists(self):
         if self.mock_file is not None:
@@ -42,11 +45,12 @@ class Sensor():
         return False
 
     def get_master_ct(self):
-        if not _phue.is_on(self.master):
-            return 1.0
-        if self.master_bri < 0.51:
-            return 1.0
         try:
+            if not _phue.is_on(self.master):
+                return 1.0
+            if self.master_bri < 0.51:
+                return 1.0
+
             ct = _phue.get_ct(self.master)
             ct = max(min(ct, self.maximum_ct), self.minimum_ct)
             return ct
