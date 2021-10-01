@@ -4,7 +4,8 @@ import os
 from time import sleep
 
 files = ['mock_kuche']
-counters = [0.0 for j in files]
+counters = [3601.0 for j in files]
+# deletes all files on startup
 
 while True:
     for j in range(len(files)):
