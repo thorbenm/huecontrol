@@ -7,111 +7,91 @@ from _phue import get_bri
 import argparse
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-s', type=str, required=True, dest='scene')
-parser.add_argument('-t', type=str, default='0.4s', dest='time')
-parser.add_argument('--reduce-only', action='store_true', dest='reduce_only')
-args = parser.parse_args()
+def hell(time=.4, reduce_only=False):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=0.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
 
-unit_is_minutes = False
-if args.time.endswith("m"):
-    unit_is_minutes = True
-time = float(args.time[:-1])
-if unit_is_minutes:
-    time *= 60
+def hell_schlafzimmer(time=.4, reduce_only=False):
+    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time, reduce_only=reduce_only)
+    set_lights(["Schlafzimmer Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
 
 
-def hell(time):
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=0.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Lichterkette"], on=True, time=time, reduce_only=args.reduce_only)
+def lesen(time=.4, reduce_only=False):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hängelampe"], on=True, time=time, reduce_only=reduce_only)
+    set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
 
-def hell_schlafzimmer(time):
-    set_lights(["Tischlampe"], bri=1.0, ct=0.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Schlafzimmer Hängelampe"], bri=1.0, time=time, reduce_only=args.reduce_only)
-
-
-def wakeup(time):
-    assert not args.reduce_only, "wakeup should not be called with --reduce-only"
-
-    ignore_schlafzimmer = False
-    ignore_wohnzimmer = 0.9 < get_bri("Stehlampe")
-
-    if not ignore_schlafzimmer:
-        set_lights(["Tischlampe"], bri=2.0/254.0, ct=1.0, time=.4)
-    if not ignore_wohnzimmer:
-        set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=2.0/254.0, ct=1.0, time=.4)
-
-    sleep(1.0)
-
-    if not ignore_schlafzimmer:
-        gemutlich_schlafzimmer(time)
-    if not ignore_wohnzimmer:
-        gemutlich(time / 2.0)
-
-    sleep(time + 1.0)
-
-    if not ignore_schlafzimmer and is_on("Tischlampe"):
-        set_lights(["Schlafzimmer Hängelampe"], bri=1.1/254.0)
-        sleep(1.0)
-        hell_schlafzimmer(600.0)
-    if not ignore_wohnzimmer and is_on("Stehlampe"):
-        hell(600.0)
-
-
-def lesen(time):
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Hängelampe"], on=True, time=time, reduce_only=args.reduce_only)
-    set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Lichterkette"], on=True, time=time, reduce_only=args.reduce_only)
-
-
-def warm(time):
+def warm(time=.4, reduce_only=False):
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], ct=1.0, time=time)
 
 
-def warm_schlafzimmer(time):
+def warm_schlafzimmer(time=.4, reduce_only=False):
     set_lights(["Tischlampe"], ct=1.0, time=time)
 
 
-def lesen_schlafzimmer(time):
-    set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=args.reduce_only)
+def lesen_schlafzimmer(time=.4, reduce_only=False):
+    set_lights(["Tischlampe"], bri=1.0, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=reduce_only)
 
 
-def gemutlich(time):
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=.5, ct=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Hängelampe"], on=False, time=time, reduce_only=args.reduce_only)
-    set_lights(["Lichterkette"], on=True, time=time, reduce_only=args.reduce_only)
+def gemutlich(time=.4, reduce_only=False, bri=.5):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=bri, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hängelampe"], on=False, time=time, reduce_only=reduce_only)
+    set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
 
-def gemutlich_schlafzimmer(time):
-    set_lights(["Tischlampe"], bri=.5, ct=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=args.reduce_only)
+def gemutlich_schlafzimmer(time=.4, reduce_only=False, bri=.5):
+    set_lights(["Tischlampe"], bri=bri, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=reduce_only)
 
 
-def dunkel(time):
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=.1, ct=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Hängelampe"], on=False, time=time, reduce_only=args.reduce_only)
-    set_lights(["Lichterkette"], on=True, time=time, reduce_only=args.reduce_only)
+def dunkel(time=.4, reduce_only=False):
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=.1, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hängelampe"], on=False, time=time, reduce_only=reduce_only)
+    set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
 
-def dunkel_schlafzimmer(time):
-    set_lights(["Tischlampe"], bri=.1, ct=1.0, time=time, reduce_only=args.reduce_only)
-    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=args.reduce_only)
+def dunkel_schlafzimmer(time=.4, reduce_only=False):
+    set_lights(["Tischlampe"], bri=.1, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, time=time, reduce_only=reduce_only)
 
 
-def off(time):
+def off(time=.4, reduce_only=False):
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "Hängelampe",
                 "Lichterkette", "LED Streifen"],
-               on=False, time=time, reduce_only=args.reduce_only)
+               on=False, time=time, reduce_only=reduce_only)
 
 
-def off_schlafzimmer(time):
+def off_schlafzimmer(time=.4, reduce_only=False):
     set_lights(["Tischlampe", "Schlafzimmer Hängelampe"],
-               on=False, time=time, reduce_only=args.reduce_only)
+               on=False, time=time, reduce_only=reduce_only)
 
 
-exec("%s(%f)" % (args.scene, time))
+def convert_time_string(time_str):
+    unit_is_minutes = False
+    if time_str.endswith("m"):
+        unit_is_minutes = True
+    time = float(time_str[:-1])
+    if unit_is_minutes:
+        time *= 60
+    return time
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', type=str, required=True, dest='scene')
+    parser.add_argument('-t', type=str, default='0.4s', dest='time')
+    parser.add_argument('--reduce-only', action='store_true', dest='reduce_only')
+    args = parser.parse_args()
+
+    time = convert_time_string(args.time)
+
+    exec("%s(%f, reduce_only=%s)" % (args.scene, time, "True" if args.reduce_only else "False"))
+
+
+if __name__ == '__main__':
+    main()

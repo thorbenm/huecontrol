@@ -90,3 +90,7 @@ def set_light_save(*args, **kwargs):
         except:
             print(r)
         sleep(2.0)
+
+
+def min_bri():
+    return 1.1/254.0
