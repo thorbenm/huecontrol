@@ -5,6 +5,7 @@ from time import time
 import json
 import _phue
 from math import inf
+from math import isclose
 from user_id import user_id
 import os.path
 
@@ -25,9 +26,6 @@ class Sensor():
         self.minimum_bri = 1.1/254.0
         self.maximum_bri = 1.0
 
-        self.minimum_ct = 0.5
-        self.maximum_ct = 1.0
-
         self.last_sensor_state_buffer = None
 
     def get_master_bri(self):
@@ -46,14 +44,19 @@ class Sensor():
 
     def get_master_ct(self):
         try:
+            def _map(x, in_min, in_max, out_min, out_max):
+                # arduino map
+                return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
             if not _phue.is_on(self.master):
-                return 1.0
-            if self.master_bri < 0.51:
                 return 1.0
 
             ct = _phue.get_ct(self.master)
-            ct = max(min(ct, self.maximum_ct), self.minimum_ct)
-            return ct
+            if 0.98 < ct:
+                return 1.0
+            if self.master_bri < 0.5:
+                return 1.0
+            else:
+                return _map(self.master_bri, 0.5, 1.0, 1.0, 0.5)
         except:
             return 1.0
 
