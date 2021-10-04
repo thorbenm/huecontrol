@@ -5,9 +5,12 @@ from _phue import set_lights
 from _phue import is_on
 from _phue import get_bri
 import argparse
+import motionsensor
 
 
 def hell(time=.4, reduce_only=False):
+    if 60 < time:
+        motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=0.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
@@ -19,6 +22,8 @@ def hell_schlafzimmer(time=.4, reduce_only=False):
 
 
 def lesen(time=.4, reduce_only=False):
+    if 60 < time:
+        motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], on=True, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
@@ -26,6 +31,8 @@ def lesen(time=.4, reduce_only=False):
 
 
 def warm(time=.4, reduce_only=False):
+    if 60 < time:
+        motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], ct=1.0, time=time)
 
 
@@ -39,6 +46,8 @@ def lesen_schlafzimmer(time=.4, reduce_only=False):
 
 
 def gemutlich(time=.4, reduce_only=False, bri=.5):
+    if 60 < time:
+        motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=bri, ct=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], on=False, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
@@ -50,6 +59,8 @@ def gemutlich_schlafzimmer(time=.4, reduce_only=False, bri=.5):
 
 
 def dunkel(time=.4, reduce_only=False):
+    if 60 < time:
+        motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=.1, ct=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], on=False, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
@@ -61,6 +72,8 @@ def dunkel_schlafzimmer(time=.4, reduce_only=False):
 
 
 def off(time=.4, reduce_only=False):
+    if 60 < time:
+        motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "Hängelampe",
                 "Lichterkette", "LED Streifen"],
                on=False, time=time, reduce_only=reduce_only)
@@ -91,6 +104,7 @@ def main():
     time = convert_time_string(args.time)
 
     exec("%s(%f, reduce_only=%s)" % (args.scene, time, "True" if args.reduce_only else "False"))
+
 
 
 if __name__ == '__main__':
