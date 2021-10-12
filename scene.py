@@ -11,7 +11,8 @@ import motionsensor
 def hell(time=.4, reduce_only=False):
     if 60 < time:
         motionsensor.freeze()
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=0.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen", "Hue Play Links", "Hue Play Rechts"],
+               bri=1.0, ct=0.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
@@ -24,7 +25,7 @@ def hell_schlafzimmer(time=.4, reduce_only=False):
 def lesen(time=.4, reduce_only=False):
     if 60 < time:
         motionsensor.freeze()
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=1.0, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen", "Hue Play Links", "Hue Play Rechts"], bri=1.0, ct=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], on=True, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
@@ -33,7 +34,7 @@ def lesen(time=.4, reduce_only=False):
 def warm(time=.4, reduce_only=False):
     if 60 < time:
         motionsensor.freeze()
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], ct=1.0, time=time)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen", "Hue Play Links", "Hue Play Rechts"], ct=1.0, time=time)
 
 
 def warm_schlafzimmer(time=.4, reduce_only=False):
@@ -48,7 +49,7 @@ def lesen_schlafzimmer(time=.4, reduce_only=False):
 def gemutlich(time=.4, reduce_only=False, bri=.5):
     if 60 < time:
         motionsensor.freeze()
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=bri, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen", "Hue Play Links", "Hue Play Rechts"], bri=bri, ct=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], on=False, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
@@ -61,7 +62,7 @@ def gemutlich_schlafzimmer(time=.4, reduce_only=False, bri=.5):
 def dunkel(time=.4, reduce_only=False):
     if 60 < time:
         motionsensor.freeze()
-    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"], bri=.1, ct=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen", "Hue Play Links", "Hue Play Rechts"], bri=.1, ct=1.0, time=time, reduce_only=reduce_only)
     set_lights(["Hängelampe"], on=False, time=time, reduce_only=reduce_only)
     set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
 
@@ -75,7 +76,8 @@ def off(time=.4, reduce_only=False):
     if 60 < time:
         motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "Hängelampe",
-                "Lichterkette", "LED Streifen"],
+                "Lichterkette", "LED Streifen", "Hue Play Links",
+                "Hue Play Rechts"],
                on=False, time=time, reduce_only=reduce_only)
 
 
