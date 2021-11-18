@@ -12,10 +12,6 @@ import os
 from pathlib import Path
 
 
-json_data = requests.get("https://discovery.meethue.com").json()
-ip_address = json_data[0]['internalipaddress']
-
-
 def freeze():
     Path("/home/pi/Programming/huecontrol/motionsensor_freeze").touch()
 
@@ -80,7 +76,7 @@ class Sensor():
     def sensor_state(self):
         try:
             response = requests.get("http://%s/api/%s/sensors/%d" % (
-                                    ip_address, user_id, self.sensor_id))
+                                    _phue.ip_address, user_id, self.sensor_id))
             json_data = json.loads(response.text)
             return json_data['state']['presence']
         except:

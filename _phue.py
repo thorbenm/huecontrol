@@ -4,13 +4,9 @@ from phue import Bridge
 from time import sleep
 
 
-json_data = requests.get("https://discovery.meethue.com").json()
-ip_address = json_data[0]['internalipaddress']
-
-
+ip_address = "Philips-hue"
 b = Bridge(ip_address)
 b.connect()
-# print(b.get_api())
 
 
 def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
