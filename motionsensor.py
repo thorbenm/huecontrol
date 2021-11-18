@@ -52,7 +52,7 @@ class Sensor():
 
     def freeze_file(self):
         if os.path.isfile("motionsensor_freeze"):
-            Sensor.next_update = time() + 40.0
+            Sensor.next_update = time() + 90.0
             os.remove("motionsensor_freeze")
 
     def get_master_ct(self):
