@@ -16,6 +16,11 @@ def freeze():
     Path("/home/pi/Programming/huecontrol/motionsensor_freeze").touch()
 
 
+def _map(x, in_min, in_max, out_min, out_max):
+    # arduino map
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
+
 class Sensor():
     master = "Stehlampe"
     master_bri = float('nan')
@@ -34,12 +39,15 @@ class Sensor():
         self.minimum_bri = _phue.min_bri()
         self.maximum_bri = 1.0
 
+        self.minimum_ct = 0.4
+        self.maximum_ct = 1.0
+
         self.last_sensor_state_buffer = None
 
     def get_master_bri(self):
         try:
             bri = _phue.get_bri(Sensor.master)
-            bri = max(min(bri, self.maximum_bri), self.minimum_bri)
+            bri = _map(bri, 0.0, 1.0, self.minimum_bri, self.maximum_bri)
             return bri
         except:
             return 0.5
@@ -55,21 +63,21 @@ class Sensor():
             Sensor.next_update = time() + 90.0
             os.remove("motionsensor_freeze")
 
+    def get_virtual_master_ct(self):
+        # based on brightness instead
+        if Sensor.master_bri < 0.5:
+            return self.maximum_ct
+        else:
+            return _map(Sensor.master_bri, 0.5, 1.0, self.maximum_ct, self.minimum_ct)
+
     def get_master_ct(self):
         try:
-            def _map(x, in_min, in_max, out_min, out_max):
-                # arduino map
-                return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
             if not _phue.is_on(Sensor.master):
                 return 1.0
 
             ct = _phue.get_ct(Sensor.master)
-            if 0.98 < ct:
-                return 1.0
-            if Sensor.master_bri < 0.5:
-                return 1.0
-            else:
-                return _map(Sensor.master_bri, 0.5, 1.0, 1.0, 0.5)
+            ct = _map(ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
+            return max(ct, self.get_virtual_master_ct())
         except:
             return 1.0
 
