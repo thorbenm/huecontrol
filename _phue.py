@@ -21,12 +21,6 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             if reduce_only and not is_on(l):
                 continue
             set_light(l, 'on', on, transitiontime=time)
-        if ct is not None:
-            set_light(l, 'ct', int(ct * (454 - 153) + 153), transitiontime=time)
-        if hue is not None:
-            set_light(l, 'hue', int(hue * 65535), transitiontime=time)
-        if sat is not None:
-            set_light(l, 'sat', int(sat * 254), transitiontime=time)
         if bri is not None:
             if reduce_only and get_bri(l) < bri:
                 continue
@@ -40,6 +34,12 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             set_light(l, 'bri', int(bri * 254), transitiontime=time)
 #            else:
 #                set_light(l, 'on', False, transitiontime=time)
+        if ct is not None:
+            set_light(l, 'ct', int(ct * (454 - 153) + 153), transitiontime=time)
+        if hue is not None:
+            set_light(l, 'hue', int(hue * 65535), transitiontime=time)
+        if sat is not None:
+            set_light(l, 'sat', int(sat * 254), transitiontime=time)
 
 
 def is_on(light):
