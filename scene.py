@@ -22,6 +22,20 @@ def hell_schlafzimmer(time=.4, reduce_only=False):
     set_lights(["Schlafzimmer Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
 
 
+def warm(time=.4, reduce_only=False):
+    if 90 < time:
+        motionsensor.freeze()
+    set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen"],
+               bri=1.0, ct=0.4, time=time, reduce_only=reduce_only)
+    set_lights(["Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
+    set_lights(["Lichterkette"], on=True, time=time, reduce_only=reduce_only)
+
+
+def warm_schlafzimmer(time=.4, reduce_only=False):
+    set_lights(["Tischlampe"], bri=1.0, ct=0.4, time=time, reduce_only=reduce_only)
+    set_lights(["Schlafzimmer Hängelampe"], bri=1.0, time=time, reduce_only=reduce_only)
+
+
 def lesen(time=.4, reduce_only=False):
     if 90 < time:
         motionsensor.freeze()
