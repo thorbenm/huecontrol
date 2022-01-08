@@ -7,31 +7,26 @@ import scene
 
 
 def wakeup(t1, t2, t3):
-    ignore_schlafzimmer = False
-    ignore_wohnzimmer = 0.9 < _phue.get_bri("Stehlampe")
+    scene.gemutlich_schlafzimmer(time=.4, bri=_phue.min_bri(), increase_only=True)
+    scene.gemutlich(time=.4, bri=_phue.min_bri(), increase_only=True)
 
-    if not ignore_schlafzimmer:
-        scene.gemutlich_schlafzimmer(time=.4, bri=_phue.min_bri())
-    if not ignore_wohnzimmer:
-        scene.gemutlich(time=.4, bri=_phue.min_bri())
+    sleep(t1 + .1)
 
-    sleep(t1 + 1.0)
+    if _phue.is_on("Tischlampe"):
+        scene.gemutlich_schlafzimmer(t2, increase_only=True)
+    if _phue.is_on("Stehlampe"):
+        scene.gemutlich(t2, increase_only=True)
 
-    if not ignore_schlafzimmer and _phue.is_on("Tischlampe"):
-        scene.gemutlich_schlafzimmer(t2)
-    if not ignore_wohnzimmer and _phue.is_on("Stehlampe"):
-        scene.gemutlich(t2)
+    sleep(t2 + .1)
 
-    sleep(t2 + 1.0)
-
-    if not ignore_schlafzimmer and _phue.is_on("Tischlampe"):
+    if _phue.is_on("Tischlampe"):
         _phue.set_lights(["Schlafzimmer Hängelampe"], bri=_phue.min_bri())
         sleep(1.0)
-        scene.hell_schlafzimmer(t3)
-    if not ignore_wohnzimmer and _phue.is_on("Stehlampe"):
+        scene.hell_schlafzimmer(t3, increase_only=True)
+    if _phue.is_on("Stehlampe"):
         _phue.set_lights(["Hängelampe"], bri=_phue.min_bri())
         sleep(1.0)
-        scene.hell(t3)
+        scene.hell(t3, increase_only=True)
 
 
 def main():
