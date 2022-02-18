@@ -12,14 +12,14 @@ def wakeup(t1, t2, t3):
 
     sleep(t1 + .1)
 
-    if _phue.is_on("Tischlampe"):
+    if _phue.is_on("Nachttischlampe"):
         scene.gemutlich_schlafzimmer(t2, increase_only=True)
     if _phue.is_on("Stehlampe"):
         scene.gemutlich(t2, increase_only=True)
 
     sleep(t2 + .1)
 
-    if _phue.is_on("Tischlampe"):
+    if _phue.is_on("Nachttischlampe"):
         _phue.set_lights(["Schlafzimmer Hängelampe"], bri=_phue.min_bri())
         sleep(1.0)
         scene.hell_schlafzimmer(t3, increase_only=True)
