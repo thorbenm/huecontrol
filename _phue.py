@@ -2,9 +2,9 @@
 import requests
 from phue import Bridge
 from time import sleep
+from personal_data import ip_address
 
 
-ip_address = "Philips-hue"
 b = Bridge(ip_address)
 b.connect()
 
