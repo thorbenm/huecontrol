@@ -37,10 +37,14 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             command_c = command.copy()
             command_c["on"] = min(command_c["on"], b.get_light(l, "on"))
             if "bri" in command_c.keys():
-                if b.get_light(l, "bri") < command_c["bri"]:
+                current_bri = b.get_light(l, "bri") if b.get_light(l, "on") else 0
+                if current_bri < command_c["bri"]:
+                    # print("pop bri=%d" % command_c["bri"])
                     command_c.pop("bri")
             if "ct" in command_c.keys():
-                if command_c["ct"] < b.get_light(l, "ct"):
+                current_ct = b.get_light(l, "ct") if b.get_light(l, "on") else 454
+                if command_c["ct"] < current_ct:
+                    # print("pop ct=%d" % command_c["ct"])
                     command_c.pop("ct")
 
             set_light(l, command_c)
@@ -49,10 +53,14 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             command_c = command.copy()
             command_c["on"] = max(command_c["on"], b.get_light(l, "on"))
             if "bri" in command_c.keys():
-                if command_c["bri"] < b.get_light(l, "bri"):
+                current_bri = b.get_light(l, "bri") if b.get_light(l, "on") else 0
+                if command_c["bri"] < current_bri:
+                    # print("pop bri=%d" % command_c["bri"])
                     command_c.pop("bri")
             if "ct" in command_c.keys():
-                if b.get_light(l, "ct") < command_c["ct"]:
+                current_ct = b.get_light(l, "ct") if b.get_light(l, "on") else 454
+                if current_ct < command_c["ct"]:
+                    # print("pop ct=%d" % command_c["ct"])
                     command_c.pop("ct")
 
             set_light(l, command_c)
@@ -69,10 +77,14 @@ def get_bri(light):
 
 
 def get_ct(light):
+    if not b.get_light(light, "on"):
+        return 1.0
     return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
 
 
-set_light=b.set_light
+def set_light(*args, **kwargs):
+    # print(*args, **kwargs)
+    b.set_light(*args, **kwargs)
 
 
 def set_light_save(*args, **kwargs):
