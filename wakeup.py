@@ -7,8 +7,8 @@ import scene
 
 
 def wakeup(t1, t2, t3):
-    scene.gemutlich_schlafzimmer(time=.4, bri=_phue.min_bri(), increase_only=True)
-    scene.gemutlich(time=.4, bri=_phue.min_bri(), increase_only=True)
+    scene.min_schlafzimmer(increase_only=True)
+    scene.min(increase_only=True)
 
     sleep(t1 + .1)
 
