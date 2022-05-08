@@ -87,6 +87,14 @@ def set_light(*args, **kwargs):
     b.set_light(*args, **kwargs)
 
 
+def get_hue(light):
+    return float(b.get_light(light, "hue")) / 65535
+
+
+def get_sat(light):
+    return float(b.get_light(light, "sat")) / 254
+
+
 def set_light_save(*args, **kwargs):
     # currently unused. The problem wasnt that the light setting function
     # didnt throw an error but that it pretends everything was fine when
