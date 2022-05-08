@@ -35,8 +35,8 @@ def main():
     args = parser.parse_args()
 
     if args.fast:
-        t1 = "10m"
-        t2 = "3m"
+        t1 = "1s"
+        t2 = "10m"
         t3 = "45m"
     elif args.slow:
         t1 = "15m"
