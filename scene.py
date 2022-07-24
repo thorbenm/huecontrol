@@ -20,6 +20,7 @@ def __wohnzimmer_prototype(bri, bri_h, ct, time, reduce_only, increase_only):
 
 def __schlafzimmer_prototype(bri, bri_h, ct, time, reduce_only, increase_only):
     set_lights(["Nachttischlampe"], bri=bri, ct=ct, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Wickeltischlampe"], bri=bri, ct=ct, time=time, reduce_only=reduce_only, increase_only=increase_only)
     set_lights(["Schlafzimmer Hängelampe"], bri=bri_h, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
