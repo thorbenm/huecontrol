@@ -15,7 +15,7 @@ def __wohnzimmer_prototype(bri, bri_h, ct, time, reduce_only, increase_only):
     set_lights(["Hue Go", "Stehlampe", "Fensterlampe", "LED Streifen", "Ananas"],
                bri=bri, ct=ct, time=time, reduce_only=reduce_only, increase_only=increase_only)
     set_lights(["Hängelampe"], bri=bri_h, time=time, reduce_only=reduce_only, increase_only=increase_only)
-    set_lights(["Lichterkette"], on=(min_bri() < bri), time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Lichterkette"], on=(min_bri() <= bri), time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
 def __schlafzimmer_prototype(bri, bri_h, ct, time, reduce_only, increase_only):
