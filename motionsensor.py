@@ -128,8 +128,8 @@ class Sensor():
         if self.sensor_state_buffer_changed():
             if self.sensor_state_buffer():
                 # print("bri=%.2f, ct=%.2f" % (Sensor.master_bri, Sensor.master_ct))
-                _phue.set_lights(self.lights, bri=Sensor.master_bri,
-                                 ct=Sensor.master_ct)
+                _phue.set_lights_save(self.lights, bri=Sensor.master_bri,
+                                      ct=Sensor.master_ct)
                 self.current_bri = Sensor.master_bri
                 self.current_ct = Sensor.master_ct
             else:
@@ -138,9 +138,9 @@ class Sensor():
         if master_changed:
             if self.sensor_state_buffer():
                 t = 0.4
-                if (abs(Sensor.master_bri - self.current_bri) < 0.2 and
-                        abs(Sensor.master_ct - self.current_ct) < 0.2):
-                    t = 5.0
+                if (abs(Sensor.master_bri - self.current_bri) < 0.09 and
+                        abs(Sensor.master_ct - self.current_ct) < 0.09):
+                    t = 4.5
                 # print("bri=%.2f, ct=%.2f" % (Sensor.master_bri, Sensor.master_ct))
                 _phue.set_lights(self.lights, bri=Sensor.master_bri,
                                  ct=Sensor.master_ct, time=t)
@@ -160,6 +160,8 @@ def main():
         flur_sensor.update()
         sleep(.05)
         bad_sensor.update()
+        sleep(.05)
+        _phue.check_lights()
         sleep(.05)
 
 

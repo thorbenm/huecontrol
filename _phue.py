@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import requests
 from phue import Bridge
-from time import sleep
+from time import sleep, time
 from personal_data import ip_address
 
 
@@ -79,7 +79,12 @@ def get_bri(light):
 def get_ct(light):
     if not b.get_light(light, "on"):
         return 1.0
-    return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
+    try:
+        # try catch is a workaround for lazy implementation of light that
+        # dont support ct in motionsensor
+        return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
+    except:
+        return 1.0
 
 
 def set_light(*args, **kwargs):
@@ -95,33 +100,44 @@ def get_sat(light):
     return float(b.get_light(light, "sat")) / 254
 
 
-def set_light_save(*args, **kwargs):
-    # currently unused. The problem wasnt that the light setting function
-    # didnt throw an error but that it pretends everything was fine when
-    # the light in fact was never controlled.
-    # not sure if i should try and work with the monitor value instead.
-    # for now ill just not use it at all.
-    for _ in range(3):
-        r = []
-        try:
-            r = b.set_light(*args, **kwargs)
-            # print(r)
-            assert len(r) == 1
-            r = r[0]
-            assert len(r) == 2
-            try:
-                if list(r[1].values())[0]['description'] == 'parameter, ct, not available':
-                    r = r[:-1]
-            except:
-                pass
-            for j in r:
-                k = list(j.keys())
-                assert len(k) == 1
-                assert k[0] == 'success'
+global_d = dict()
+
+
+def set_lights_save(lights, **kwargs):
+    global global_d
+    set_lights(lights, **kwargs)
+    if "time" in kwargs:
+        if .5 < kwargs["time"]:
             return
-        except:
-            print(r)
-        sleep(2.0)
+    d = dict()
+    for l in [lights] if type(lights) == str else lights:
+        d[l] = {**kwargs, "at": time() + 90.0}
+    global_d = {**global_d, **d}
+
+
+def values_ok(set_v, get_v):
+    if isinstance(set_v, bool) and isinstance(get_v, bool):
+        return set_v == get_v
+    if isinstance(set_v, float) and isinstance(get_v, float):
+        return abs(set_v - get_v) < .1
+
+
+def check_lights():
+    global global_d
+    for l in list(global_d.keys()):
+        if global_d[l]["at"] < time():
+            dd = {j:global_d[l][j] for j in global_d[l] if j != "at"}
+            for k in list(dd.keys()):
+                set_v = dd[k]
+                if k == "on":
+                    get_v = is_on(l)
+                else:
+                    get_v = eval("get_" + k + "(\"" + l + "\")")
+                if values_ok(set_v, get_v):
+                    del dd[k]
+            if dd:
+                set_lights(l, **dd)
+            del global_d[l]
 
 
 def min_bri():
