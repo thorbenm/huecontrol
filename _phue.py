@@ -100,11 +100,12 @@ def get_sat(light):
     return float(b.get_light(light, "sat")) / 254
 
 
-global_d = dict()
+global_l = list()
 
 
-def set_lights_save(lights, **kwargs):
-    global global_d
+def set_lights_safe(lights, **kwargs):
+    # global global_d
+    global global_l
     set_lights(lights, **kwargs)
     if "time" in kwargs:
         if .5 < kwargs["time"]:
@@ -112,35 +113,28 @@ def set_lights_save(lights, **kwargs):
     if "bri" in kwargs:
         if kwargs["bri"] < 0.09:
             return
-    d = dict()
-    for l in [lights] if type(lights) == str else lights:
-        d[l] = {**kwargs, "at": time() + 90.0}
-    global_d = {**global_d, **d}
-
-
-def values_ok(set_v, get_v):
-    if isinstance(set_v, bool) and isinstance(get_v, bool):
-        return set_v == get_v
-    if isinstance(set_v, float) and isinstance(get_v, float):
-        return 0.09 < get_v
+    else:
+        return
+    if type(lights) == str:
+        return
+    if len(lights) == 1:
+        return
+    global_l.append({"at": time() + 90.0,
+                     "lights": lights,
+                     "bri": kwargs["bri"]})
 
 
 def check_lights():
-    global global_d
-    for l in list(global_d.keys()):
-        if global_d[l]["at"] < time():
-            dd = {j:global_d[l][j] for j in global_d[l] if j != "at"}
-            for k in list(dd.keys()):
-                set_v = dd[k]
-                if k == "on":
-                    get_v = is_on(l)
-                else:
-                    get_v = eval("get_" + k + "(\"" + l + "\")")
-                if values_ok(set_v, get_v):
-                    del dd[k]
-            if dd:
-                set_lights(l, **dd)
-            del global_d[l]
+    global global_l
+    for elem in global_l[:]:
+        if elem["at"] < time():
+            l0 = elem["lights"][0]
+            b0 = get_bri(l0)
+            for l in elem["lights"][1:]:
+                b = get_bri(l)
+                if 0.02 < abs(b0 - b):
+                    set_lights(elem["lights"], bri=elem["bri"])
+            global_l.remove(elem)
 
 
 def min_bri():

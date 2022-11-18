@@ -128,7 +128,7 @@ class Sensor():
         if self.sensor_state_buffer_changed():
             if self.sensor_state_buffer():
                 # print("bri=%.2f, ct=%.2f" % (Sensor.master_bri, Sensor.master_ct))
-                _phue.set_lights_save(self.lights, bri=Sensor.master_bri,
+                _phue.set_lights_safe(self.lights, bri=Sensor.master_bri,
                                       ct=Sensor.master_ct)
                 self.current_bri = Sensor.master_bri
                 self.current_ct = Sensor.master_ct
