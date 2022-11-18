@@ -109,6 +109,9 @@ def set_lights_save(lights, **kwargs):
     if "time" in kwargs:
         if .5 < kwargs["time"]:
             return
+    if "bri" in kwargs:
+        if kwargs["bri"] < 0.09:
+            return
     d = dict()
     for l in [lights] if type(lights) == str else lights:
         d[l] = {**kwargs, "at": time() + 90.0}
@@ -119,7 +122,7 @@ def values_ok(set_v, get_v):
     if isinstance(set_v, bool) and isinstance(get_v, bool):
         return set_v == get_v
     if isinstance(set_v, float) and isinstance(get_v, float):
-        return abs(set_v - get_v) < .1
+        return 0.09 < get_v
 
 
 def check_lights():
