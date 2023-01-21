@@ -134,6 +134,7 @@ def check_lights():
                 b = get_bri(l)
                 if 0.02 < abs(b0 - b):
                     set_lights(elem["lights"], bri=elem["bri"])
+                    break
             global_l.remove(elem)
 
 
