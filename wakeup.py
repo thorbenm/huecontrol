@@ -34,8 +34,6 @@ def wakeup(t1, t2, t3, t4):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--fast', action='store_true', dest='fast')
-    parser.add_argument('-s', '--slow', action='store_true', dest='slow')
     parser.add_argument('-t1', type=str, default='10m', dest='t1')
     parser.add_argument('-t2', type=str, default='3m', dest='t2')
     parser.add_argument('-t3', type=str, default='45m', dest='t3')
