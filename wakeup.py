@@ -38,6 +38,7 @@ def main():
     parser.add_argument('-t2', type=str, default='3m', dest='t2')
     parser.add_argument('-t3', type=str, default='45m', dest='t3')
     parser.add_argument('-t4', type=str, default='-1s', dest='t4')
+    parser.add_argument('-c', action='store_true', dest='scheduled')
     args = parser.parse_args()
 
     t1 = args.t1
@@ -49,6 +50,10 @@ def main():
     t2 = scene.convert_time_string(t2)
     t3 = scene.convert_time_string(t3)
     t4 = scene.convert_time_string(t4)
+
+    if args.scheduled:
+        with open("/home/pi/scheduled_scene", "w") as file:
+            file.write("hell\n")
 
     wakeup(t1, t2, t3, t4)
 

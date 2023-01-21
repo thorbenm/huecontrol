@@ -143,11 +143,21 @@ def main():
     parser.add_argument('-s', type=str, required=True, dest='scene')
     parser.add_argument('-t', type=str, default='0.4s', dest='time')
     parser.add_argument('--reduce-only', action='store_true', dest='reduce_only')
+    parser.add_argument('-c', action='store_true', dest='scheduled')
     args = parser.parse_args()
 
     time = convert_time_string(args.time)
 
+    if args.scene.startswith("scheduled"):
+        with open("/home/pi/scheduled_scene", "r") as f:
+            scheduled = f.read().replace("\n", "")
+            args.scene = args.scene.replace("scheduled", scheduled)
+
     exec("%s(%f, reduce_only=%s)" % (args.scene, time, "True" if args.reduce_only else "False"))
+    if args.scheduled:
+        with open("/home/pi/scheduled_scene", "w") as file:
+            file.write(args.scene.split("_")[0] + "\n")
+
 
 
 if __name__ == '__main__':
