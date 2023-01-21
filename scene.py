@@ -24,7 +24,12 @@ def __schlafzimmer_prototype(bri, bri_h, ct, time, reduce_only, increase_only):
     set_lights(["Schlafzimmer Hängelampe"], bri=bri_h, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def focus(time=.4, reduce_only=False, increase_only=False):
+def focus(*args, **kwargs):
+    focus_wohnzimmer(*args, **kwargs)
+    focus_schlafzimmer(*args, **kwargs)
+
+
+def focus_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=1.0, bri_h=1.0, ct=0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -32,7 +37,12 @@ def focus_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=1.0, bri_h=1.0, ct=0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def hell(time=.4, reduce_only=False, increase_only=False):
+def hell(*args, **kwargs):
+    hell_wohnzimmer(*args, **kwargs)
+    hell_schlafzimmer(*args, **kwargs)
+
+
+def hell_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=1.0, bri_h=1.0, ct=.5, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -40,7 +50,12 @@ def hell_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=1.0, bri_h=1.0, ct=.5, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def warm(time=.4, reduce_only=False, increase_only=False):
+def warm(*args, **kwargs):
+    warm_wohnzimmer(*args, **kwargs)
+    warm_schlafzimmer(*args, **kwargs)
+
+
+def warm_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=1.0, bri_h=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -48,7 +63,12 @@ def warm_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=1.0, bri_h=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def lesen(time=.4, reduce_only=False, increase_only=False):
+def lesen(*args, **kwargs):
+    lesen_wohnzimmer(*args, **kwargs)
+    lesen_schlafzimmer(*args, **kwargs)
+
+
+def lesen_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=.75, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -56,7 +76,12 @@ def lesen_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=.75, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def gemutlich(time=.4, reduce_only=False, increase_only=False):
+def gemutlich(*args, **kwargs):
+    gemutlich_wohnzimmer(*args, **kwargs)
+    gemutlich_schlafzimmer(*args, **kwargs)
+
+
+def gemutlich_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=.4, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -64,7 +89,12 @@ def gemutlich_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=.4, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def dunkel(time=.4, reduce_only=False, increase_only=False):
+def dunkel(*args, **kwargs):
+    dunkel_wohnzimmer(*args, **kwargs)
+    dunkel_schlafzimmer(*args, **kwargs)
+
+
+def dunkel_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=.1, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -72,7 +102,12 @@ def dunkel_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=.1, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def min(time=.4, reduce_only=False, increase_only=False):
+def min(*args, **kwargs):
+    min_wohnzimmer(*args, **kwargs)
+    min_schlafzimmer(*args, **kwargs)
+
+
+def min_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=min_bri(), bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -80,7 +115,12 @@ def min_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=min_bri(), bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def off(time=.4, reduce_only=False, increase_only=False):
+def off(*args, **kwargs):
+    off_wohnzimmer(*args, **kwargs)
+    off_schlafzimmer(*args, **kwargs)
+
+
+def off_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=0, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 

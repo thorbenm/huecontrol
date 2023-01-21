@@ -10,16 +10,14 @@ import datetime
 
 def home():
     s = ""
-    with open("/home/pi/active_scene", "r") as f:
+    with open("/home/pi/scheduled_scene", "r") as f:
         s = f.read().replace("\n", "")
     exec("scene.%s()" % s)
-    exec("scene.%s_schlafzimmer()" % s)
     roomba.stop()
 
 
 def away():
     scene.off()
-    scene.off_schlafzimmer()
     roomba.start()
 
 

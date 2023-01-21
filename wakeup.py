@@ -8,28 +8,28 @@ import scene
 
 def wakeup(t1, t2, t3, t4):
     # scene.min_schlafzimmer(increase_only=True)
-    scene.min(increase_only=True)
+    scene.min_wohnzimmer(increase_only=True)
 
     sleep(t1 + .1)
 
     # if _phue.is_on("Nachttischlampe"):
     #     scene.gemutlich_schlafzimmer(t2, increase_only=True)
     if _phue.is_on("Stehlampe"):
-        scene.gemutlich(t2, increase_only=True)
+        scene.gemutlich_wohnzimmer(t2, increase_only=True)
 
     sleep(t2 + .1)
 
     # if _phue.is_on("Nachttischlampe"):
     #     scene.hell_schlafzimmer(t3, increase_only=True)
     if _phue.is_on("Stehlampe"):
-        scene.hell(t3, increase_only=True)
+        scene.hell_wohnzimmer(t3, increase_only=True)
 
     if 0.0 < t4:
         sleep(t2 + .1)
         # if _phue.is_on("Nachttischlampe"):
         #     scene.focus_schlafzimmer(t3, increase_only=True)
         if _phue.is_on("Stehlampe"):
-            scene.focus(t3, increase_only=True)
+            scene.focus_wohnzimmer(t3, increase_only=True)
 
 
 def main():
