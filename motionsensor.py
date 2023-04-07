@@ -10,6 +10,7 @@ from personal_data import user_id
 import os.path
 import os
 from pathlib import Path
+import ambient
 
 
 def freeze():
@@ -25,8 +26,10 @@ class Sensor():
     master = "Stehlampe"
     master_bri = float('nan')
     master_ct = float('nan')
+    ambient_bri = float('nan')
     next_update = -inf
-    def __init__(self, sensor_id, lights, turn_off_after, mock_file=None):
+    def __init__(self, sensor_id, lights, turn_off_after, mock_file=None,
+                 use_ambient=False):
         self.sensor_id = sensor_id
         self.lights = lights
         self.turn_off_after = turn_off_after
@@ -39,8 +42,10 @@ class Sensor():
         self.minimum_bri = _phue.min_bri()
         self.maximum_bri = 1.0
 
-        self.minimum_ct = 0.4
+        self.minimum_ct = 0.3
         self.maximum_ct = 1.0
+
+        self.use_ambient = use_ambient
 
         self.last_sensor_state_buffer = None
 
@@ -63,12 +68,12 @@ class Sensor():
             Sensor.next_update = time() + 90.0
             os.remove("motionsensor_freeze")
 
-    def get_virtual_master_ct(self):
+    def get_virtual_ct(self, bri):
         # based on brightness instead
-        if Sensor.master_bri < 0.5:
+        if bri < 0.5:
             return self.maximum_ct
         else:
-            return _map(Sensor.master_bri, 0.5, 1.0, self.maximum_ct, self.minimum_ct)
+            return _map(bri, 0.5, 1.0, self.maximum_ct, self.minimum_ct)
 
     def get_master_ct(self):
         try:
@@ -77,7 +82,7 @@ class Sensor():
 
             ct = _phue.get_ct(Sensor.master)
             ct = _map(ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
-            return max(ct, self.get_virtual_master_ct())
+            return max(ct, self.get_virtual_ct(Sensor.master_bri))
         except:
             return 1.0
 
@@ -105,53 +110,60 @@ class Sensor():
             return True
         return False
 
-    def update_bri_ct(self):
+    def update_shared_values(self):
         if Sensor.next_update < time():
-            master_bri = Sensor.master_bri
-            master_ct = Sensor.master_ct
             Sensor.master_bri = self.get_master_bri()
             Sensor.master_ct = self.get_master_ct()
-            master_bri_changed = not isclose(master_bri, Sensor.master_bri)
-            master_ct_changed = not isclose(master_ct, Sensor.master_ct)
+            Sensor.ambient_bri = ambient.get_simulated_brightness()
             Sensor.next_update = time() + 5.0
-            return master_bri_changed or master_ct_changed
-        return False
 
+    def get_shared_values(self):
+        return Sensor.master_bri, Sensor.master_ct
+
+    def get_ambient(self):
+        if self.use_ambient:
+            return Sensor.ambient_bri, self.get_virtual_ct(Sensor.ambient_bri)
+        else:
+            return self.minimum_bri, self.maximum_ct
 
     def update(self):
         self.freeze_file()
-        self.update_bri_ct()
+        self.update_shared_values()
         if self.sensor_state() or self.mock_file_exists():
             self.last_motion = time()
-        master_changed = (not isclose(Sensor.master_bri, self.current_bri) or
-                          not isclose(Sensor.master_ct, self.current_ct))
+
+        master_bri, master_ct = self.get_shared_values()
+        ambient_bri, ambient_ct = self.get_ambient()
+        bri = max(master_bri, ambient_bri)
+        ct = min(master_ct, ambient_ct)
+
+        master_changed = (not isclose(bri, self.current_bri) or
+                          not isclose(ct, self.current_ct))
         if self.sensor_state_buffer_changed():
             if self.sensor_state_buffer():
-                # print("bri=%.2f, ct=%.2f" % (Sensor.master_bri, Sensor.master_ct))
-                _phue.set_lights_safe(self.lights, bri=Sensor.master_bri,
-                                      ct=Sensor.master_ct)
-                self.current_bri = Sensor.master_bri
-                self.current_ct = Sensor.master_ct
+                # print("bri=%.2f, ct=%.2f" % (bri, ct))
+                _phue.set_lights_safe(self.lights, bri=bri, ct=ct)
+                self.current_bri = bri
+                self.current_ct = ct
             else:
                 _phue.set_lights(self.lights, on=False, time=10.0)
-            return
-        if master_changed:
+        elif master_changed:
             if self.sensor_state_buffer():
                 t = 0.4
-                if (abs(Sensor.master_bri - self.current_bri) < 0.09 and
-                        abs(Sensor.master_ct - self.current_ct) < 0.09):
+                if (abs(bri - self.current_bri) < 0.09 and
+                        abs(ct - self.current_ct) < 0.09):
                     t = 4.5
-                # print("bri=%.2f, ct=%.2f" % (Sensor.master_bri, Sensor.master_ct))
-                _phue.set_lights(self.lights, bri=Sensor.master_bri,
-                                 ct=Sensor.master_ct, time=t)
-                self.current_bri = Sensor.master_bri
-                self.current_ct = Sensor.master_ct
+                # print("bri=%.2f, ct=%.2f" % (bri, ct))
+                _phue.set_lights(self.lights, bri=bri, ct=ct, time=t)
+                self.current_bri = bri
+                self.current_ct = ct
 
 
 def main():
-    kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"], 300.0, mock_file="mock_kuche")
-    flur_sensor = Sensor(33, ["Kronleuchter"], 120.0)
-    bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0)
+    kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
+                           300.0, mock_file="mock_kuche")
+    flur_sensor = Sensor(33, ["Kronleuchter"], 120.0, use_ambient=True)
+    bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0, use_ambient=True)
 
 
     while True:

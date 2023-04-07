@@ -6,13 +6,15 @@ import sys
 sys.path.insert(0, '/home/pi/Programming/roomba')
 import roomba
 import datetime
+import ambient
 
 
 def home():
-    s = ""
-    with open("/home/pi/scheduled_scene", "r") as f:
-        s = f.read().replace("\n", "")
-    exec("scene.%s()" % s)
+    if not ambient.should_be_off():
+        s = ""
+        with open("/home/pi/scheduled_scene", "r") as f:
+            s = f.read().replace("\n", "")
+        exec("scene.%s_wohnzimmer()" % s)
     roomba.stop()
 
 
