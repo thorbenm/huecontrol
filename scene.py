@@ -102,6 +102,17 @@ def dunkel_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=.1, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
+def dunkel_30_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
+    if 90 < time:
+        motionsensor.freeze()
+    set_lights(["Hue Go", "Stehlampe", "LED Streifen", "Ananas"],
+               bri=.1, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Fensterlampe"],
+               bri=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Hängelampe"], bri=0.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Lichterkette"], on=False, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
 def min(*args, **kwargs):
     min_wohnzimmer(*args, **kwargs)
     min_schlafzimmer(*args, **kwargs)
