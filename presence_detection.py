@@ -10,7 +10,9 @@ import ambient
 
 
 def home():
-    if not ambient.should_be_off():
+    if ambient.should_be_off():
+        scene.off_wohnzimmer()
+    else:
         s = ""
         with open("/home/pi/scheduled_scene", "r") as f:
             s = f.read().replace("\n", "")
