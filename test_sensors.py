@@ -1,5 +1,5 @@
 import requests
-from user_id import user_id
+from personal_data import user_id
 from time import sleep
 import sys
 import json
