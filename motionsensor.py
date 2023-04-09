@@ -11,6 +11,8 @@ import os.path
 import os
 from pathlib import Path
 import ambient
+from datetime import datetime
+from systemd import journal
 
 
 def freeze():
@@ -68,12 +70,14 @@ class Sensor():
             Sensor.next_update = time() + 90.0
             os.remove("motionsensor_freeze")
 
-    def get_virtual_ct(self, bri):
+    def get_virtual_ct(self, bri, minimum_ct=None):
         # based on brightness instead
+        if minimum_ct is None:
+            minimum_ct = self.minimum_ct
         if bri < 0.5:
             return self.maximum_ct
         else:
-            return _map(bri, 0.5, 1.0, self.maximum_ct, self.minimum_ct)
+            return _map(bri, 0.5, 1.0, self.maximum_ct, minimum_ct)
 
     def get_master_ct(self):
         try:
@@ -117,14 +121,15 @@ class Sensor():
             Sensor.ambient_bri = ambient.get_simulated_brightness()
             Sensor.next_update = time() + 5.0
 
-    def get_shared_values(self):
-        return Sensor.master_bri, Sensor.master_ct
-
-    def get_ambient(self):
-        if self.use_ambient:
-            return Sensor.ambient_bri, self.get_virtual_ct(Sensor.ambient_bri)
+    def get_bri_ct(self):
+        master_bri = Sensor.master_bri
+        master_ct = Sensor.master_ct
+        ambient_bri = Sensor.ambient_bri
+        ambient_ct = self.get_virtual_ct(Sensor.ambient_bri, minimum_ct=.65)
+        if master_bri < ambient_bri and self.use_ambient:
+            return ambient_bri, ambient_ct
         else:
-            return self.minimum_bri, self.maximum_ct
+            return master_bri, master_ct
 
     def update(self):
         self.freeze_file()
@@ -132,16 +137,14 @@ class Sensor():
         if self.sensor_state() or self.mock_file_exists():
             self.last_motion = time()
 
-        master_bri, master_ct = self.get_shared_values()
-        ambient_bri, ambient_ct = self.get_ambient()
-        bri = max(master_bri, ambient_bri)
-        ct = min(master_ct, ambient_ct)
+        bri, ct = self.get_bri_ct()
 
         master_changed = (not isclose(bri, self.current_bri) or
                           not isclose(ct, self.current_ct))
         if self.sensor_state_buffer_changed():
             if self.sensor_state_buffer():
-                # print("bri=%.2f, ct=%.2f" % (bri, ct))
+                journal.write("bri=%.2f, ct=%.2f " % (bri, ct) +
+                              " ".join(self.lights))
                 _phue.set_lights_safe(self.lights, bri=bri, ct=ct)
                 self.current_bri = bri
                 self.current_ct = ct
@@ -153,7 +156,9 @@ class Sensor():
                 if (abs(bri - self.current_bri) < 0.09 and
                         abs(ct - self.current_ct) < 0.09):
                     t = 4.5
-                # print("bri=%.2f, ct=%.2f" % (bri, ct))
+
+                journal.write("bri=%.2f, ct=%.2f " % (bri, ct) +
+                              " ".join(self.lights))
                 _phue.set_lights(self.lights, bri=bri, ct=ct, time=t)
                 self.current_bri = bri
                 self.current_ct = ct

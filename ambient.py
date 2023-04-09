@@ -60,7 +60,7 @@ def get_history_mean(i=MASTER, number=10):
 
 def get_simulated_brightness():
     m = get_history_mean()
-    bri = arduino_map(m, 10000, 30000, 0, 1)
+    bri = arduino_map(m, 5000, 25000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
