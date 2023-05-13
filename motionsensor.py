@@ -29,9 +29,10 @@ class Sensor():
     master_bri = float('nan')
     master_ct = float('nan')
     ambient_bri = float('nan')
+    currently_using_ambient_brightness = None
     next_update = -inf
     def __init__(self, sensor_id, lights, turn_off_after, mock_file=None,
-                 use_ambient=False):
+                 use_ambient_for_brightness=False, use_ambient_for_motion=False):
         self.sensor_id = sensor_id
         self.lights = lights
         self.turn_off_after = turn_off_after
@@ -47,17 +48,22 @@ class Sensor():
         self.minimum_ct = 0.3
         self.maximum_ct = 1.0
 
-        self.use_ambient = use_ambient
+        self.use_ambient_for_brightness = use_ambient_for_brightness
+        self.use_ambient_for_motion = use_ambient_for_motion
 
         self.last_sensor_state_buffer = None
 
     def get_master_bri(self):
         try:
-            bri = _phue.get_bri(Sensor.master)
-            bri = _map(bri, 0.0, 1.0, self.minimum_bri, self.maximum_bri)
-            return bri
+            return _phue.get_bri(Sensor.master)
         except:
             return 0.5
+
+    def apply_min_max_bri(self, bri):
+        minimum_bri = self.minimum_bri
+        if self.use_ambient_for_motion and Sensor.currently_using_ambient_brightness:
+            minimum_bri = 0.0
+        return _map(bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
 
     def mock_file_exists(self):
         if self.mock_file is not None:
@@ -119,6 +125,7 @@ class Sensor():
             Sensor.master_bri = self.get_master_bri()
             Sensor.master_ct = self.get_master_ct()
             Sensor.ambient_bri = ambient.get_simulated_brightness()
+            Sensor.currently_using_ambient_brightness = Sensor.master_bri < Sensor.ambient_bri
             Sensor.next_update = time() + 5.0
 
     def get_bri_ct(self):
@@ -126,7 +133,7 @@ class Sensor():
         master_ct = Sensor.master_ct
         ambient_bri = Sensor.ambient_bri
         ambient_ct = self.get_virtual_ct(Sensor.ambient_bri, minimum_ct=.65)
-        if master_bri < ambient_bri and self.use_ambient:
+        if Sensor.currently_using_ambient_brightness and self.use_ambient_for_brightness:
             return ambient_bri, ambient_ct
         else:
             return master_bri, master_ct
@@ -138,6 +145,7 @@ class Sensor():
             self.last_motion = time()
 
         bri, ct = self.get_bri_ct()
+        bri = self.apply_min_max_bri(bri)
 
         master_changed = (not isclose(bri, self.current_bri) or
                           not isclose(ct, self.current_ct))
@@ -166,9 +174,9 @@ class Sensor():
 
 def main():
     kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
-                           300.0, mock_file="mock_kuche")
-    flur_sensor = Sensor(33, ["Kronleuchter"], 120.0, use_ambient=True)
-    bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0, use_ambient=True)
+                           300.0, mock_file="mock_kuche", use_ambient_for_motion=True)
+    flur_sensor = Sensor(33, ["Kronleuchter"], 120.0, use_ambient_for_brightness=True)
+    bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0, use_ambient_for_brightness=True)
 
 
     while True:
