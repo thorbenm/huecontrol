@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from personal_data import user_id
+from datetime import datetime
 import requests
 import json
 import _phue
@@ -36,7 +37,8 @@ def __get_new(i=MASTER):
 def __get_history(i=MASTER, number=10):
     with open(log_file, "r") as file:
         lines = file.readlines()
-    lines = lines[-number:]
+    if number != float('inf'):
+        lines = lines[-number:]
     lines = [l.replace("\n", "") for l in lines]
     lines = [l[26:] for l in lines]
     lines = [l.split(";") for l in lines]
@@ -64,6 +66,15 @@ def get_simulated_brightness():
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
+
+
+def get_schmitt_trigger(low=10000, high=20000):
+    history = __get_history(number=float('inf'))
+    for j in history[::-1]:
+        if j <= low:
+            return False
+        elif high <= j:
+            return True
  
 
 def log_all():
@@ -83,18 +94,29 @@ def log_all():
     logging.info(message)
 
 
+def __minutes_in_current_day():
+    now = datetime.now()
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    minutes_passed = (now - midnight).total_seconds() // 60
+    return int(minutes_passed)
+
+
 limit = 30000.0
 def should_turn_off():
-    window_minutes = int(3 * 60)
+    window_minutes = __minutes_in_current_day()
+    if window_minutes < 10:
+        return False
     history = __get_history(number=window_minutes)
-    history_before = __get_history(number=window_minutes+1)[:-1]
+    history_before = history[:-1]
     nof_elements = len([h for h in history if limit <= h])
     nof_elements_before = len([h for h in history_before if limit <= h])
     return nof_elements == 10 and nof_elements_before == 9
 
 
 def should_be_off():
-    window_minutes = int(1 * 60)
+    window_minutes = __minutes_in_current_day()
+    if window_minutes < 10:
+        return False
     history = __get_history(number=window_minutes)
     nof_elements = len([h for h in history if limit <= h])
     return 10 <= nof_elements

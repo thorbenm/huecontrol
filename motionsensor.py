@@ -61,7 +61,7 @@ class Sensor():
 
     def apply_min_max_bri(self, bri):
         minimum_bri = self.minimum_bri
-        if self.use_ambient_for_motion and Sensor.currently_using_ambient_brightness:
+        if self.use_ambient_for_motion and ambient.get_schmitt_trigger():
             minimum_bri = 0.0
         return _map(bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
 
