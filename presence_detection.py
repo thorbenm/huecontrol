@@ -17,6 +17,8 @@ def home():
         with open("/home/pi/scheduled_scene", "r") as f:
             s = f.read().replace("\n", "")
         exec("scene.%s_wohnzimmer()" % s)
+        exec("scene.%s_schlafzimmer()" % s)
+        _phue.set_lights("Hängelampe", on=False)
     roomba.stop()
 
 
