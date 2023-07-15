@@ -62,7 +62,7 @@ def get_history_mean(i=MASTER, number=10):
 
 def get_simulated_brightness():
     g = __get_new()
-    bri = arduino_map(g, 5000, 25000, 0, 1)
+    bri = arduino_map(g, 6500, 26500, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
@@ -101,25 +101,27 @@ def __minutes_in_current_day():
     return int(minutes_passed)
 
 
-limit = 30000.0
+limit_ambient = 28000.0
+limit_minutes = int(2 * 60)
 def should_turn_off():
     window_minutes = __minutes_in_current_day()
-    if window_minutes < 10:
+    if window_minutes < limit_minutes:
         return False
     history = __get_history(number=window_minutes)
     history_before = history[:-1]
-    nof_elements = len([h for h in history if limit <= h])
-    nof_elements_before = len([h for h in history_before if limit <= h])
-    return nof_elements == 10 and nof_elements_before == 9
+    nof_elements = len([h for h in history if limit_ambient <= h])
+    nof_elements_before = len([h for h in history_before if limit_ambient <= h])
+    return (nof_elements == limit_minutes and
+            nof_elements_before == limit_minutes - 1)
 
 
 def should_be_off():
     window_minutes = __minutes_in_current_day()
-    if window_minutes < 10:
+    if window_minutes < limit_minutes:
         return False
     history = __get_history(number=window_minutes)
-    nof_elements = len([h for h in history if limit <= h])
-    return 10 <= nof_elements
+    nof_elements = len([h for h in history if limit_ambient <= h])
+    return limit_minutes <= nof_elements
 
 
 def turn_off_if_ambient_above_limit():
