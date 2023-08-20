@@ -104,6 +104,7 @@ def __minutes_in_current_day():
 limit_ambient = 28000.0
 limit_minutes = int(2 * 60)
 def should_turn_off():
+    return False
     window_minutes = __minutes_in_current_day()
     if window_minutes < limit_minutes:
         return False
@@ -116,6 +117,7 @@ def should_turn_off():
 
 
 def should_be_off():
+    return False
     window_minutes = __minutes_in_current_day()
     if window_minutes < limit_minutes:
         return False
