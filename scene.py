@@ -43,11 +43,37 @@ def hell(*args, **kwargs):
 
 
 def hell_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
-    __wohnzimmer_prototype(bri=1.0, bri_h=1.0, ct=.5, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    __wohnzimmer_prototype(bri=1.0, bri_h=1.0, ct=.35, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
 def hell_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
-    __schlafzimmer_prototype(bri=1.0, bri_h=1.0, ct=.5, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    __schlafzimmer_prototype(bri=1.0, bri_h=1.0, ct=.35, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
+def halbwarm(*args, **kwargs):
+    halbwarm_wohnzimmer(*args, **kwargs)
+    halbwarm_schlafzimmer(*args, **kwargs)
+
+
+def halbwarm_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
+    __wohnzimmer_prototype(bri=1.0, bri_h=1.0, ct=.6, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
+def halbwarm_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
+    __schlafzimmer_prototype(bri=1.0, bri_h=1.0, ct=.6, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
+def max(*args, **kwargs):
+    max_wohnzimmer(*args, **kwargs)
+    max_schlafzimmer(*args, **kwargs)
+
+
+def max_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
+    __wohnzimmer_prototype(bri=1.0, bri_h=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
+def max_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
+    __schlafzimmer_prototype(bri=1.0, bri_h=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
 def warm(*args, **kwargs):
@@ -56,23 +82,10 @@ def warm(*args, **kwargs):
 
 
 def warm_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
-    __wohnzimmer_prototype(bri=1.0, bri_h=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
-
-
-def warm_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
-    __schlafzimmer_prototype(bri=1.0, bri_h=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
-
-
-def lesen(*args, **kwargs):
-    lesen_wohnzimmer(*args, **kwargs)
-    lesen_schlafzimmer(*args, **kwargs)
-
-
-def lesen_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     __wohnzimmer_prototype(bri=.75, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def lesen_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
+def warm_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=.75, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
@@ -102,15 +115,26 @@ def dunkel_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=.1, bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
 
 
-def dunkel_30_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
+def lesen(*args, **kwargs):
+    lesen_wohnzimmer(*args, **kwargs)
+    lesen_schlafzimmer(*args, **kwargs)
+
+
+def lesen_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
     if 90 < time:
         motionsensor.freeze()
     set_lights(["Hue Go", "Stehlampe", "LED Streifen", "Ananas"],
                bri=.1, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
     set_lights(["Fensterlampe"],
-               bri=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+               bri=.4, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
     set_lights(["Hängelampe"], bri=0.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
     set_lights(["Lichterkette"], on=False, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
+def lesen_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
+    set_lights(["Nachttischlampe"], bri=.3, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Wickeltischlampe"], bri=min_bri(), ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, reduce_only=reduce_only, increase_only=increase_only)
 
 
 def min(*args, **kwargs):
@@ -124,6 +148,12 @@ def min_wohnzimmer(time=.4, reduce_only=False, increase_only=False):
 
 def min_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
     __schlafzimmer_prototype(bri=min_bri(), bri_h=0, ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+
+
+def nachtlicht_schlafzimmer(time=.4, reduce_only=False, increase_only=False):
+    set_lights(["Nachttischlampe"], on=False, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Wickeltischlampe"], bri=min_bri(), ct=1.0, time=time, reduce_only=reduce_only, increase_only=increase_only)
+    set_lights(["Schlafzimmer Hängelampe"], on=False, reduce_only=reduce_only, increase_only=increase_only)
 
 
 def off(*args, **kwargs):
