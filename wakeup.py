@@ -6,39 +6,49 @@ import argparse
 import scene
 
 
-def wakeup(t1, t2, t3, t4):
-    scene.min_schlafzimmer(increase_only=True)
-    scene.min_wohnzimmer(increase_only=True)
+def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer, schlafzimmer_h, wohnzimmer_h):
+    if schlafzimmer:
+        scene.min_schlafzimmer(increase_only=True)
+    if wohnzimmer:
+        scene.min_wohnzimmer(increase_only=True)
 
     sleep(t1 + .1)
 
-    if _phue.is_on("Nachttischlampe"):
-        scene.lesen_schlafzimmer(t2, increase_only=True)
-    if _phue.is_on("Stehlampe"):
-        scene.lesen_wohnzimmer(t2, increase_only=True)
+    if _phue.is_on("Nachttischlampe") and schlafzimmer:
+        scene.warm_schlafzimmer(t2, increase_only=True)
+    if _phue.is_on("Stehlampe") and wohnzimmer:
+        scene.warm_wohnzimmer(t2, increase_only=True)
 
     sleep(t2 + .1)
 
-    if _phue.is_on("Nachttischlampe"):
+    if _phue.is_on("Nachttischlampe") and schlafzimmer:
         scene.hell_schlafzimmer(t3, increase_only=True)
-    if _phue.is_on("Stehlampe"):
+        if not schlafzimmer_h:
+            _phue.set_lights("Schlafzimmer Hängelampe", on=False)
+    if _phue.is_on("Stehlampe") and wohnzimmer:
         scene.hell_wohnzimmer(t3, increase_only=True)
+        if not wohnzimmer_h:
+            _phue.set_lights("Hängelampe", on=False)
 
     if 0.0 < t4:
         sleep(t2 + .1)
-        if _phue.is_on("Nachttischlampe"):
+        if _phue.is_on("Nachttischlampe") and schlafzimmer:
             scene.focus_schlafzimmer(t3, increase_only=True)
-        if _phue.is_on("Stehlampe"):
+        if _phue.is_on("Stehlampe") and wohnzimmer:
             scene.focus_wohnzimmer(t3, increase_only=True)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t1', type=str, default='10m', dest='t1')
-    parser.add_argument('-t2', type=str, default='3m', dest='t2')
+    parser.add_argument('-t1', type=str, default='1s', dest='t1')
+    parser.add_argument('-t2', type=str, default='15m', dest='t2')
     parser.add_argument('-t3', type=str, default='45m', dest='t3')
     parser.add_argument('-t4', type=str, default='-1s', dest='t4')
     parser.add_argument('-c', action='store_true', dest='scheduled')
+    parser.add_argument('-w', action='store_true', dest='wohnzimmer')
+    parser.add_argument('-s', action='store_true', dest='schlafzimmer')
+    parser.add_argument('-wh', action='store_true', dest='wohnzimmer_h')
+    parser.add_argument('-sh', action='store_true', dest='schlafzimmer_h')
     args = parser.parse_args()
 
     t1 = args.t1
@@ -55,7 +65,8 @@ def main():
         with open("/home/pi/scheduled_scene", "w") as file:
             file.write("hell\n")
 
-    wakeup(t1, t2, t3, t4)
+    wakeup(t1, t2, t3, t4, args.schlafzimmer, args.wohnzimmer,
+           args.schlafzimmer_h, args.wohnzimmer_h)
 
 
 if __name__ == '__main__':
