@@ -21,8 +21,6 @@ def _sleep(time):
 
 
 def main():
-    _phue.set_lights("Stehlampe", bri=.75, ct=.5, time=30)
-    _phue.set_lights("Hängelampe", bri=.1, time=30)
     while True:
         r1 = float(random.randint(20, 60))
         r2 = float(random.randint(20, 60))
