@@ -135,7 +135,7 @@ class Sensor():
         if 0.01 < master_bri:
             ambient_ct = master_ct
         else:
-            ambient_ct = self.get_virtual_ct(ambient_bri, minimum_ct=.65)
+            ambient_ct = self.get_virtual_ct(ambient_bri, minimum_ct=.58)
         if Sensor.currently_using_ambient_brightness and self.use_ambient_for_brightness:
             return ambient_bri, ambient_ct
         else:
