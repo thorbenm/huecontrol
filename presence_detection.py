@@ -1,29 +1,27 @@
 #!/usr/bin/python3
 import _phue
 from time import sleep
-import scene
 import sys
 sys.path.insert(0, '/home/pi/Programming/roomba')
 import roomba
-import datetime
 import ambient
+import scene
 
 
 def home():
     if ambient.should_be_off():
-        scene.off_wohnzimmer()
+        scene.transition("off_wohnzimmer")
     else:
         s = ""
         with open("/home/pi/scheduled_scene", "r") as f:
             s = f.read().replace("\n", "")
-        exec("scene.%s_wohnzimmer()" % s)
-        _phue.set_lights("Hängelampe", on=False)
-    exec("scene.%s_schlafzimmer()" % s)
+        exec("scene.transition('%s' + '_wohnzimmer')" % s)
+    exec("scene.transition('%s' + '_schlafzimmer')" % s)
     roomba.stop()
 
 
 def away():
-    scene.off()
+    scene.transition("off")
     roomba.start()
 
 

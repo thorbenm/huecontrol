@@ -8,34 +8,38 @@ import scene
 
 def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer, schlafzimmer_h, wohnzimmer_h):
     if schlafzimmer:
-        scene.min_schlafzimmer(increase_only=True)
+        scene.transition("min_schlafzimmer", increase_only=True)
     if wohnzimmer:
-        scene.min_wohnzimmer(increase_only=True)
+        scene.transition("min_wohnzimmer", increase_only=True)
 
     sleep(t1 + .1)
 
     if _phue.is_on("Nachttischlampe") and schlafzimmer:
-        scene.warm_schlafzimmer(t2, increase_only=True)
+        scene.transition("warm_schlafzimmer", time=t2, increase_only=True)
     if _phue.is_on("Stehlampe") and wohnzimmer:
-        scene.warm_wohnzimmer(t2, increase_only=True)
+        scene.transition("warm_wohnzimmer", time=t2, increase_only=True)
 
     sleep(t2 + .1)
 
     if _phue.is_on("Nachttischlampe") and schlafzimmer:
-        scene.hell_schlafzimmer(t3, increase_only=True)
+        override = {}
         if not schlafzimmer_h:
-            _phue.set_lights("Schlafzimmer Hängelampe", on=False)
+            override = {"Schlafzimmer Hängelampe": {'on': False}}
+        scene.transition("hell_schlafzimmer", time=t3, increase_only=True,
+                         _override=override)
     if _phue.is_on("Stehlampe") and wohnzimmer:
-        scene.hell_wohnzimmer(t3, increase_only=True)
+        override = {}
         if not wohnzimmer_h:
-            _phue.set_lights("Hängelampe", on=False)
+            override = {"Hängelampe": {'on': False}}
+        scene.transition("hell_wohnzimmer", time=t3, increase_only=True,
+                         _override=override)
 
     if 0.0 < t4:
         sleep(t2 + .1)
         if _phue.is_on("Nachttischlampe") and schlafzimmer:
-            scene.focus_schlafzimmer(t3, increase_only=True)
+            scene.transition("focus_schlafzimmer", time=t4, increase_only=True)
         if _phue.is_on("Stehlampe") and wohnzimmer:
-            scene.focus_wohnzimmer(t3, increase_only=True)
+            scene.transition("focus_wohnzimmer", time=t4, increase_only=True)
 
 
 def main():

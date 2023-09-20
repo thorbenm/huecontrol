@@ -9,7 +9,6 @@ import logging
 from numpy import mean
 import scene
 
-
 log_file = '/home/pi/ambient.log'
 MASTER = 11
 
@@ -128,7 +127,7 @@ def should_be_off():
 
 def turn_off_if_ambient_above_limit():
     if should_turn_off():
-        scene.off_wohnzimmer(time=10*60)
+        scene.transition('off_wohnzimmer', time=10*60)
 
 
 def main():

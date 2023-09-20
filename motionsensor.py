@@ -15,8 +15,11 @@ from datetime import datetime
 from systemd import journal
 
 
+FREEZE_FILE_PATH = "/home/pi/Programming/huecontrol/motionsensor_freeze"
+
+
 def freeze():
-    Path("/home/pi/Programming/huecontrol/motionsensor_freeze").touch()
+    Path(FREEZE_FILE_PATH).touch()
 
 
 def _map(x, in_min, in_max, out_min, out_max):
@@ -72,9 +75,9 @@ class Sensor():
         return False
 
     def freeze_file(self):
-        if os.path.isfile("motionsensor_freeze"):
+        if os.path.isfile(FREEZE_FILE_PATH):
             Sensor.next_update = time() + 90.0
-            os.remove("motionsensor_freeze")
+            os.remove(FREEZE_FILE_PATH)
 
     def get_virtual_ct(self, bri, minimum_ct=None):
         # based on brightness instead
