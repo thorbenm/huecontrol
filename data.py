@@ -1,17 +1,17 @@
 from _phue import min_bri
 
 
-wohnzimmer_lights = ["Hängelampe",
-                     "Hue Go",
-                     "Stehlampe",
-                     "Fensterlampe",
-                     "LED Streifen",
-                     "Ananas",
-                     "Lichterkette"] 
+wohnzimmer_lights = [["Hängelampe", ["bri"]],
+                     ["Hue Go", ["bri", "ct"]],
+                     ["Stehlampe", ["bri", "ct"]],
+                     ["Fensterlampe", ["bri", "ct"]],
+                     ["LED Streifen", ["bri", "ct"]],
+                     ["Ananas", ["bri", "ct"]],
+                     ["Lichterkette", ["on"]]]
 
-schlafzimmer_lights = ["Schlafzimmer Hängelampe",
-                       "Nachttischlampe",
-                       "Wickeltischlampe"]
+schlafzimmer_lights = [["Schlafzimmer Hängelampe", ["bri"]],
+                       ["Nachttischlampe", ["bri", "ct"]],
+                       ["Wickeltischlampe", ["bri", "ct"]]]
 
 all_lights = [*wohnzimmer_lights,
               *schlafzimmer_lights]
@@ -31,6 +31,8 @@ off_schlafzimmer["Nachttischlampe"] = {"bri": 0.0, "ct": 1.0}
 off_schlafzimmer["Wickeltischlampe"] = {"bri": 0.0, "ct": 1.0}
 off_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
 
+off = {**off_wohnzimmer, **off_schlafzimmer}
+
 
 min_wohnzimmer = dict()
 min_wohnzimmer["Stehlampe"] = {"bri": min_bri(), "ct": 1.0}
@@ -45,6 +47,8 @@ min_schlafzimmer = dict()
 min_schlafzimmer["Nachttischlampe"] = {"bri": min_bri(), "ct": 1.0}
 min_schlafzimmer["Wickeltischlampe"] = {"bri": min_bri(), "ct": 1.0}
 min_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
+
+min = {**min_wohnzimmer, **min_schlafzimmer}
 
 
 nachtlicht_schlafzimmer = dict()
@@ -67,6 +71,8 @@ dunkel_schlafzimmer["Nachttischlampe"] = {"bri": .1, "ct": 1.0}
 dunkel_schlafzimmer["Wickeltischlampe"] = {"bri": .1, "ct": 1.0}
 dunkel_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
 
+dunkel = {**dunkel_wohnzimmer, **dunkel_schlafzimmer}
+
 
 lesen_wohnzimmer = dict()
 lesen_wohnzimmer["Stehlampe"] = {"bri": .1, "ct": 1.0}
@@ -81,6 +87,8 @@ lesen_schlafzimmer = dict()
 lesen_schlafzimmer["Nachttischlampe"] = {"bri": .3, "ct": 1.0}
 lesen_schlafzimmer["Wickeltischlampe"] = {"bri": min_bri(), "ct": 1.0}
 lesen_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
+
+lesen = {**lesen_wohnzimmer, **lesen_schlafzimmer}
 
 
 gemutlich_wohnzimmer = dict()
@@ -97,6 +105,8 @@ gemutlich_schlafzimmer["Nachttischlampe"] = {"bri": .4, "ct": 1.0}
 gemutlich_schlafzimmer["Wickeltischlampe"] = {"bri": .4, "ct": 1.0}
 gemutlich_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
 
+gemutlich = {**gemutlich_wohnzimmer, **gemutlich_schlafzimmer}
+
 
 warm_wohnzimmer = dict()
 warm_wohnzimmer["Stehlampe"] = {"bri": .75, "ct": 1.0}
@@ -111,6 +121,8 @@ warm_schlafzimmer = dict()
 warm_schlafzimmer["Nachttischlampe"] = {"bri": .75, "ct": 1.0}
 warm_schlafzimmer["Wickeltischlampe"] = {"bri": .75, "ct": 1.0}
 warm_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
+
+warm = {**warm_wohnzimmer, **warm_schlafzimmer}
 
 
 max_wohnzimmer = dict()
@@ -127,6 +139,8 @@ max_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 1.0}
 max_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": 1.0}
 max_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": .3}
 
+max = {**max_wohnzimmer, **max_schlafzimmer}
+
 
 halbwarm_wohnzimmer = dict()
 halbwarm_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": .6}
@@ -141,6 +155,8 @@ halbwarm_schlafzimmer = dict()
 halbwarm_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 0.6}
 halbwarm_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": 0.6}
 halbwarm_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 1.0}
+
+halbwarm = {**halbwarm_wohnzimmer, **halbwarm_schlafzimmer}
 
 
 hell_wohnzimmer = dict()
@@ -157,6 +173,8 @@ hell_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": .35}
 hell_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": .35}
 hell_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 1.0}
 
+hell = {**hell_wohnzimmer, **hell_schlafzimmer}
+
 
 focus_wohnzimmer = dict()
 focus_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": 0.0}
@@ -171,3 +189,5 @@ focus_schlafzimmer = dict()
 focus_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 0.0}
 focus_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": 0.0}
 focus_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 1.0}
+
+focus = {**focus_wohnzimmer, **focus_schlafzimmer}

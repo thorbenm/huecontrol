@@ -23,8 +23,16 @@ def find_duplicate_values(dictionary):
     return result_keys, result_values
 
 
+def get_scheduled_scene():
+    with open("/home/pi/scheduled_scene", "r") as f:
+        return f.read().replace("\n", "")
+
+
 def transition(name, time=.4, reduce_only=False, increase_only=False,
               _override={}):
+    if name.startswith("scheduled"):
+        name = name.replace("scheduled", get_scheduled_scene())
+
     if name.endswith("zimmer"):
         if 90.0 < time and name.endswith("wohnzimmer"):
             motionsensor.freeze()
@@ -56,21 +64,14 @@ def main():
     parser.add_argument('-s', type=str, required=True, dest='scene')
     parser.add_argument('-t', type=str, default='0.4s', dest='time')
     parser.add_argument('--reduce-only', action='store_true', dest='reduce_only')
-    parser.add_argument('-c', action='store_true', dest='scheduled')
+    parser.add_argument('-c', action='store_true', dest='scheduled',
+                        help='store as scheduled scene')
     args = parser.parse_args()
-
     time = convert_time_string(args.time)
-
-    if args.scene.startswith("scheduled"):
-        with open("/home/pi/scheduled_scene", "r") as f:
-            scheduled = f.read().replace("\n", "")
-            args.scene = args.scene.replace("scheduled", scheduled)
-
     transition(args.scene, time=time, reduce_only=args.reduce_only)
     if args.scheduled:
         with open("/home/pi/scheduled_scene", "w") as file:
             file.write(args.scene.split("_")[0] + "\n")
-
 
 
 if __name__ == '__main__':

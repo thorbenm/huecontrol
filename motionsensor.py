@@ -13,6 +13,8 @@ from pathlib import Path
 import ambient
 from datetime import datetime
 from systemd import journal
+import scene
+import data
 
 
 FREEZE_FILE_PATH = "/home/pi/Programming/huecontrol/motionsensor_freeze"
@@ -123,12 +125,32 @@ class Sensor():
             return True
         return False
 
+    def get_scheduled_ct(self):
+        if ambient.auto_ct_enabled():
+            ct = ambient.get_simulated_ct()
+        else:
+            scheduled_scene = scene.get_scheduled_scene()
+            d = eval("data." + scheduled_scene)
+            ct = d[Sensor.master]["ct"]
+        ct = _map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
+        return ct
+
+        # scheduled_scene = scene.get_scheduled_scene()
+        # if scheduled_scene == "auto":
+        #     ct = ambient.get_simulated_ct()
+        # else:
+        #     d = eval("data." + scheduled_scene)
+        #     ct = d[Sensor.master]["ct"]
+        # ct = _map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
+        # return ct
+
     def update_shared_values(self):
         if Sensor.next_update < time():
             Sensor.master_bri = self.get_master_bri()
             Sensor.master_ct = self.get_master_ct()
-            Sensor.ambient_bri = ambient.get_simulated_brightness()
+            Sensor.ambient_bri = ambient.get_simulated_bri()
             Sensor.currently_using_ambient_brightness = Sensor.master_bri < Sensor.ambient_bri
+            Sensor.scheduled_ct = self.get_scheduled_ct()
             Sensor.next_update = time() + 5.0
 
     def get_bri_ct(self):
@@ -138,7 +160,7 @@ class Sensor():
         if 0.01 < master_bri:
             ambient_ct = master_ct
         else:
-            ambient_ct = self.get_virtual_ct(ambient_bri, minimum_ct=.58)
+            ambient_ct = Sensor.scheduled_ct
         if Sensor.currently_using_ambient_brightness and self.use_ambient_for_brightness:
             return ambient_bri, ambient_ct
         else:

@@ -8,6 +8,8 @@ import _phue
 import logging
 from numpy import mean
 import scene
+import data
+from time import sleep
 
 log_file = '/home/pi/ambient.log'
 MASTER = 11
@@ -36,35 +38,53 @@ def __get_new(i=MASTER):
 def __get_history(i=MASTER, number=10):
     with open(log_file, "r") as file:
         lines = file.readlines()
+    if len(lines) == 0:
+        sleep(.1)
+        with open(log_file, "r") as file:
+            lines = file.readlines()
+
     if number != float('inf'):
         lines = lines[-number:]
-    lines = [l.replace("\n", "") for l in lines]
-    lines = [l[26:] for l in lines]
-    lines = [l.split(";") for l in lines]
-    lines = [[jj.replace(" ", "") for jj in j if jj] for j in lines]
-    lines = [[jj for jj in j if jj] for j in lines]
-    data = dict()
-    for l in lines:
-        for element in l:
-            key, value = element.split(':')
-            key = int(key)
-            value = float(value)
-            if key not in data:
-                data[key] = list()
-            data[key].append(value)
-    return data[i]
+    lines_copy = lines
+    try:
+        lines = [l.replace("\n", "") for l in lines]
+        lines = [l[26:] for l in lines]
+        lines = [l.split(";") for l in lines]
+        lines = [[jj.replace(" ", "") for jj in j if jj] for j in lines]
+        lines = [[jj for jj in j if jj] for j in lines]
+        data = dict()
+        for l in lines:
+            for element in l:
+                key, value = element.split(':')
+                key = int(key)
+                value = float(value)
+                if key not in data:
+                    data[key] = list()
+                data[key].append(value)
+        return data[i]
+    except:
+        print(lines_copy)
+        raise
 
 
 def get_history_mean(i=MASTER, number=10):
     return mean(__get_history(i, number))
 
 
-def get_simulated_brightness():
+def get_simulated_bri():
     g = __get_new()
     bri = arduino_map(g, 4500, 27500, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
+
+
+def get_simulated_ct():
+    mean = get_history_mean(i=31, number=10)
+    ct = arduino_map(mean, 16000, 34000, 1.0, .35)
+    ct = min(ct, 1.0)
+    ct = max(ct, .35)
+    return ct
 
 
 def get_schmitt_trigger(low=10000, high=20000):
@@ -90,7 +110,9 @@ def log_all():
                         encoding='utf-8',
                         level=logging.INFO,
                         format='%(asctime)s   %(message)s')
+
     logging.info(message)
+    trim_logs()
 
 
 def __minutes_in_current_day():
@@ -130,9 +152,30 @@ def turn_off_if_ambient_above_limit():
         scene.transition('off_wohnzimmer', time=10*60)
 
 
+def auto_ct_enabled():
+    try:
+        with open('/home/pi/auto_ct_enabled', 'r') as file:
+            content = file.read().strip()
+        return content.lower() == "true"
+    except:
+        return False
+
+
+def auto_ct():
+    if auto_ct_enabled():
+        lights = []
+        for light, light_data in data.all_lights:
+            if "bri" in light_data and "ct" in light_data:
+                if .98 < _phue.get_bri(light):
+                    lights.append(light)
+        if 1 < len(lights):
+            _phue.set_lights(lights, ct=get_simulated_ct(), time=59)
+
+
 def main():
     log_all()
     turn_off_if_ambient_above_limit()
+    auto_ct()
     trim_logs()
 
 

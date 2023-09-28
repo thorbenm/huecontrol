@@ -5,9 +5,9 @@ Description=Startup of the motion controller
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/Programming/huecontrol
-ExecStartPre=/bin/sleep 10
 ExecStart=/home/pi/Programming/huecontrol/motionsensor.py
 Restart=always
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
