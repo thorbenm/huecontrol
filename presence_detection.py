@@ -6,23 +6,21 @@ sys.path.insert(0, '/home/pi/Programming/roomba')
 import roomba
 import ambient
 import scene
-import save
-import data
 
 
 def home():
-    if save.saved_data_exists():
-        save.apply()
-        sleep(1.0)
-        scene.transition("scheduled", reduce_only=True)
+    if ambient.should_be_off():
+        scene.transition("off_wohnzimmer")
     else:
-        scene.transition("scheduled")
-
+        s = ""
+        with open("/home/pi/scheduled_scene", "r") as f:
+            s = f.read().replace("\n", "")
+        exec("scene.transition('%s' + '_wohnzimmer')" % s)
+    exec("scene.transition('%s' + '_schlafzimmer')" % s)
     roomba.stop()
 
 
 def away():
-    save.save()
     scene.transition("off")
     roomba.start()
 
