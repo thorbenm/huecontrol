@@ -14,20 +14,20 @@ def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer, schlafzimmer_h, wohnzimmer_
 
     sleep(t1 + .1)
 
-    if _phue.is_on("Nachttischlampe") and schlafzimmer:
+    if _phue.get_on("Nachttischlampe") and schlafzimmer:
         scene.transition("warm_schlafzimmer", time=t2, increase_only=True)
-    if _phue.is_on("Stehlampe") and wohnzimmer:
+    if _phue.get_on("Stehlampe") and wohnzimmer:
         scene.transition("warm_wohnzimmer", time=t2, increase_only=True)
 
     sleep(t2 + .1)
 
-    if _phue.is_on("Nachttischlampe") and schlafzimmer:
+    if _phue.get_on("Nachttischlampe") and schlafzimmer:
         override = {}
         if not schlafzimmer_h:
             override = {"Schlafzimmer Hängelampe": {'on': False}}
         scene.transition("hell_schlafzimmer", time=t3, increase_only=True,
                          _override=override)
-    if _phue.is_on("Stehlampe") and wohnzimmer:
+    if _phue.get_on("Stehlampe") and wohnzimmer:
         override = {}
         if not wohnzimmer_h:
             override = {"Hängelampe": {'on': False}}
@@ -36,9 +36,9 @@ def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer, schlafzimmer_h, wohnzimmer_
 
     if 0.0 < t4:
         sleep(t2 + .1)
-        if _phue.is_on("Nachttischlampe") and schlafzimmer:
+        if _phue.get_on("Nachttischlampe") and schlafzimmer:
             scene.transition("focus_schlafzimmer", time=t4, increase_only=True)
-        if _phue.is_on("Stehlampe") and wohnzimmer:
+        if _phue.get_on("Stehlampe") and wohnzimmer:
             scene.transition("focus_wohnzimmer", time=t4, increase_only=True)
 
 

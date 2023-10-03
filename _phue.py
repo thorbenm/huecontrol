@@ -66,7 +66,7 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             set_light(l, command_c)
 
 
-def is_on(light):
+def get_on(light):
     return b.get_light(light, "on")
 
 

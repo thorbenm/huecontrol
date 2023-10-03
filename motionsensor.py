@@ -41,7 +41,7 @@ class Sensor():
         self.sensor_id = sensor_id
         self.lights = lights
         self.turn_off_after = turn_off_after
-        self.last_motion = time() if _phue.is_on(lights[0]) else -inf
+        self.last_motion = time() if _phue.get_on(lights[0]) else -inf
         self.mock_file = mock_file
 
         self.current_bri = float('nan')
@@ -92,7 +92,7 @@ class Sensor():
 
     def get_master_ct(self):
         try:
-            if not _phue.is_on(Sensor.master):
+            if not _phue.get_on(Sensor.master):
                 return 1.0
 
             ct = _phue.get_ct(Sensor.master)
