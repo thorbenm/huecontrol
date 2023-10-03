@@ -12,7 +12,7 @@ import data
 from time import sleep
 
 log_file = '/home/pi/ambient.log'
-MASTER = 11
+MASTER = 31
 
 
 def arduino_map(x, in_min, in_max, out_min, out_max):
@@ -73,21 +73,21 @@ def get_history_mean(i=MASTER, number=10):
 
 def get_simulated_bri():
     g = __get_new()
-    bri = arduino_map(g, 4500, 27500, 0, 1)
+    bri = arduino_map(g, 1000, 38000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
 
 
 def get_simulated_ct():
-    mean = get_history_mean(i=31, number=10)
-    ct = arduino_map(mean, 16000, 34000, 1.0, .35)
+    mean = get_history_mean(number=10)
+    ct = arduino_map(mean, 14000, 34000, 1.0, .35)
     ct = min(ct, 1.0)
     ct = max(ct, .35)
     return ct
 
 
-def get_schmitt_trigger(low=10000, high=20000):
+def get_schmitt_trigger(low=16000, high=20000):
     history = __get_history(number=float('inf'))
     for j in history[::-1]:
         if j <= low:
