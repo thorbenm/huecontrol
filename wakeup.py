@@ -6,7 +6,7 @@ import argparse
 import scene
 
 
-def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer, schlafzimmer_h, wohnzimmer_h):
+def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer):
     if schlafzimmer:
         scene.transition("min_schlafzimmer", increase_only=True)
     if wohnzimmer:
@@ -22,17 +22,9 @@ def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer, schlafzimmer_h, wohnzimmer_
     sleep(t2 + .1)
 
     if _phue.get_on("Nachttischlampe") and schlafzimmer:
-        override = {}
-        if not schlafzimmer_h:
-            override = {"Schlafzimmer Hängelampe": {'on': False}}
-        scene.transition("hell_schlafzimmer", time=t3, increase_only=True,
-                         _override=override)
+        scene.transition("hell_schlafzimmer", time=t3, increase_only=True)
     if _phue.get_on("Stehlampe") and wohnzimmer:
-        override = {}
-        if not wohnzimmer_h:
-            override = {"Hängelampe": {'on': False}}
-        scene.transition("hell_wohnzimmer", time=t3, increase_only=True,
-                         _override=override)
+        scene.transition("hell_wohnzimmer", time=t3, increase_only=True)
 
     if 0.0 < t4:
         sleep(t2 + .1)
@@ -51,8 +43,6 @@ def main():
     parser.add_argument('-c', action='store_true', dest='scheduled')
     parser.add_argument('-w', action='store_true', dest='wohnzimmer')
     parser.add_argument('-s', action='store_true', dest='schlafzimmer')
-    parser.add_argument('-wh', action='store_true', dest='wohnzimmer_h')
-    parser.add_argument('-sh', action='store_true', dest='schlafzimmer_h')
     args = parser.parse_args()
 
     t1 = args.t1
@@ -69,8 +59,7 @@ def main():
         with open("/home/pi/scheduled_scene", "w") as file:
             file.write("hell\n")
 
-    wakeup(t1, t2, t3, t4, args.schlafzimmer, args.wohnzimmer,
-           args.schlafzimmer_h, args.wohnzimmer_h)
+    wakeup(t1, t2, t3, t4, args.schlafzimmer, args.wohnzimmer)
 
 
 if __name__ == '__main__':
