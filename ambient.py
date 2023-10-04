@@ -73,7 +73,7 @@ def get_history_mean(i=MASTER, number=10):
 
 def get_simulated_bri():
     g = __get_new()
-    bri = arduino_map(g, 1000, 38000, 0, 1)
+    bri = arduino_map(g, 1000, 36000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
