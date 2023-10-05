@@ -16,6 +16,14 @@ schlafzimmer_lights = [["Schlafzimmer Hängelampe", ["bri"]],
 all_lights = [*wohnzimmer_lights,
               *schlafzimmer_lights]
 
+kuche_slaves = [["Filament", ["bri", "ct"]],
+                ["Deckenleuchte Links", ["bri", "ct"]],
+                ["Deckenleuchte Rechts", ["bri", "ct"]]]
+
+bad_slaves = [["Spiegellicht", ["bri", "ct"]],
+              ["Badlicht", ["bri", "ct"]]]
+
+flur_slaves = [["Kronleuchter", ["bri", "ct"]]]
 
 off_wohnzimmer = dict()
 off_wohnzimmer["Stehlampe"] = {"bri": 0.0, "ct": 1.0}
