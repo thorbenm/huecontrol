@@ -3,6 +3,7 @@ from _phue import set_lights
 import argparse
 import motionsensor
 import data
+import toolbox
 
 
 def find_duplicate_values(dictionary):
@@ -49,16 +50,6 @@ def transition(name, time=.4, reduce_only=False, increase_only=False,
                   increase_only=increase_only, _override=_override)
 
 
-def convert_time_string(time_str):
-    unit_is_minutes = False
-    if time_str.endswith("m"):
-        unit_is_minutes = True
-    time = float(time_str[:-1].replace(",", "."))
-    if unit_is_minutes:
-        time *= 60
-    return time
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', type=str, required=True, dest='scene')
@@ -67,7 +58,7 @@ def main():
     parser.add_argument('-c', action='store_true', dest='scheduled',
                         help='store as scheduled scene')
     args = parser.parse_args()
-    time = convert_time_string(args.time)
+    time = toolbox.convert_time_string(args.time)
     transition(args.scene, time=time, reduce_only=args.reduce_only)
     if args.scheduled:
         with open("/home/pi/scheduled_scene", "w") as file:

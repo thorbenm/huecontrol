@@ -10,13 +10,11 @@ from numpy import mean
 import scene
 import data
 from time import sleep
+import toolbox
+
 
 log_file = '/home/pi/ambient.log'
 MASTER = 31
-
-
-def arduino_map(x, in_min, in_max, out_min, out_max):
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
 
 def trim_logs():
@@ -73,7 +71,7 @@ def get_history_mean(i=MASTER, number=10):
 
 def get_simulated_bri():
     g = __get_new()
-    bri = arduino_map(g, 1000, 36000, 0, 1)
+    bri = toolbox.map(g, 1000, 36000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
@@ -81,7 +79,7 @@ def get_simulated_bri():
 
 def get_simulated_ct():
     mean = get_history_mean(number=10)
-    ct = arduino_map(mean, 14000, 34000, 1.0, .35)
+    ct = toolbox.map(mean, 14000, 34000, 1.0, .35)
     ct = min(ct, 1.0)
     ct = max(ct, .35)
     return ct

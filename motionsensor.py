@@ -15,6 +15,7 @@ from datetime import datetime
 from systemd import journal
 import scene
 import data
+import toolbox
 
 
 FREEZE_FILE_PATH = "/home/pi/Programming/huecontrol/motionsensor_freeze"
@@ -22,11 +23,6 @@ FREEZE_FILE_PATH = "/home/pi/Programming/huecontrol/motionsensor_freeze"
 
 def freeze():
     Path(FREEZE_FILE_PATH).touch()
-
-
-def _map(x, in_min, in_max, out_min, out_max):
-    # arduino map
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
 
 class Sensor():
@@ -68,7 +64,7 @@ class Sensor():
         minimum_bri = self.minimum_bri
         if self.use_ambient_for_motion and ambient.get_schmitt_trigger():
             minimum_bri = 0.0
-        return _map(bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
+        return toolbox.map(bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
 
     def mock_file_exists(self):
         if self.mock_file is not None:
@@ -88,7 +84,7 @@ class Sensor():
         if bri < 0.5:
             return self.maximum_ct
         else:
-            return _map(bri, 0.5, 1.0, self.maximum_ct, minimum_ct)
+            return toolbox.map(bri, 0.5, 1.0, self.maximum_ct, minimum_ct)
 
     def get_master_ct(self):
         try:
@@ -96,7 +92,7 @@ class Sensor():
                 return 1.0
 
             ct = _phue.get_ct(Sensor.master)
-            ct = _map(ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
+            ct = toolbox.map(ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
             return max(ct, self.get_virtual_ct(Sensor.master_bri))
         except:
             return 1.0
@@ -132,17 +128,8 @@ class Sensor():
             scheduled_scene = scene.get_scheduled_scene()
             d = eval("data." + scheduled_scene)
             ct = d[Sensor.master]["ct"]
-        ct = _map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
+        ct = toolbox.map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
         return ct
-
-        # scheduled_scene = scene.get_scheduled_scene()
-        # if scheduled_scene == "auto":
-        #     ct = ambient.get_simulated_ct()
-        # else:
-        #     d = eval("data." + scheduled_scene)
-        #     ct = d[Sensor.master]["ct"]
-        # ct = _map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
-        # return ct
 
     def update_shared_values(self):
         if Sensor.next_update < time():
