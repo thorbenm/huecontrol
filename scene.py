@@ -29,6 +29,13 @@ def get_scheduled_scene():
         return f.read().replace("\n", "")
 
 
+def transition_dicionary(d, time=.4, reduce_only=False, increase_only=False):
+    keys, values = find_duplicate_values(d)
+    for k, v in zip(keys, values):
+        set_lights(k, **v, time=time, reduce_only=reduce_only,
+                   increase_only=increase_only)
+
+
 def transition(name, time=.4, reduce_only=False, increase_only=False,
               _override={}):
     if name.startswith("scheduled"):
@@ -39,10 +46,8 @@ def transition(name, time=.4, reduce_only=False, increase_only=False,
             motionsensor.freeze()
         d = eval("data." + name)
         d = {**d, **_override}
-        keys, values = find_duplicate_values(d)
-        for k, v in zip(keys, values):
-            set_lights(k, **v, time=time, reduce_only=reduce_only,
-                       increase_only=increase_only)
+        transition_dicionary(d, time=time, reduce_only=reduce_only,
+                             increase_only=increase_only)
     else:
         transition(name + "_wohnzimmer", time=time, reduce_only=reduce_only,
                   increase_only=increase_only, _override=_override)

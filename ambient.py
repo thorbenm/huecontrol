@@ -21,9 +21,9 @@ def trim_logs():
     with open(log_file, "r") as file:
         lines = file.readlines()
 
-    if len(lines) > 10000:
+    if len(lines) > 50000:
         with open(log_file, "w") as file:
-            file.writelines(lines[-10000:])
+            file.writelines(lines[-50000:])
 
 
 def __get_new(i=MASTER):
@@ -77,11 +77,11 @@ def get_simulated_bri():
     return bri
 
 
-def get_simulated_ct():
-    mean = get_history_mean(number=10)
-    ct = toolbox.map(mean, 14000, 34000, 1.0, .35)
-    ct = min(ct, 1.0)
-    ct = max(ct, .35)
+def get_simulated_ct(maximum=1.0, minimum=.35):
+    mean = get_history_mean(number=60)
+    ct = toolbox.map(mean, 0, 33000, maximum, minimum)
+    ct = min(ct, maximum)
+    ct = max(ct, minimum)
     return ct
 
 
@@ -161,13 +161,20 @@ def auto_ct_enabled():
 
 def auto_ct():
     if auto_ct_enabled():
-        lights = []
-        for light, light_data in data.all_lights:
-            if "bri" in light_data and "ct" in light_data:
-                if .98 < _phue.get_bri(light):
-                    lights.append(light)
-        if 1 < len(lights):
-            _phue.set_lights(lights, ct=get_simulated_ct(), time=59)
+        ct_value = get_simulated_ct(maximum=1.0, minimum=0.0)
+        for z in ["schlafzimmer", "wohnzimmer"]:
+            do_this_room = True
+            for light, light_data in eval("data." + z + "_lights"):
+                if "bri" in light_data:
+                    threshold = data.warm[light]["bri"] - 0.02
+                    if _phue.get_bri(light) < threshold:
+                        do_this_room = False
+            if do_this_room:
+                s = toolbox.scene_superposition(ct_value,
+                                                eval("data.warm_" + z),
+                                                1.0 - ct_value,
+                                                eval("data.hell_" + z))
+                scene.transition_dicionary(s, time=59)
 
 
 def main():
