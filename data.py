@@ -117,37 +117,20 @@ gemutlich = {**gemutlich_wohnzimmer, **gemutlich_schlafzimmer}
 
 
 warm_wohnzimmer = dict()
-warm_wohnzimmer["Stehlampe"] = {"bri": .75, "ct": 1.0}
-warm_wohnzimmer["Hue Go"] = {"bri": .75, "ct": 1.0}
-warm_wohnzimmer["Fensterlampe"] = {"bri": .75, "ct": 1.0}
-warm_wohnzimmer["LED Streifen"] = {"bri": .75, "ct": 1.0}
-warm_wohnzimmer["Ananas"] = {"bri": .75, "ct": 1.0}
+warm_wohnzimmer["Stehlampe"] = {"bri": .8, "ct": 1.0}
+warm_wohnzimmer["Hue Go"] = {"bri": .8, "ct": 1.0}
+warm_wohnzimmer["Fensterlampe"] = {"bri": .8, "ct": 1.0}
+warm_wohnzimmer["LED Streifen"] = {"bri": .8, "ct": 1.0}
+warm_wohnzimmer["Ananas"] = {"bri": .8, "ct": 1.0}
 warm_wohnzimmer["Lichterkette"] = {"on": True}
 warm_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 warm_schlafzimmer = dict()
-warm_schlafzimmer["Nachttischlampe"] = {"bri": .75, "ct": 1.0}
-warm_schlafzimmer["Wickeltischlampe"] = {"bri": .75, "ct": 1.0}
+warm_schlafzimmer["Nachttischlampe"] = {"bri": .8, "ct": 1.0}
+warm_schlafzimmer["Wickeltischlampe"] = {"bri": .8, "ct": 1.0}
 warm_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 0.0}
 
 warm = {**warm_wohnzimmer, **warm_schlafzimmer}
-
-
-max_wohnzimmer = dict()
-max_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": 1.0}
-max_wohnzimmer["Hue Go"] = {"bri": 1.0, "ct": 1.0}
-max_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": 1.0}
-max_wohnzimmer["LED Streifen"] = {"bri": 1.0, "ct": 1.0}
-max_wohnzimmer["Ananas"] = {"bri": 1.0, "ct": 1.0}
-max_wohnzimmer["Lichterkette"] = {"on": True}
-max_wohnzimmer["Hängelampe"] = {"bri": 0.0}
-
-max_schlafzimmer = dict()
-max_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 1.0}
-max_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": 1.0}
-max_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": .3}
-
-max = {**max_wohnzimmer, **max_schlafzimmer}
 
 
 halbwarm_wohnzimmer = dict()
