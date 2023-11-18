@@ -32,7 +32,7 @@ def wakeup(t1, t2, t3, schlafzimmer, wohnzimmer):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t1', type=str, default='1s', dest='t1')
-    parser.add_argument('-t2', type=str, default='10m', dest='t2')
+    parser.add_argument('-t2', type=str, default='auto', dest='t2')
     parser.add_argument('-t3', type=str, default='auto', dest='t3')
     parser.add_argument('-c', action='store_true', dest='scheduled')
     parser.add_argument('-w', action='store_true', dest='wohnzimmer')
@@ -44,9 +44,16 @@ def main():
     t3 = args.t3
 
     t1 = toolbox.convert_time_string(t1)
+
+    if t2 == "auto":
+        if _phue.get_on("Nachttischlampe") or _phue.get_on("Stehlampe"):
+            t2 = "2m"
+        else:
+            t2 = "10m"
     t2 = toolbox.convert_time_string(t2)
+
     if t3 == "auto":
-        t3 = toolbox.map(ambient.get_simulated_bri(), 0, 1, 90 * 60, 5 * 60)
+        t3 = toolbox.map(ambient.get_simulated_bri() ** .5, 0, 1, 90 * 60, 5 * 60)
     else:
         t3 = toolbox.convert_time_string(t3)
 
