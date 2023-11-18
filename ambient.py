@@ -11,6 +11,7 @@ import scene
 import data
 from time import sleep
 import toolbox
+import sys
 
 
 log_file = '/home/pi/ambient.log'
@@ -21,9 +22,11 @@ def trim_logs():
     with open(log_file, "r") as file:
         lines = file.readlines()
 
-    if len(lines) > 50000:
+    max_number_of_lines = 1 * 24 * 60
+
+    if len(lines) > max_number_of_lines:
         with open(log_file, "w") as file:
-            file.writelines(lines[-50000:])
+            file.writelines(lines[-max_number_of_lines:])
 
 
 def __get_new(i=MASTER):
@@ -159,6 +162,16 @@ def auto_ct_enabled():
         return False
 
 
+def enable_auto_ct():
+    with open('/home/pi/auto_ct_enabled', 'w') as f:
+        f.write('true')
+
+
+def disable_auto_ct():
+    with open('/home/pi/auto_ct_enabled', 'w') as f:
+        f.write('false')
+
+
 def auto_ct():
     if auto_ct_enabled():
         ct_value = get_simulated_ct(maximum=1.0, minimum=0.0)
@@ -185,4 +198,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 1:
+        main()
+    else:
+        for a in sys.argv[1:]:
+            f = globals()[a.strip("-").replace("-", "_")]
+            f()
