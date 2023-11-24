@@ -31,6 +31,7 @@ class Sensor():
     master_ct = float('nan')
     ambient_bri = float('nan')
     currently_using_ambient_brightness = None
+    scheduled_ct = float('nan')
     next_update = -inf
     def __init__(self, sensor_id, lights, turn_off_after, mock_file=None,
                  use_ambient_for_brightness=False, use_ambient_for_motion=False):
