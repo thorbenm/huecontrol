@@ -42,8 +42,6 @@ def transition(name, time=.4, reduce_only=False, increase_only=False,
         name = name.replace("scheduled", get_scheduled_scene())
 
     if name.endswith("zimmer"):
-        if 90.0 < time and name.endswith("wohnzimmer"):
-            motionsensor.freeze()
         d = eval("data." + name)
         d = {**d, **_override}
         transition_dicionary(d, time=time, reduce_only=reduce_only,

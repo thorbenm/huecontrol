@@ -9,20 +9,11 @@ from math import isclose
 from personal_data import user_id
 import os.path
 import os
-from pathlib import Path
 import ambient
-from datetime import datetime
 from systemd import journal
 import scene
 import data
 import toolbox
-
-
-FREEZE_FILE_PATH = "/home/pi/Programming/huecontrol/motionsensor_freeze"
-
-
-def freeze():
-    Path(FREEZE_FILE_PATH).touch()
 
 
 class Sensor():
@@ -72,11 +63,6 @@ class Sensor():
             if os.path.isfile(self.mock_file):
                 return True
         return False
-
-    def freeze_file(self):
-        if os.path.isfile(FREEZE_FILE_PATH):
-            Sensor.next_update = time() + 90.0
-            os.remove(FREEZE_FILE_PATH)
 
     def get_virtual_ct(self, bri, minimum_ct=None):
         # based on brightness instead
@@ -155,7 +141,6 @@ class Sensor():
             return master_bri, master_ct
 
     def update(self):
-        self.freeze_file()
         self.update_shared_values()
         if self.sensor_state() or self.mock_file_exists():
             self.last_motion = time()
@@ -177,9 +162,8 @@ class Sensor():
         elif master_changed:
             if self.sensor_state_buffer():
                 t = 0.4
-                if (abs(bri - self.current_bri) < 0.09 and
-                        abs(ct - self.current_ct) < 0.09):
-                    t = 4.5
+                if abs(bri - self.current_bri) < 0.09:
+                    t = 30.0
 
                 journal.write("bri=%.2f, ct=%.2f " % (bri, ct) +
                               " ".join(self.lights))

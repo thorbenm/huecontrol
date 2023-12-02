@@ -8,8 +8,13 @@ def convert_time_string(time_str):
     return time
 
 
-def map(x, in_min, in_max, out_min, out_max):
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+def map(x, in_min, in_max, out_min, out_max, clamp=False):
+    ret = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+    if clamp:
+        lower, higher = sorted([out_min, out_max])
+        ret = min(higher, ret)
+        ret = max(lower, ret)
+    return ret
 
 
 def scene_superposition(factor1, scene1, factor2, scene2):

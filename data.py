@@ -1,8 +1,7 @@
 from _phue import min_bri
 
 
-wohnzimmer_lights = [["Hängelampe", ["bri"]],
-                     ["Hue Go", ["bri", "ct"]],
+wohnzimmer_lights = [["Hue Go", ["bri", "ct"]],
                      ["Stehlampe", ["bri", "ct"]],
                      ["Fensterlampe", ["bri", "ct"]],
                      ["LED Streifen", ["bri", "ct"]],
@@ -32,7 +31,6 @@ off_wohnzimmer["Fensterlampe"] = {"bri": 0.0, "ct": 1.0}
 off_wohnzimmer["LED Streifen"] = {"bri": 0.0, "ct": 1.0}
 off_wohnzimmer["Ananas"] = {"bri": 0.0, "ct": 1.0}
 off_wohnzimmer["Lichterkette"] = {"on": False}
-off_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 off_schlafzimmer = dict()
 off_schlafzimmer["Nachttischlampe"] = {"bri": 0.0, "ct": 1.0}
@@ -49,7 +47,6 @@ min_wohnzimmer["Fensterlampe"] = {"bri": min_bri(), "ct": 1.0}
 min_wohnzimmer["LED Streifen"] = {"bri": min_bri(), "ct": 1.0}
 min_wohnzimmer["Ananas"] = {"bri": min_bri(), "ct": 1.0}
 min_wohnzimmer["Lichterkette"] = {"on": False}
-min_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 min_schlafzimmer = dict()
 min_schlafzimmer["Nachttischlampe"] = {"bri": min_bri(), "ct": 1.0}
@@ -72,7 +69,6 @@ dunkel_wohnzimmer["Fensterlampe"] = {"bri": .1, "ct": 1.0}
 dunkel_wohnzimmer["LED Streifen"] = {"bri": .1, "ct": 1.0}
 dunkel_wohnzimmer["Ananas"] = {"bri": .1, "ct": 1.0}
 dunkel_wohnzimmer["Lichterkette"] = {"on": False}
-dunkel_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 dunkel_schlafzimmer = dict()
 dunkel_schlafzimmer["Nachttischlampe"] = {"bri": .1, "ct": 1.0}
@@ -89,7 +85,6 @@ lesen_wohnzimmer["Fensterlampe"] = {"bri": .5, "ct": 1.0}
 lesen_wohnzimmer["LED Streifen"] = {"bri": .1, "ct": 1.0}
 lesen_wohnzimmer["Ananas"] = {"bri": .1, "ct": 1.0}
 lesen_wohnzimmer["Lichterkette"] = {"on": False}
-lesen_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 lesen_schlafzimmer = dict()
 lesen_schlafzimmer["Nachttischlampe"] = {"bri": .25, "ct": 1.0}
@@ -106,7 +101,6 @@ gemutlich_wohnzimmer["Fensterlampe"] = {"bri": .5, "ct": 1.0}
 gemutlich_wohnzimmer["LED Streifen"] = {"bri": .4, "ct": 1.0}
 gemutlich_wohnzimmer["Ananas"] = {"bri": .4, "ct": 1.0}
 gemutlich_wohnzimmer["Lichterkette"] = {"on": True}
-gemutlich_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 gemutlich_schlafzimmer = dict()
 gemutlich_schlafzimmer["Nachttischlampe"] = {"bri": .4, "ct": 1.0}
@@ -123,7 +117,6 @@ warm_wohnzimmer["Fensterlampe"] = {"bri": .8, "ct": 1.0}
 warm_wohnzimmer["LED Streifen"] = {"bri": .8, "ct": 1.0}
 warm_wohnzimmer["Ananas"] = {"bri": .8, "ct": 1.0}
 warm_wohnzimmer["Lichterkette"] = {"on": True}
-warm_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 warm_schlafzimmer = dict()
 warm_schlafzimmer["Nachttischlampe"] = {"bri": .8, "ct": 1.0}
@@ -140,7 +133,6 @@ halbwarm_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": .6}
 halbwarm_wohnzimmer["LED Streifen"] = {"bri": 1.0, "ct": .6}
 halbwarm_wohnzimmer["Ananas"] = {"bri": 1.0, "ct": .6}
 halbwarm_wohnzimmer["Lichterkette"] = {"on": True}
-halbwarm_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 halbwarm_schlafzimmer = dict()
 halbwarm_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 0.6}
@@ -157,7 +149,6 @@ hell_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": .35}
 hell_wohnzimmer["LED Streifen"] = {"bri": 1.0, "ct": .35}
 hell_wohnzimmer["Ananas"] = {"bri": 1.0, "ct": .35}
 hell_wohnzimmer["Lichterkette"] = {"on": True}
-hell_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 hell_schlafzimmer = dict()
 hell_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": .35}
@@ -174,7 +165,6 @@ focus_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": 0.0}
 focus_wohnzimmer["LED Streifen"] = {"bri": 1.0, "ct": 0.0}
 focus_wohnzimmer["Ananas"] = {"bri": 1.0, "ct": 0.0}
 focus_wohnzimmer["Lichterkette"] = {"on": True}
-focus_wohnzimmer["Hängelampe"] = {"bri": 0.0}
 
 focus_schlafzimmer = dict()
 focus_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 0.0}

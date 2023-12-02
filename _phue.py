@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 import requests
 from phue import Bridge
-from time import sleep, time
+from time import time as unix_time
 from personal_data import ip_address
+import json
+import toolbox
+import os
 
 
 b = Bridge(ip_address)
@@ -11,6 +14,7 @@ b.connect()
 
 def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
                reduce_only=False, increase_only=False):
+    set_fake_values(lights, time=time, bri=bri, ct=ct)
 
     command = {'transitiontime' : int(time * 10)}
     if on is not None:
@@ -39,12 +43,10 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             if "bri" in command_c.keys():
                 current_bri = b.get_light(l, "bri") if b.get_light(l, "on") else 0
                 if current_bri < command_c["bri"]:
-                    # print("pop bri=%d" % command_c["bri"])
                     command_c.pop("bri")
             if "ct" in command_c.keys():
                 current_ct = b.get_light(l, "ct") if b.get_light(l, "on") else 454
                 if command_c["ct"] < current_ct:
-                    # print("pop ct=%d" % command_c["ct"])
                     command_c.pop("ct")
 
             set_light(l, command_c)
@@ -55,12 +57,10 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             if "bri" in command_c.keys():
                 current_bri = b.get_light(l, "bri") if b.get_light(l, "on") else 0
                 if command_c["bri"] < current_bri:
-                    # print("pop bri=%d" % command_c["bri"])
                     command_c.pop("bri")
             if "ct" in command_c.keys():
                 current_ct = b.get_light(l, "ct") if b.get_light(l, "on") else 454
                 if current_ct < command_c["ct"]:
-                    # print("pop ct=%d" % command_c["ct"])
                     command_c.pop("ct")
 
             set_light(l, command_c)
@@ -70,21 +70,44 @@ def get_on(light):
     return b.get_light(light, "on")
 
 
-def get_bri(light):
-    if not b.get_light(light, "on"):
-        return 0.0
+def __get_bri(light):
     return float(b.get_light(light, "bri")) / 254.0
 
 
+def get_bri(light):
+    if b.get_light(light, "on"):
+        ret = __get_bri(light)
+    else:
+        # homekit only sets "on" and leaves "bri" at its original
+        # value when using the hue switch to turn off a light
+        ret = 0.0
+    fake = get_fake_value(light, "bri", ret)
+    if fake is None:
+        return ret
+    else:
+        print("fake")
+        return fake
+
+
+def __get_ct(light):
+    return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
+
+
 def get_ct(light):
+    ret = float("NaN")
     if not b.get_light(light, "on"):
-        return 1.0
+        ret = 1.0
     try:
         # try catch is a workaround for lazy implementation of light that
         # dont support ct in motionsensor
-        return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
+        ret = __get_ct(light)
     except:
-        return 1.0
+        ret = 1.0
+    fake = get_fake_value(light, "ct", ret)
+    if fake is None:
+        return ret
+    else:
+        return fake
 
 
 def set_light(*args, **kwargs):
@@ -119,7 +142,7 @@ def set_lights_safe(lights, **kwargs):
         return
     if len(lights) == 1:
         return
-    global_l.append({"at": time() + 90.0,
+    global_l.append({"at": unix_time() + 90.0,
                      "lights": lights,
                      "bri": kwargs["bri"]})
 
@@ -127,7 +150,7 @@ def set_lights_safe(lights, **kwargs):
 def check_lights():
     global global_l
     for elem in global_l[:]:
-        if elem["at"] < time():
+        if elem["at"] < unix_time():
             l0 = elem["lights"][0]
             b0 = get_bri(l0)
             for l in elem["lights"][1:]:
@@ -140,3 +163,72 @@ def check_lights():
 
 def min_bri():
     return 1.1/254.0
+
+
+FAKE_VALUES_PATH = "/home/pi/fake_values.json"
+FAKE_LAMPS = ["Stehlampe"]
+FAKE_DURATION = 120.0
+
+
+def set_fake_values(lights, time, bri=None, ct=None):
+    if 1.0 < time:
+        d = dict()
+        for l in lights:
+            if l not in FAKE_LAMPS:
+                continue
+            d[l] = dict()
+            if bri is not None:
+                start_bri = __get_bri(l)
+                finish_bri = bri
+                if 0.02 < abs(start_bri - finish_bri):
+                    d[l]["start_bri"] = start_bri
+                    d[l]["finish_bri"] = finish_bri
+            if ct is not None:
+                start_ct = __get_ct(l)
+                finish_ct = ct
+                if 0.02 < abs(start_ct - finish_ct):
+                    d[l]["start_ct"] = start_ct
+                    d[l]["finish_ct"] = finish_ct
+            if d[l]:
+                d[l]["start_time"] = unix_time()
+                d[l]["finish_time"] = d[l]["start_time"] + time
+            else:
+                del d[l]
+        if d:
+            with open(FAKE_VALUES_PATH, 'w') as f:
+                json.dump(d, f)
+
+
+def get_fake_value(light, kind, real_value):
+    if light in FAKE_LAMPS:
+        d = dict()
+        try:
+            with open(FAKE_VALUES_PATH, 'r') as f:
+                d = json.load(f)
+        except FileNotFoundError:
+            return None
+        if light in d:
+            if unix_time() - d[light]["start_time"] < FAKE_DURATION:
+                if "start_" + kind in d[light] and "finish_" + kind in d[light]:
+                    start = float("NaN")
+                    finish = float("NaN")
+                    if kind == "bri":
+                        start = d[light]["start_bri"]
+                        finish = d[light]["finish_bri"]
+                    elif kind == "ct":
+                        start = d[light]["start_ct"]
+                        finish = d[light]["finish_ct"]
+                    else:
+                        raise RuntimeError("invalid kind in get_fake_value()")
+                    if abs(real_value - finish) < .02:
+                        return toolbox.map(unix_time(),
+                                           d[light]["start_time"],
+                                           d[light]["finish_time"],
+                                           start, finish, clamp=True)
+                    else:
+                        os.remove(FAKE_VALUES_PATH)
+            else:
+                os.remove(FAKE_VALUES_PATH)
+    # to support multiple FAKE_LAMPS remove should delete the entry of this one and
+    # not delete the entire file
+    return None

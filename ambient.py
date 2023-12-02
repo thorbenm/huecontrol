@@ -9,7 +9,7 @@ import logging
 from numpy import mean
 import scene
 import data
-from time import sleep
+from time import sleep, time
 import toolbox
 import sys
 
@@ -74,7 +74,7 @@ def get_history_mean(i=MASTER, number=10):
 
 def get_simulated_bri():
     g = __get_new()
-    bri = toolbox.map(g, 1000, 36000, 0, 1)
+    bri = toolbox.map(g, 3500, 36000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
@@ -173,7 +173,7 @@ def disable_auto_ct():
 
 
 def auto_ct():
-    if auto_ct_enabled():
+    if auto_ct_enabled() and int(time() // 60 % 30) == 0:
         ct_value = get_simulated_ct(maximum=1.0, minimum=0.0)
         for z in ["schlafzimmer", "wohnzimmer"]:
             do_this_room = True
@@ -187,7 +187,7 @@ def auto_ct():
                                                 eval("data.warm_" + z),
                                                 1.0 - ct_value,
                                                 eval("data.hell_" + z))
-                scene.transition_dicionary(s, time=59)
+                scene.transition_dicionary(s, time=29 * 60)
 
 
 def main():
