@@ -172,28 +172,29 @@ def disable_auto_ct():
         f.write('false')
 
 
-def auto_ct():
-    if auto_ct_enabled() and int(time() // 60 % 30) == 0:
-        ct_value = get_simulated_ct(maximum=1.0, minimum=0.0)
-        for z in ["schlafzimmer", "wohnzimmer"]:
-            do_this_room = True
-            for light, light_data in eval("data." + z + "_lights"):
-                if "bri" in light_data:
-                    threshold = data.warm[light]["bri"] - 0.02
-                    if _phue.get_bri(light) < threshold:
-                        do_this_room = False
-            if do_this_room:
-                s = toolbox.scene_superposition(ct_value,
-                                                eval("data.warm_" + z),
-                                                1.0 - ct_value,
-                                                eval("data.hell_" + z))
-                scene.transition_dicionary(s, time=29 * 60)
+def force_auto_ct_slow(transition_time=29*60):
+    if transition_time is None:
+        transition_time = AUTO_CT_TRANSITION_TIME - 1.0
+    ct_value = get_simulated_ct(maximum=1.0, minimum=0.0)
+    s = toolbox.scene_superposition(ct_value, data.warm,
+                                    1.0 - ct_value, data.hell)
+    scene.transition_dicionary(s, time=transition_time, reduce_only=True)
+
+
+def force_auto_ct_fast(transition_time=.4):
+    force_auto_ct_slow(transition_time=transition_time)
+
+
+def auto_ct_if_enabled(transition_time=29*60):
+    if auto_ct_enabled():
+        force_auto_ct_slow(transition_time)
 
 
 def main():
     log_all()
     turn_off_if_ambient_above_limit()
-    auto_ct()
+    if int(time() // 60 % 30) == 0:
+        auto_ct_if_enabled()
     trim_logs()
 
 
