@@ -210,17 +210,9 @@ def get_fake_value(light, kind, real_value):
         if light in d:
             if unix_time() - d[light]["start_time"] < FAKE_DURATION:
                 if "start_" + kind in d[light] and "finish_" + kind in d[light]:
-                    start = float("NaN")
-                    finish = float("NaN")
-                    if kind == "bri":
-                        start = d[light]["start_bri"]
-                        finish = d[light]["finish_bri"]
-                    elif kind == "ct":
-                        start = d[light]["start_ct"]
-                        finish = d[light]["finish_ct"]
-                    else:
-                        raise RuntimeError("invalid kind in get_fake_value()")
-                    if abs(real_value - finish) < .02:
+                    start = d[light]["start_" + kind]
+                    finish = d[light]["finish_" + kind]
+                    if abs(real_value - finish) < .02 or abs(real_value - start) < .02:
                         return toolbox.map(unix_time(),
                                            d[light]["start_time"],
                                            d[light]["finish_time"],
