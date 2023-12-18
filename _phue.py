@@ -85,7 +85,6 @@ def get_bri(light):
     if fake is None:
         return ret
     else:
-        print("fake")
         return fake
 
 

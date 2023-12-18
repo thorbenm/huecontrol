@@ -175,9 +175,9 @@ def disable_auto_ct():
 def force_auto_ct_slow(transition_time=29*60):
     if transition_time is None:
         transition_time = AUTO_CT_TRANSITION_TIME - 1.0
-    ct_value = get_simulated_ct(maximum=1.0, minimum=0.0)
-    s = toolbox.scene_superposition(ct_value, data.warm,
-                                    1.0 - ct_value, data.hell)
+    value = get_simulated_bri()
+    s = toolbox.scene_superposition(value, data.hell,
+                                    1.0 - value, data.halbwarm)
     scene.transition_dicionary(s, time=transition_time, reduce_only=True)
 
 
