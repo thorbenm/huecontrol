@@ -80,14 +80,6 @@ def get_simulated_bri():
     return bri
 
 
-def get_simulated_ct(maximum=1.0, minimum=.35):
-    mean = get_history_mean(number=60)
-    ct = toolbox.map(mean, 0, 33000, maximum, minimum)
-    ct = min(ct, maximum)
-    ct = max(ct, minimum)
-    return ct
-
-
 def get_schmitt_trigger(low=16000, high=20000):
     history = __get_history(number=float('inf'))
     for j in history[::-1]:

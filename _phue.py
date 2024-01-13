@@ -14,7 +14,6 @@ b.connect()
 
 def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
                reduce_only=False, increase_only=False):
-    set_fake_values(lights, time=time, bri=bri, ct=ct)
 
     command = {'transitiontime' : int(time * 10)}
     if on is not None:
@@ -34,7 +33,7 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
             command["on"] = True
 
     if not reduce_only and not increase_only:
-
+        set_fake_values(lights, time=time, bri=bri, ct=ct)
         set_light(lights, command)
     elif reduce_only:
         for l in [lights] if type(lights) == str else lights:
@@ -49,6 +48,9 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
                 if command_c["ct"] < current_ct:
                     command_c.pop("ct")
 
+            set_fake_values(l, time=time,
+                            bri=(bri if "bri" in command_c else None),
+                            ct=(ct if "ct" in command_c else None))
             set_light(l, command_c)
     elif increase_only:
         for l in [lights] if type(lights) == str else lights:
@@ -63,6 +65,9 @@ def set_lights(lights, bri=None, ct=None, on=None, hue=None, sat=None, time=.4,
                 if current_ct < command_c["ct"]:
                     command_c.pop("ct")
 
+            set_fake_values(l, time=time,
+                            bri=(bri if "bri" in command_c else None),
+                            ct=(ct if "ct" in command_c else None))
             set_light(l, command_c)
 
 
@@ -172,7 +177,7 @@ FAKE_DURATION = 120.0
 def set_fake_values(lights, time, bri=None, ct=None):
     if 1.0 < time:
         d = dict()
-        for l in lights:
+        for l in [lights] if type(lights) == str else lights:
             if l not in FAKE_LAMPS:
                 continue
             d[l] = dict()

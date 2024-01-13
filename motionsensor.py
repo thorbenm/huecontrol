@@ -109,12 +109,9 @@ class Sensor():
         return False
 
     def get_scheduled_ct(self):
-        if ambient.auto_ct_enabled():
-            ct = ambient.get_simulated_ct()
-        else:
-            scheduled_scene = scene.get_scheduled_scene()
-            d = eval("data." + scheduled_scene)
-            ct = d[Sensor.master]["ct"]
+        scheduled_scene = scene.get_scheduled_scene()
+        d = eval("data." + scheduled_scene)
+        ct = d[Sensor.master]["ct"]
         ct = toolbox.map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
         return ct
 
@@ -163,7 +160,7 @@ class Sensor():
             if self.sensor_state_buffer():
                 t = 0.4
                 if abs(bri - self.current_bri) < 0.25:
-                    t = 30.0
+                    t = 4.9
 
                 journal.write("bri=%.2f, ct=%.2f " % (bri, ct) +
                               " ".join(self.lights))
