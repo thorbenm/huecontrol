@@ -73,8 +73,13 @@ def get_history_mean(i=MASTER, number=10):
 
 
 def get_simulated_bri():
+    # snowy nights in winter can be up to 3500 in brightness,
+    # so 4000 makes sure simulated brightness is 0 all night
+    # the hightest values I have seen are around 40000. So
+    # 36000 is just slighty lower than that.
+
     g = __get_new()
-    bri = toolbox.map(g, 3500, 36000, 0, 1)
+    bri = toolbox.map(g, 4000, 36000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
     return bri
@@ -145,48 +150,22 @@ def turn_off_if_ambient_above_limit():
         scene.transition('off_wohnzimmer', time=10*60)
 
 
-def auto_ct_enabled():
-    try:
-        with open('/home/pi/auto_ct_enabled', 'r') as file:
-            content = file.read().strip()
-        return content.lower() == "true"
-    except:
-        return False
-
-
-def enable_auto_ct():
-    with open('/home/pi/auto_ct_enabled', 'w') as f:
-        f.write('true')
-
-
-def disable_auto_ct():
-    with open('/home/pi/auto_ct_enabled', 'w') as f:
-        f.write('false')
-
-
-def force_auto_ct_slow(transition_time=29*60):
+def auto_ct_slow_reduce_only(transition_time=29*60):
     if transition_time is None:
         transition_time = AUTO_CT_TRANSITION_TIME - 1.0
-    value = get_simulated_bri()
-    s = toolbox.scene_superposition(value, data.hell,
-                                    1.0 - value, data.halbwarm)
+    bri = get_simulated_bri()
+    s = toolbox.scene_superposition(bri, data.hell,
+                                    1.0 - bri, data.halbwarm)
     scene.transition_dicionary(s, time=transition_time, reduce_only=True)
 
 
-def force_auto_ct_fast(transition_time=.4):
-    force_auto_ct_slow(transition_time=transition_time)
-
-
-def auto_ct_if_enabled(transition_time=29*60):
-    if auto_ct_enabled():
-        force_auto_ct_slow(transition_time)
+def auto_ct_fast_reduce_only(transition_time=.4):
+    auto_ct_slow_reduce_only(transition_time=transition_time)
 
 
 def main():
     log_all()
     turn_off_if_ambient_above_limit()
-    if int(time() // 60 % 30) == 0:
-        auto_ct_if_enabled()
     trim_logs()
 
 
