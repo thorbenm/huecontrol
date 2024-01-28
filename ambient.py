@@ -150,7 +150,7 @@ def turn_off_if_ambient_above_limit():
         scene.transition('off_wohnzimmer', time=10*60)
 
 
-def auto_ct_slow_reduce_only(transition_time=29*60):
+def auto_ct_slow_reduce_only(transition_time=14*60):
     if transition_time is None:
         transition_time = AUTO_CT_TRANSITION_TIME - 1.0
     bri = get_simulated_bri()
