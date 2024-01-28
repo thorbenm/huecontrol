@@ -80,7 +80,7 @@ class Sensor():
 
             ct = _phue.get_ct(Sensor.master)
             ct = toolbox.map(ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
-            return max(ct, self.get_virtual_ct(Sensor.master_bri))
+            return ct
         except:
             return 1.0
 
