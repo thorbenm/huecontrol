@@ -127,16 +127,16 @@ warm = {**warm_wohnzimmer, **warm_schlafzimmer}
 
 
 halbwarm_wohnzimmer = dict()
-halbwarm_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": .7}
-halbwarm_wohnzimmer["Hue Go"] = {"bri": 1.0, "ct": .7}
-halbwarm_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": .7}
-halbwarm_wohnzimmer["LED Streifen"] = {"bri": 1.0, "ct": .7}
-halbwarm_wohnzimmer["Ananas"] = {"bri": 1.0, "ct": .7}
+halbwarm_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": .6}
+halbwarm_wohnzimmer["Hue Go"] = {"bri": 1.0, "ct": .6}
+halbwarm_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": .6}
+halbwarm_wohnzimmer["LED Streifen"] = {"bri": 1.0, "ct": .6}
+halbwarm_wohnzimmer["Ananas"] = {"bri": 1.0, "ct": .6}
 halbwarm_wohnzimmer["Lichterkette"] = {"on": True}
 
 halbwarm_schlafzimmer = dict()
-halbwarm_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": .7}
-halbwarm_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": .7}
+halbwarm_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": .6}
+halbwarm_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": .6}
 halbwarm_schlafzimmer["Schlafzimmer Hängelampe"] = {"bri": 1.0}
 
 halbwarm = {**halbwarm_wohnzimmer, **halbwarm_schlafzimmer}
