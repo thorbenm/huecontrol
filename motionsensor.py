@@ -159,7 +159,8 @@ class Sensor():
         elif master_changed:
             if self.sensor_state_buffer():
                 t = 0.4
-                if abs(bri - self.current_bri) < 0.25:
+                if (abs(bri - self.current_bri) < 0.2 and
+                        abs(ct - self.current_ct) < 0.2):
                     t = 4.9
 
                 journal.write("bri=%.2f, ct=%.2f " % (bri, ct) +
