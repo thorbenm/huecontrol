@@ -38,7 +38,13 @@ def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer):
         scene.transition(s4 + "_wohnzimmer", time=t4, increase_only=True)
 
 
-def main():
+def parse_args(input_args=None):
+    if isinstance(input_args, str):
+        input_args = input_args.split()
+        this_file = __file__.split("/")[-1].removesuffix(".py")
+        if input_args[0].startswith(this_file):
+            input_args = input_args[1:]
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-t1', type=str, default='1s', dest='t1')
     parser.add_argument('-t2', type=str, default='auto', dest='t2')
@@ -47,34 +53,33 @@ def main():
     parser.add_argument('-c', action='store_true', dest='scheduled')
     parser.add_argument('-w', action='store_true', dest='wohnzimmer')
     parser.add_argument('-s', action='store_true', dest='schlafzimmer')
-    args = parser.parse_args()
+    args = parser.parse_args(input_args if input_args else None)
 
-    t1 = args.t1
-    t2 = args.t2
-    t3 = args.t3
-    t4 = args.t4
+    args.t1 = toolbox.convert_time_string(args.t1)
 
-    t1 = toolbox.convert_time_string(t1)
-
-    if t2 == "auto":
+    if args.t2 == "auto":
         if _phue.get_on("Nachttischlampe") or _phue.get_on("Stehlampe"):
-            t2 = "1m"
+            args.t2 = "1m"
         else:
-            t2 = "10m"
-    t2 = toolbox.convert_time_string(t2)
+            args.t2 = "10m"
+    args.t2 = toolbox.convert_time_string(args.t2)
+    args.t3 = toolbox.convert_time_string(args.t3)
 
-    t3 = toolbox.convert_time_string(t3)
-
-    if t4 == "auto":
-        t4 = toolbox.map(ambient.get_simulated_bri() ** .5, 0, 1, 90 * 60, 5 * 60)
+    if args.t4 == "auto":
+        args.t4 = toolbox.map(ambient.get_simulated_bri() ** .5, 0, 1, 90 * 60, 5 * 60)
     else:
-        t4 = toolbox.convert_time_string(t4)
+        args.t4 = toolbox.convert_time_string(args.t4)
 
+    return args
+
+
+def main(input_args=None):
+    args = parse_args(input_args)
     if args.scheduled:
         with open("/home/pi/scheduled_scene", "w") as file:
             file.write("hell\n")
 
-    wakeup(t1, t2, t3, t4, args.schlafzimmer, args.wohnzimmer)
+    wakeup(args.t1, args.t2, args.t3, args.t4, args.schlafzimmer, args.wohnzimmer)
 
 
 if __name__ == '__main__':

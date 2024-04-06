@@ -2,7 +2,7 @@
 import requests
 from phue import Bridge
 from time import time as unix_time
-from personal_data import ip_address
+from hue_data import ip_address
 import json
 import toolbox
 import os

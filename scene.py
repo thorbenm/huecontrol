@@ -53,17 +53,29 @@ def transition(name, time=.4, reduce_only=False, increase_only=False,
                   increase_only=increase_only, _override=_override)
 
 
-def main():
+def parse_args(input_args=None):
+    if isinstance(input_args, str):
+        input_args = input_args.split()
+        this_file = __file__.split("/")[-1].removesuffix(".py")
+        if input_args[0].startswith(this_file):
+            input_args = input_args[1:]
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', type=str, required=True, dest='scene')
+    parser.add_argument(type=str, dest='scene')
     parser.add_argument('-t', type=str, default='0.4s', dest='time')
-    parser.add_argument('--reduce-only', action='store_true', dest='reduce_only')
-    parser.add_argument('-c', action='store_true', dest='scheduled',
+    parser.add_argument('-r', '--reduce-only', action='store_true', dest='reduce_only')
+    parser.add_argument('-w', action='store_true', dest='write_scheduled',
                         help='store as scheduled scene')
-    args = parser.parse_args()
-    time = toolbox.convert_time_string(args.time)
-    transition(args.scene, time=time, reduce_only=args.reduce_only)
-    if args.scheduled:
+    args = parser.parse_args(input_args if input_args else None)
+
+    args.time = toolbox.convert_time_string(args.time)
+    return args
+
+
+def main(input_args=None):
+    args = parse_args(input_args)
+    transition(args.scene, time=args.time, reduce_only=args.reduce_only)
+    if args.write_scheduled:
         with open("/home/pi/scheduled_scene", "w") as file:
             file.write(args.scene.split("_")[0] + "\n")
 
