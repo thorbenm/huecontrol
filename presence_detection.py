@@ -6,17 +6,13 @@ sys.path.insert(0, '/home/pi/Programming/roomba')
 import roomba
 import ambient
 import scene
-from datetime import datetime
+import scheduled_scene
 
 
 def home():
-    if ambient.should_be_off():
-        scene.transition("off_wohnzimmer")
-    else:
-        scene.transition("scheduled_wohnzimmer")
-    scene.transition("scheduled_schlafzimmer")
+    scheduled_scene.transition()
     sleep(1.0)
-    if 12 <= datetime.now().hour <= 16:  # TODO: no time should be here.
+    if ambient.auto_ct_enabled():
         ambient.auto_ct_fast_reduce_only()
     roomba.stop()
 

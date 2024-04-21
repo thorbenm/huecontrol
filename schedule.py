@@ -4,6 +4,7 @@ import datetime
 from personal_data import calendar_url
 import sys
 from systemd import journal
+import scene
 sys.path.insert(1, '/home/pi/Programming/frame')
 from _calendar import get_events
 
@@ -21,15 +22,15 @@ def split_commands(command):
 
 def run_command(command):
     for c in split_commands(command):
-        module = c.split()[0]
-        if module not in ALLOWED_MODULES:
-            raise RuntimeError(module + ' is not an allowed module')
+        if not is_variable_definition(c):
+            module = c.split()[0]
+            if module not in ALLOWED_MODULES:
+                raise RuntimeError(module + ' is not an allowed module')
 
-        module = __import__(module)
-        module_main = getattr(module, "main")
-        module_parse_args = getattr(module, "parse_args")
+            module = __import__(module)
+            module_main = getattr(module, "main")
 
-        module_main(c)
+            module_main(c)
 
 
 def is_now(dt):
@@ -41,13 +42,88 @@ def is_now(dt):
             now.minute == dt.minute)
 
 
+def get_calendar_events():
+    threshold = datetime.datetime.now() - datetime.timedelta(days=7)
+    return get_events(calendar_url, threshold=threshold, bunch_reoccuring=False)
+
+
 def run_current_commands():
-    events = get_events(calendar_url, threshold=(datetime.datetime.now()-datetime.timedelta(days=7)), bunch_reoccuring=False)
+    events = get_calendar_events()
     for e in events:
         if is_now(e.start):
             c = e.name
             journal.write("schedule: " + c)
             run_command(c)
+
+
+def is_variable_definition(command):
+    return "=" in command
+
+
+def variable_definition_command_filter(command):
+    if command.startswith("scene "):
+        args = scene.parse_args(command)
+        if args.write_scheduled:
+            return f"scheduled_scene = '{args.scene}'"
+    return command
+
+
+def get_scene_args(command):
+    if command.startswith("scene "):
+        args = scene.parse_args(command)
+        return args
+    return None
+
+
+def get_variable_definitions():
+    events = get_calendar_events()
+    data = list()
+    for e in events:
+        command = e.name
+        for c in split_commands(command):
+            c = variable_definition_command_filter(c)
+            if is_variable_definition(c):
+                variable = c.split("=")[0].strip()
+                value = eval(c.split("=")[1].strip())
+
+                element = lambda: None
+                element.when = e.start
+                element.variable = variable
+                element.value = value
+                element.scene_args = get_scene_args(e.name)
+
+                data.append(element)
+    return data
+
+
+def get_variable(name, hour=None, minute=None, dt=None):
+    if dt is None:
+        dt = datetime.datetime.now()
+    dt = dt.replace(second=0, microsecond=0)
+    if hour is not None:
+        dt = dt.replace(hour=hour)
+    if minute is not None:
+        dt = dt.replace(minute=minute)
+
+    data = get_variable_definitions()
+    data = [d for d in data if d.when <= dt]
+    data = [d for d in data if d.variable == name]
+    return data[-1].value
+
+
+def test():
+    assert get_variable("auto_ct", 11, 59) == False
+    assert get_variable("auto_ct", 12, 00) == True
+    assert get_variable("auto_ct", 16, 58) == True
+    assert get_variable("auto_ct", 16, 59) == False
+
+    assert get_variable("scheduled_scene", 6, 59) == "gemutlich"
+    assert get_variable("scheduled_scene", 7, 00) == "hell"
+    assert get_variable("scheduled_scene", 16, 59) == "hell"
+    assert get_variable("scheduled_scene", 17, 00) == "warm"
+    assert get_variable("scheduled_scene", 18, 29) == "warm"
+    assert get_variable("scheduled_scene", 18, 30) == "gemutlich"
+    print("all tests passed")
 
 
 def main():

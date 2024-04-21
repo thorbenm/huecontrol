@@ -6,12 +6,13 @@ import requests
 import json
 import _phue
 import logging
-from numpy import mean
+from numpy import mean, log
 import scene
 import data
 from time import sleep, time
 import toolbox
 import sys
+import schedule
 
 
 log_file = '/home/pi/ambient.log'
@@ -82,6 +83,7 @@ def get_simulated_bri():
     bri = toolbox.map(g, 4000, 36000, 0, 1)
     bri = min(bri, 1)
     bri = max(bri, 0)
+    bri = bri ** (log(.4)/log(.6))
     return bri
 
 
@@ -163,10 +165,17 @@ def auto_ct_fast_reduce_only(transition_time=.4):
     auto_ct_slow_reduce_only(transition_time=transition_time)
 
 
+def auto_ct_enabled():
+    return schedule.get_variable("auto_ct")
+
+
 def main():
     log_all()
     turn_off_if_ambient_above_limit()
     trim_logs()
+    minute = datetime.now().minute
+    if auto_ct_enabled() and minute % 15 == 0:
+        auto_ct_slow_reduce_only()
 
 
 if __name__ == "__main__":
