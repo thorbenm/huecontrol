@@ -81,16 +81,16 @@ def get_variable_definitions():
     for e in events:
         command = e.name
         for c in split_commands(command):
-            c = variable_definition_command_filter(c)
-            if is_variable_definition(c):
-                variable = c.split("=")[0].strip()
-                value = eval(c.split("=")[1].strip())
+            cf = variable_definition_command_filter(c)
+            if is_variable_definition(cf):
+                variable = cf.split("=")[0].strip()
+                value = eval(cf.split("=")[1].strip())
 
                 element = lambda: None
                 element.when = e.start
                 element.variable = variable
                 element.value = value
-                element.scene_args = get_scene_args(e.name)
+                element.scene_args = get_scene_args(c)
 
                 data.append(element)
     return data

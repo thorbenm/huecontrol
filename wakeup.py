@@ -66,7 +66,7 @@ def parse_args(input_args=None):
     args.t3 = toolbox.convert_time_string(args.t3)
 
     if args.t4 == "auto":
-        args.t4 = toolbox.map(ambient.get_simulated_bri() ** .5, 0, 1, 90 * 60, 5 * 60)
+        args.t4 = toolbox.map(ambient.get_simulated_bri(), 0, .5, 90 * 60, 5 * 60, clamp=True)
     else:
         args.t4 = toolbox.convert_time_string(args.t4)
 

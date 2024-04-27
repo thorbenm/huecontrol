@@ -80,9 +80,7 @@ def get_simulated_bri():
     # 36000 is just slighty lower than that.
 
     g = __get_new()
-    bri = toolbox.map(g, 4000, 36000, 0, 1)
-    bri = min(bri, 1)
-    bri = max(bri, 0)
+    bri = toolbox.map(g, 4000, 36000, 0, 1, clamp=True)
     bri = bri ** (log(.4)/log(.6))
     return bri
 

@@ -11,9 +11,9 @@ import os.path
 import os
 import ambient
 from systemd import journal
-import scene
 import data
 import toolbox
+import scheduled_scene
 
 
 class Sensor():
@@ -109,9 +109,9 @@ class Sensor():
         return False
 
     def get_scheduled_ct(self):
-        scheduled_scene = scene.get_scheduled_scene()
-        d = eval("data." + scheduled_scene)
+        d, _ = scheduled_scene.get_scene_dict()
         ct = d[Sensor.master]["ct"]
+        ct = round(20.0 * ct) / 20.0
         ct = toolbox.map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
         return ct
 
