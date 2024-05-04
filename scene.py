@@ -24,11 +24,6 @@ def find_duplicate_values(dictionary):
     return result_keys, result_values
 
 
-def get_scheduled_scene():
-    with open("/home/pi/scheduled_scene", "r") as f:
-        return f.read().replace("\n", "")
-
-
 def transition_dicionary(d, time=.4, reduce_only=False, increase_only=False):
     keys, values = find_duplicate_values(d)
     for k, v in zip(keys, values):
@@ -38,9 +33,6 @@ def transition_dicionary(d, time=.4, reduce_only=False, increase_only=False):
 
 def transition(name, time=.4, reduce_only=False, increase_only=False,
               _override={}):
-    if name.startswith("scheduled"):
-        name = name.replace("scheduled", get_scheduled_scene())
-
     if name.endswith("zimmer"):
         d = eval("data." + name)
         d = {**d, **_override}
@@ -75,9 +67,6 @@ def parse_args(input_args=None):
 def main(input_args=None):
     args = parse_args(input_args)
     transition(args.scene, time=args.time, reduce_only=args.reduce_only)
-    if args.write_scheduled:
-        with open("/home/pi/scheduled_scene", "w") as file:
-            file.write(args.scene.split("_")[0] + "\n")
 
 
 if __name__ == '__main__':
