@@ -55,6 +55,10 @@ def parse_args(input_args=None):
     parser.add_argument('-s', action='store_true', dest='schlafzimmer')
     args = parser.parse_args(input_args if input_args else None)
 
+    if not args.wohnzimmer and not args.schlafzimmer:
+        args.wohnzimmer = True
+        args.schlafzimmer = True
+
     args.t1 = toolbox.convert_time_string(args.t1)
 
     if args.t2 == "auto":
