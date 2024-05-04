@@ -81,7 +81,9 @@ def get_simulated_bri():
 
     g = __get_new()
     bri = toolbox.map(g, 4000, 36000, 0, 1, clamp=True)
-    bri = bri ** (log(.4)/log(.6))
+    curvature_from = .6
+    curvature_to = .3
+    bri = bri ** (log(curvature_to)/log(curvature_from))
     return bri
 
 
