@@ -22,8 +22,14 @@ class Sensor():
     master_ct = float('nan')
     ambient_bri = float('nan')
     currently_using_ambient_brightness = None
-    scheduled_ct = float('nan')
     next_update = -inf
+    update_interval = 5.0
+
+    scheduled_ct = float('nan')
+    next_update_scheduled_ct = -inf
+    update_interval_scheduled_ct = 600.0
+
+
     def __init__(self, sensor_id, lights, turn_off_after, mock_file=None,
                  use_ambient_for_brightness=False, use_ambient_for_motion=False):
         self.sensor_id = sensor_id
@@ -121,8 +127,11 @@ class Sensor():
             Sensor.master_ct = self.get_master_ct()
             Sensor.ambient_bri = ambient.get_simulated_bri()
             Sensor.currently_using_ambient_brightness = Sensor.master_bri < Sensor.ambient_bri
+            Sensor.next_update = time() + Sensor.update_interval
+
+        if Sensor.next_update_scheduled_ct < time():
             Sensor.scheduled_ct = self.get_scheduled_ct()
-            Sensor.next_update = time() + 5.0
+            Sensor.next_update_scheduled_ct = time() + Sensor.update_interval_scheduled_ct
 
     def get_bri_ct(self):
         master_bri = Sensor.master_bri
@@ -171,10 +180,21 @@ class Sensor():
 
 
 def main():
-    kuchen_sensor = Sensor(10, ["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
-                           300.0, mock_file="mock_kuche", use_ambient_for_motion=True)
-    flur_sensor = Sensor(33, ["Kronleuchter"], 120.0, use_ambient_for_brightness=True)
-    bad_sensor = Sensor(81, ["Badlicht", "Spiegellicht"], 600.0, use_ambient_for_brightness=True)
+    kuchen_sensor = Sensor(sensor_id=10,
+                           lights=["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
+                           turn_off_after=300.0,
+                           mock_file="mock_kuche",
+                           use_ambient_for_motion=True)
+
+    flur_sensor = Sensor(sensor_id=33,
+                         lights=["Kronleuchter"],
+                         turn_off_after=180.0,
+                         use_ambient_for_brightness=True)
+
+    bad_sensor = Sensor(sensor_id=81,
+                        lights=["Badlicht", "Spiegellicht"],
+                        turn_off_after=600.0,
+                        use_ambient_for_brightness=True)
 
 
     while True:
