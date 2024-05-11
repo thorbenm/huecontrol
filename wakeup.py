@@ -32,9 +32,9 @@ def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer):
     sleep(t3 + .1)
 
     s4 = "hell"
-    if _phue.get_on("Nachttischlampe") and schlafzimmer:
+    if _phue.get_on("Nachttischlampe") and schlafzimmer and getattr(data, s3)["Nachttischlampe"]["ct"] - 0.02 < _phue.get_ct("Nachttischlampe"):
         scene.transition(s4 + "_schlafzimmer", time=t4, increase_only=True)
-    if _phue.get_on("Stehlampe") and wohnzimmer:
+    if _phue.get_on("Stehlampe") and wohnzimmer and getattr(data, s3)["Stehlampe"]["ct"] - 0.02 < _phue.get_ct("Stehlampe"):
         scene.transition(s4 + "_wohnzimmer", time=t4, increase_only=True)
 
 
