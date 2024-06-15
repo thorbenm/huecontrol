@@ -72,6 +72,14 @@ def parse_args(input_args=None):
     return args
 
 
+def transition_schlafzimmer(time=.4):
+    transition(time=time, wohnzimmer=False, schlafzimmer=True)
+
+
+def transition_wohnzimmer(time=.4):
+    transition(time=time, wohnzimmer=True, schlafzimmer=False)
+
+
 def transition(time=.4, wohnzimmer=True, schlafzimmer=True, hour=None, minute=None, dt=None):
     if dt is None:
         dt = datetime.datetime.now()
