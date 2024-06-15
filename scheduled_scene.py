@@ -95,7 +95,7 @@ def transition(time=.4, wohnzimmer=True, schlafzimmer=True, hour=None, minute=No
         scene.transition_dicionary(get_data(current.value, wohnzimmer, schlafzimmer), time=time)
     else:
         s, adjusted_transition_time = get_scene_dict(dt, wohnzimmer=wohnzimmer, schlafzimmer=schlafzimmer)
-        scene.transition_dicionary(s)
+        scene.transition_dicionary(s, time=time)
         sleep(1.0 + time)
         adjusted_transition_time -= 60  # to not run into next transition
         adjusted_transition_time = max(adjusted_transition_time, .4)
