@@ -82,7 +82,7 @@ def get_simulated_bri():
     g = __get_new()
     bri = toolbox.map(g, 4000, 36000, 0, 1, clamp=True)
     curvature_from = .6
-    curvature_to = .3
+    curvature_to = .35
     bri = bri ** (log(curvature_to)/log(curvature_from))
     return bri
 
@@ -122,10 +122,9 @@ def __minutes_in_current_day():
     return int(minutes_passed)
 
 
-limit_ambient = 28000.0
-limit_minutes = int(2 * 60)
+limit_ambient = 35000.0
+limit_minutes = int(1 * 60)
 def should_turn_off():
-    return False
     window_minutes = __minutes_in_current_day()
     if window_minutes < limit_minutes:
         return False
@@ -138,7 +137,6 @@ def should_turn_off():
 
 
 def should_be_off():
-    return False
     window_minutes = __minutes_in_current_day()
     if window_minutes < limit_minutes:
         return False
@@ -149,7 +147,7 @@ def should_be_off():
 
 def turn_off_if_ambient_above_limit():
     if should_turn_off():
-        scene.transition('off_wohnzimmer', time=10*60)
+        scene.transition('off_wohnzimmer')
 
 
 def auto_ct_slow_reduce_only(transition_time=14*60):
