@@ -1,11 +1,11 @@
 [Unit]
-Description=Startup of the motion controller
+Description=Startup of phue server
 
 [Service]
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/Programming/huecontrol
-ExecStart=/home/pi/Programming/huecontrol/motionsensor.py
+ExecStart=/home/pi/Programming/huecontrol/phue_server.py
 Restart=always
 RestartSec=5s
 

@@ -179,33 +179,36 @@ class Sensor():
                 self.current_ct = ct
 
 
+kuchen_sensor = Sensor(sensor_id=10,
+                       lights=["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
+                       turn_off_after=300.0,
+                       mock_file="mock_kuche",
+                       use_ambient_for_motion=True)
+
+
+flur_sensor = Sensor(sensor_id=33,
+                     lights=["Kronleuchter"],
+                     turn_off_after=180.0,
+                     use_ambient_for_brightness=True)
+
+
+bad_sensor = Sensor(sensor_id=81,
+                    lights=["Badlicht", "Spiegellicht"],
+                    turn_off_after=600.0,
+                    use_ambient_for_brightness=True)
+
+
+def update():
+    kuchen_sensor.update()
+    flur_sensor.update()
+    bad_sensor.update()
+    _phue.check_lights()
+
+
 def main():
-    kuchen_sensor = Sensor(sensor_id=10,
-                           lights=["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
-                           turn_off_after=300.0,
-                           mock_file="mock_kuche",
-                           use_ambient_for_motion=True)
-
-    flur_sensor = Sensor(sensor_id=33,
-                         lights=["Kronleuchter"],
-                         turn_off_after=180.0,
-                         use_ambient_for_brightness=True)
-
-    bad_sensor = Sensor(sensor_id=81,
-                        lights=["Badlicht", "Spiegellicht"],
-                        turn_off_after=600.0,
-                        use_ambient_for_brightness=True)
-
-
     while True:
-        kuchen_sensor.update()
-        sleep(.05)
-        flur_sensor.update()
-        sleep(.05)
-        bad_sensor.update()
-        sleep(.05)
-        _phue.check_lights()
-        sleep(.05)
+        update()
+        sleep(.5)
 
 
 if __name__ == '__main__':
