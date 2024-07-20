@@ -10,22 +10,21 @@ import data
 
 
 def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer):
-    s1 = "min"
     if schlafzimmer:
-        scene.transition(s1 + "_schlafzimmer", increase_only=True)
+        scene.transition("nachtlicht_schlafzimmer", increase_only=True)
     if wohnzimmer:
-        scene.transition(s1 + "_wohnzimmer", increase_only=True)
+        scene.transition("min_wohnzimmer", increase_only=True)
     sleep(t1 + .1)
 
     s2 = "gemutlich"
-    if _phue.get_on("Nachttischlampe") and schlafzimmer:
-        scene.transition(s2 + "_schlafzimmer", time=t2, increase_only=True)
+    if _phue.get_on("Wickeltischlampe") and schlafzimmer:  # different lamp !!!
+        _phue.set_lights("Wickeltischlampe", **getattr(data, "warm")["Wickeltischlampe"], time=t2, increase_only=True)  # not consistent
     if _phue.get_on("Stehlampe") and wohnzimmer:
         scene.transition(s2 + "_wohnzimmer", time=t2, increase_only=True)
     sleep(t2 + .1)
 
     s3 = "halbwarm"
-    if _phue.get_on("Nachttischlampe") and schlafzimmer:
+    if _phue.get_on("Wickeltischlampe") and schlafzimmer:  # different lamp!!!
         scene.transition(s3 + "_schlafzimmer", time=t3, increase_only=True)
     if _phue.get_on("Stehlampe") and wohnzimmer:
         scene.transition(s3 + "_wohnzimmer", time=t3, increase_only=True)
