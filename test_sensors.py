@@ -1,29 +1,30 @@
 import requests
-from hue_data import user_id
-from time import sleep
-import sys
-import json
+from hue_data import ip_address, user_id
 
-json_data = requests.get("https://discovery.meethue.com").json()
-ip_address = json_data[0]['internalipaddress']
+def check_sensors(base_url, start_id=1, end_id=100):
+    valid_sensors = []
+    for sensor_id in range(start_id, end_id + 1):
+        url = f"{base_url}/sensors/{sensor_id}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            if 'state' in data:  # Checking if 'state' key is present in the response
+                valid_sensors.append((sensor_id, data))
+                print(f"Sensor ID {sensor_id} is valid: {data['name']}")
+            else:
+                print(f"Sensor ID {sensor_id} does not correspond to a valid device.")
+        else:
+            print(f"Sensor ID {sensor_id} failed with status code {response.status_code}")
+    return valid_sensors
 
-def get_sensor_state(sensor_id):
-    response = requests.get("http://%s/api/%s/sensors/%d" % (
-                            ip_address, user_id, sensor_id))
-    json_data = json.loads(response.text)
-    return json_data['state']['presence']
+def main():
+    base_url = f"http://{ip_address}/api/{user_id}"
+    valid_sensors = check_sensors(base_url)
+    if not valid_sensors:
+        print("No valid sensors found in the specified range.")
+    else:
+        print(f"Found {len(valid_sensors)} valid sensors.")
 
-valid_indices = []
-for j in range(100):
-    try:
-        get_sensor_state(j)
-        print(str(j) + " valid")
-        valid_indices.append(j)
-    except:
-        print(str(j) + " invalid")
-        pass
-while True:
-    for j in valid_indices:
-        print(str(j) + ": " + str(get_sensor_state(j)))
-    print(" ")
-    sleep(0.5)
+if __name__ == '__main__':
+    main()
+
