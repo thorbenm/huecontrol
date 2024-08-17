@@ -1,8 +1,9 @@
 import requests
-from time import sleep
+from time import sleep, time
 from hue_data import ip_address, user_id
 from datetime import datetime
 import scene
+import subprocess
 
 
 class Switch():
@@ -10,97 +11,125 @@ class Switch():
         self.id = _id
         self.last_state = self.get_state()
 
-        self.on_function = lambda: None
-        self.up_function = lambda: None
-        self.down_function = lambda:None
-        self.off_function = lambda: None
+        self.on_press_function = lambda: None
+        self.up_press_function = lambda: None
+        self.down_press_function = lambda:None
+        self.off_press_function = lambda: None
 
-    def interpret_buttonevent(self, buttonevent):
-        actions = {
-            1000: "Initial press on button 1 (On)",
-            1002: "Release after press on button 1 (On)",
-            2000: "Initial press on button 2 (Dim Up)",
-            2002: "Release after press on button 2 (Dim Up)",
-            3000: "Initial press on button 3 (Dim Down)",
-            3002: "Release after press on button 3 (Dim Down)",
-            4000: "Initial press on button 4 (Off)",
-            4002: "Release after press on button 4 (Off)",
-            1001: "Hold on button 1 (On)",
-            1003: "Release after hold on button 1 (On)",
-            2001: "Hold on button 2 (Dim Up)",
-            2003: "Release after hold on button 2 (Dim Up)",
-            3001: "Hold on button 3 (Dim Down)",
-            3003: "Release after hold on button 3 (Dim Down)",
-            4001: "Hold on button 4 (Off)",
-            4003: "Release after hold on button 4 (Off)"
-        }
-        return actions.get(buttonevent, f"Unknown event {buttonevent}")
-    
+        self.on_long_press_function = lambda: None
+        self.up_long_press_function = lambda: None
+        self.down_long_press_function = lambda:None
+        self.off_long_press_function = lambda: None
+
+        self.long_press_duration = 1.0  # which is 3 seconds in reality
+
+        self.on_mode = "long press"
+        self.up_mode = "long press"
+        self.down_mode = "long press"
+        self.off_mode = "long press"
+
     def get_state(self):
         url = f'http://{ip_address}/api/{user_id}/sensors/{self.id}'
         response = requests.get(url)
         if response.status_code == 200:
-            return response.json()["state"]
+            d = response.json()["state"]
+            if d["buttonevent"] is None:
+                return None
+            button_type, event_type = self.get_digits(d["buttonevent"])
+
+            button_type_dict = dict()
+            button_type_dict[1] = "on"
+            button_type_dict[2] = "up"
+            button_type_dict[3] = "down"
+            button_type_dict[4] = "off"
+
+            event_type_dict = dict()
+            event_type_dict[0] = "press"
+            event_type_dict[1] = "hold"
+            event_type_dict[2] = "press release"
+            event_type_dict[3] = "hold release"
+
+            button_type = button_type_dict[button_type]
+            event_type = event_type_dict[event_type]
+
+            ret = dict()
+            ret["lastupdated"] = d["lastupdated"]
+            ret["button_type"] = button_type
+            ret["event_type"] = event_type
+
+            return ret
         else:
             print('Failed to fetch data:', response.status_code)
             return None
 
-    def get_digits(self, state):
-        number = state["buttonevent"]
-        s = str(number)
-        return int(s[0]), int(s[3])
+    def get_digits(self, buttonevent):
+        if buttonevent:
+            s = str(buttonevent)
+            return int(s[0]), int(s[3])
+        return -1, -1
+
+    def check_modes(self):
+        for v in [self.on_mode, self.up_mode, self.down_mode, self.off_mode]:
+            if v != "long press" and v != "hold":
+                raise RuntimeError('invalid mode: '+ v)
     
     def update(self):
-        current_state = self.get_state()
-        if current_state != self.last_state:
-            description = current_state["buttonevent"]
-            updated = current_state["lastupdated"]
-            print(f"State changed: {description}, Last updated: {updated}")
+        self.check_modes()
+        state = self.get_state()
+        if state != self.last_state:
+            print(state)
 
-            button_type, event_type = self.get_digits(current_state)
-            last_button_type, _ = self.get_digits(current_state)
+            if state["event_type"] == "press release":
+                press_function_name = state["button_type"] + "_press_function"
+                press_function = getattr(self, press_function_name)
+                press_function()
+            if state["event_type"] == "hold":
+                if self.last_state["event_type"] != "hold":
+                    # if current and last state are hold, its probably still the same hold
+                    mode = getattr(self, state["button_type"] + "_mode")
+                    if mode == "long press":
+                        start = time()
+                        while self.get_state()["event_type"] == "hold":
+                            sleep(.25)
+                            if self.long_press_duration <= time() - start:
+                                long_press_function_name = state["button_type"] + "_long_press_function"
+                                long_press_function = getattr(self, long_press_function_name)
+                                long_press_function()
+                                break
 
-            time_delta = (datetime.fromisoformat(current_state["lastupdated"]) -
-                          datetime.fromisoformat(self.last_state["lastupdated"])).total_seconds()
+            self.last_state = state
 
-            # using a button gives 2 events: press and release
-            # ignore release if press happend within last 2 seconds:
-            # bet we still need to listen to the release, because there
-            # is a chance we miss the press altogether
-            if event_type != 2 or last_button_type != button_type or 2.0 < time_delta:
-                # ignore hold (for now):
-                if event_type != 1 and event_type != 3:
-                    if button_type == 1:
-                        self.on_function()
-                    elif button_type == 2:
-                        self.up_function()
-                    elif button_type == 3:
-                        self.down_function()
-                    elif button_type == 4:
-                        self.off_function()
 
-            self.last_state = current_state
+def run_detached_shell(command):
+    full_command = f"( (nohup {command} > /dev/null 2> /dev/null < /dev/null) & )"
+    subprocess.Popen(full_command, shell=True, executable="/bin/bash")
 
 
 wohnzimmer_switch = Switch(84)
-wohnzimmer_switch.on_function = lambda: scene.transition("hell_wohnzimmer")
-wohnzimmer_switch.up_function = lambda: scene.transition("warm_wohnzimmer")
-wohnzimmer_switch.down_function = lambda: scene.transition("gemutlich_wohnzimmer")
-wohnzimmer_switch.off_function = lambda: scene.transition("off_wohnzimmer")
+wohnzimmer_switch.on_press_function = lambda: scene.transition("hell_wohnzimmer")
+wohnzimmer_switch.up_press_function = lambda: scene.transition("warm_wohnzimmer")
+wohnzimmer_switch.down_press_function = lambda: scene.transition("gemutlich_wohnzimmer")
+wohnzimmer_switch.off_press_function = lambda: scene.transition("off_wohnzimmer")
+
+wohnzimmer_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 2m")
+wohnzimmer_switch.off_long_press_function = lambda: scene.transition("off_wohnzimmer", time=15*60)
 
 
 anne_switch = Switch(87)
-anne_switch.on_function = lambda: scene.transition("hell_schlafzimmer")
-anne_switch.up_function = lambda: scene.transition("lesen_schlafzimmer")
-anne_switch.down_function = lambda: scene.transition("nachtlicht_schlafzimmer")
-anne_switch.off_function = lambda: scene.transition("off_schlafzimmer")
+anne_switch.on_press_function = lambda: scene.transition("hell_schlafzimmer")
+anne_switch.up_press_function = lambda: scene.transition("lesen_schlafzimmer")
+anne_switch.down_press_function = lambda: scene.transition("nachtlicht_schlafzimmer")
+anne_switch.off_press_function = lambda: scene.transition("off_schlafzimmer")
 
 
 thorben_switch = Switch(43)
-thorben_switch.on_function = lambda: scene.transition("hell_schlafzimmer")
-thorben_switch.up_function = lambda: scene.transition("lesen_schlafzimmer")
-thorben_switch.down_function = lambda: scene.transition("nachtlicht_schlafzimmer")
-thorben_switch.off_function = lambda: scene.transition("off_schlafzimmer")
+thorben_switch.on_press_function = lambda: scene.transition("hell_schlafzimmer")
+thorben_switch.up_press_function = lambda: scene.transition("lesen_schlafzimmer")
+thorben_switch.down_press_function = lambda: scene.transition("nachtlicht_schlafzimmer")
+thorben_switch.off_press_function = lambda: scene.transition("off_schlafzimmer")
+
+thorben_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
+thorben_switch.off_long_press_function = lambda: scene.transition("off_schlafzimmer", time=5*60)
 
 
 def update():
@@ -111,10 +140,15 @@ def update():
 
 def main():
     test_switch = Switch(84)
-    test_switch.on_function = lambda: print("on")
-    test_switch.up_function = lambda: print("up")
-    test_switch.down_function = lambda: print("down")
-    test_switch.off_function = lambda: print("off")
+    test_switch.on_press_function = lambda: print("on press")
+    test_switch.up_press_function = lambda: print("up press")
+    test_switch.down_press_function = lambda: print("down press")
+    test_switch.off_press_function = lambda: print("off press")
+
+    test_switch.on_long_press_function = lambda: print("on hold")
+    test_switch.up_long_press_function = lambda: print("up hold")
+    test_switch.down_long_press_function = lambda: print("down hold")
+    test_switch.off_long_press_function = lambda: print("off hold")
     while True:
         test_switch.update()
         sleep(.5)
