@@ -1,3 +1,8 @@
 #!/bin/bash
 
-wakeup -t2 1m
+if [ $(date +%H) -lt 12 ]
+then
+    wakeup -t2 1m
+else
+    wakeup -s -t2 1m
+fi
