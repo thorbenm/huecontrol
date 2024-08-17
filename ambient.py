@@ -79,8 +79,8 @@ def get_simulated_bri():
     # the hightest values I have seen are around 40000. So
     # 36000 is just slighty lower than that.
 
-    g = __get_new()
-    bri = toolbox.map(g, 4000, 36000, 0, 1, clamp=True)
+    g = get_history_mean()
+    bri = toolbox.map(g, 4000, 33000, 0, 1, clamp=True)
     curvature_from = .6
     curvature_to = .35
     bri = bri ** (log(curvature_to)/log(curvature_from))
