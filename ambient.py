@@ -16,7 +16,7 @@ import schedule
 
 
 log_file = '/home/pi/ambient.log'
-MASTER = 31
+MASTER = 89
 
 
 def trim_logs():
@@ -80,9 +80,9 @@ def get_simulated_bri():
     # 36000 is just slighty lower than that.
 
     g = get_history_mean()
-    bri = toolbox.map(g, 4000, 33000, 0, 1, clamp=True)
+    bri = toolbox.map(g, 4000, 29000, 0, 1, clamp=True)
     curvature_from = .6
-    curvature_to = .35
+    curvature_to = .6
     bri = bri ** (log(curvature_to)/log(curvature_from))
     return bri
 
@@ -98,7 +98,7 @@ def get_schmitt_trigger(low=16000, high=20000):
 
 def log_all():
     message = ""
-    for i in [11, 31, 34, 82]:
+    for i in [MASTER, 11, 31, 34, 82]:
         lightlevel = __get_new(i)
     
         message += str(i) 

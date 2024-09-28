@@ -30,9 +30,9 @@ class Sensor():
     update_interval_scheduled_ct = 600.0
 
 
-    def __init__(self, sensor_id, lights, turn_off_after, mock_file=None,
+    def __init__(self, sensor_ids, lights, turn_off_after, mock_file=None,
                  use_ambient_for_brightness=False, use_ambient_for_motion=False):
-        self.sensor_id = sensor_id
+        self.sensor_ids = sensor_ids
         self.lights = lights
         self.turn_off_after = turn_off_after
         self.last_motion = time() if _phue.get_on(lights[0]) else -inf
@@ -46,6 +46,8 @@ class Sensor():
 
         self.minimum_ct = 0.3
         self.maximum_ct = 1.0
+
+        self.fade_off_time = 10.0
 
         self.use_ambient_for_brightness = use_ambient_for_brightness
         self.use_ambient_for_motion = use_ambient_for_motion
@@ -92,10 +94,15 @@ class Sensor():
 
     def sensor_state(self):
         try:
-            response = requests.get("http://%s/api/%s/sensors/%d" % (
-                                    _phue.ip_address, user_id, self.sensor_id))
-            json_data = json.loads(response.text)
-            return json_data['state']['presence']
+            for i in self.sensor_ids:
+                response = requests.get("http://%s/api/%s/sensors/%d" % (
+                                        _phue.ip_address, user_id, i))
+                json_data = json.loads(response.text)
+                presence = json_data['state']['presence'] 
+                print("id:", i, "presence:", presence)
+                if presence:
+                    return True
+            return False
         except:
             # requests very rarely throws an exception.
             # mostly during the night that causes the whole thing to crash
@@ -164,7 +171,7 @@ class Sensor():
                 self.current_bri = bri
                 self.current_ct = ct
             else:
-                _phue.set_lights(self.lights, on=False, time=10.0)
+                _phue.set_lights(self.lights, on=False, time=self.fade_off_time)
         elif master_changed:
             if self.sensor_state_buffer():
                 t = 0.4
@@ -179,22 +186,23 @@ class Sensor():
                 self.current_ct = ct
 
 
-kuchen_sensor = Sensor(sensor_id=10,
-                       lights=["Deckenleuchte Links", "Deckenleuchte Rechts", "Filament"],
-                       turn_off_after=300.0,
+kuchen_sensor = Sensor(sensor_ids=[10],
+                       lights=[j[0] for j in [*data.kuche_lights]],
+                       turn_off_after=2*60,
                        mock_file="mock_kuche",
                        use_ambient_for_motion=True)
+kuchen_sensor.fade_off_time = 120.0
 
 
-flur_sensor = Sensor(sensor_id=33,
-                     lights=["Kronleuchter"],
-                     turn_off_after=180.0,
+flur_sensor = Sensor(sensor_ids=[30,33],
+                     lights=[j[0] for j in [*data.flur_lights]],
+                     turn_off_after=90,
                      use_ambient_for_brightness=True)
 
 
-bad_sensor = Sensor(sensor_id=81,
-                    lights=["Badlicht", "Spiegellicht"],
-                    turn_off_after=600.0,
+bad_sensor = Sensor(sensor_ids=[81],
+                    lights=[j[0] for j in [*data.bad_lights]],
+                    turn_off_after=15*60,
                     use_ambient_for_brightness=True)
 
 

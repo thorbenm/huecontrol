@@ -115,27 +115,30 @@ wohnzimmer_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/
 wohnzimmer_switch.off_long_press_function = lambda: scene.transition("off_wohnzimmer", time=15*60)
 
 
-anne_switch = Switch(87)
-anne_switch.on_press_function = lambda: scene.transition("hell_schlafzimmer")
-anne_switch.up_press_function = lambda: scene.transition("lesen_schlafzimmer")
-anne_switch.down_press_function = lambda: scene.transition("nachtlicht_schlafzimmer")
-anne_switch.off_press_function = lambda: scene.transition("off_schlafzimmer")
+schlafzimmer_bed_switch = Switch(87)
+schlafzimmer_bed_switch.on_press_function = lambda: scene.transition("hell_schlafzimmer")
+schlafzimmer_bed_switch.up_press_function = lambda: scene.transition("lesen_schlafzimmer")
+schlafzimmer_bed_switch.down_press_function = lambda: scene.transition("nachtlicht_schlafzimmer")
+schlafzimmer_bed_switch.off_press_function = lambda: scene.transition("off_schlafzimmer")
+
+schlafzimmer_bed_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
+schlafzimmer_bed_switch.off_long_press_function = lambda: scene.transition("off_schlafzimmer", time=3*60)
 
 
-thorben_switch = Switch(43)
-thorben_switch.on_press_function = lambda: scene.transition("hell_schlafzimmer")
-thorben_switch.up_press_function = lambda: scene.transition("lesen_schlafzimmer")
-thorben_switch.down_press_function = lambda: scene.transition("nachtlicht_schlafzimmer")
-thorben_switch.off_press_function = lambda: scene.transition("off_schlafzimmer")
+schlafzimmer_door_switch = Switch(43)
+schlafzimmer_door_switch.on_press_function = lambda: scene.transition("hell_schlafzimmer")
+schlafzimmer_door_switch.up_press_function = lambda: scene.transition("lesen_schlafzimmer")
+schlafzimmer_door_switch.down_press_function = lambda: scene.transition("nachtlicht_schlafzimmer")
+schlafzimmer_door_switch.off_press_function = lambda: scene.transition("off_schlafzimmer")
 
-thorben_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
-thorben_switch.off_long_press_function = lambda: scene.transition("off_schlafzimmer", time=5*60)
+schlafzimmer_door_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
+schlafzimmer_door_switch.off_long_press_function = lambda: scene.transition("off_schlafzimmer", time=3*60)
 
 
 def update():
     wohnzimmer_switch.update()
-    anne_switch.update()
-    thorben_switch.update()
+    schlafzimmer_bed_switch.update()
+    schlafzimmer_door_switch.update()
 
 
 def main():
