@@ -127,7 +127,16 @@ def test():
 
 
 def main():
-    run_current_commands()
+    if len(sys.argv) > 1 and sys.argv[1] == "update":
+        force_update_buffered()
+    else:
+        run_current_commands()
+
+
+def force_update_buffered():
+    threshold = datetime.datetime.now() - datetime.timedelta(days=7)
+    get_events(calendar_url, threshold=threshold, bunch_reoccuring=False,
+               refresh_interval_minutes=-1)
 
 
 if __name__ == '__main__':

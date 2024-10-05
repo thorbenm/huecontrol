@@ -99,7 +99,7 @@ class Sensor():
                                         _phue.ip_address, user_id, i))
                 json_data = json.loads(response.text)
                 presence = json_data['state']['presence'] 
-                print("id:", i, "presence:", presence)
+                # print("id:", i, "presence:", presence)
                 if presence:
                     return True
             return False

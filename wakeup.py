@@ -47,7 +47,7 @@ def parse_args(input_args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-t1', type=str, default='1s', dest='t1')
     parser.add_argument('-t2', type=str, default='auto', dest='t2')
-    parser.add_argument('-t3', type=str, default='2m', dest='t3')
+    parser.add_argument('-t3', type=str, default='3m', dest='t3')
     parser.add_argument('-t4', type=str, default='auto', dest='t4')
     parser.add_argument('-c', action='store_true', dest='scheduled')
     parser.add_argument('-w', action='store_true', dest='wohnzimmer')
@@ -62,7 +62,7 @@ def parse_args(input_args=None):
 
     if args.t2 == "auto":
         if _phue.get_on("Nachttischlampe") or _phue.get_on("Stehlampe"):
-            args.t2 = "1m"
+            args.t2 = "3m"
         else:
             args.t2 = "10m"
     args.t2 = toolbox.convert_time_string(args.t2)
