@@ -114,6 +114,7 @@ class ButtonHandler():
     def get_current_scene(self):
         def difference(scene):
             lights = getattr(data, self.room + "_lights")
+            lights = [lights[0]]
             ret = 0.0
             for l in lights:
                 light_name = l[0]
@@ -155,7 +156,7 @@ class ButtonHandler():
     def update(self):
         now = time()
         if self.update_every < now - self.last_updated:
-            force_update()
+            self.force_update()
             self.last_updated = now + self.update_every
 
     def force_update(self):
@@ -190,7 +191,7 @@ wohnzimmer_switch.down_press_function = lambda: wbh.step_down()
 wohnzimmer_switch.off_press_function = lambda: (scene.transition("off_wohnzimmer"), setattr(wbh, 'current_scene', 'off'))
 
 wohnzimmer_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 3m")
-wohnzimmer_switch.off_long_press_function = lambda: scene.transition("off_wohnzimmer", time=15*60)
+wohnzimmer_switch.off_long_press_function = lambda: scene.transition("off_wohnzimmer", time=30*60)
 
 
 sbh = ButtonHandler("schlafzimmer", update_offset=7.5*60.0)

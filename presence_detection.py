@@ -10,7 +10,7 @@ import scheduled_scene
 
 
 def home():
-    scheduled_scene.transition_schlafzimmer()
+    # scheduled_scene.transition_schlafzimmer()
     if ambient.should_be_off():
         scene.transition("off_wohnzimmer")
     else:
@@ -18,12 +18,12 @@ def home():
     sleep(1.0)
     if ambient.auto_ct_enabled():
         ambient.auto_ct_fast_reduce_only()
-    roomba.stop()
+    # roomba.stop()
 
 
 def away():
     scene.transition("off")
-    roomba.start()
+    # roomba.start()
 
 
 def check(bri, setpoint):
@@ -31,20 +31,18 @@ def check(bri, setpoint):
 
 
 home_values = [
-        ["Ananas", 0.03937007874015748],
-        ["Fensterlampe", 0.11811023622047244],
-        ["Hue Go", 0.1889763779527559],
-        ["LED Streifen", 0.11023622047244094],
-        ["Stehlampe", 0.20866141732283464]
+        ["Stehlampe", 0.212],
+        ["Fensterlampe", 0.122],
+        ["Sofalampe Links", 0.043],
+        ["Sofalampe Rechts", 0.185],
     ]
 
 
 away_values = [
-        ["Ananas", 0.16141732283464566],
-        ["Fensterlampe", 0.03937007874015748],
-        ["Hue Go", 0.051181102362204724],
-        ["LED Streifen", 0.2283464566929134],
-        ["Stehlampe", 0.031496062992125984]
+        ["Stehlampe", 0.035],
+        ["Fensterlampe", 0.043],
+        ["Sofalampe Links", 0.244],
+        ["Sofalampe Rechts", 0.114],
     ]
 
 

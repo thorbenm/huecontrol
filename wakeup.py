@@ -20,14 +20,14 @@ def wakeup(t1, t2, t3, t4, schlafzimmer, wohnzimmer):
     if _phue.get_on("Wickeltischlampe") and schlafzimmer:  # different lamp !!!
         _phue.set_lights("Wickeltischlampe", **getattr(data, "warm")["Wickeltischlampe"], time=t2, increase_only=True)  # not consistent
     if _phue.get_on("Stehlampe") and wohnzimmer:
-        scene.transition(s2 + "_wohnzimmer", time=t2, increase_only=True)
+        scene.transition(s2 + "_wohnzimmer", time=t2, increase_only=True, _override={"Lichterkette": {"on": False}})
     sleep(t2 + .1)
 
     s3 = "halbwarm"
     if _phue.get_on("Wickeltischlampe") and schlafzimmer:  # different lamp!!!
         scene.transition(s3 + "_schlafzimmer", time=t3, increase_only=True)
     if _phue.get_on("Stehlampe") and wohnzimmer:
-        scene.transition(s3 + "_wohnzimmer", time=t3, increase_only=True)
+        scene.transition(s3 + "_wohnzimmer", time=t3, increase_only=True, _override={"Lichterkette": {"on": False}})
     sleep(t3 + .1)
 
     s4 = "hell"

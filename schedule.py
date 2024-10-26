@@ -75,7 +75,7 @@ def get_scene_args(command):
     return None
 
 
-def get_variable_definitions():
+def get_variable_definitions(break_function=lambda _: None):
     events = get_calendar_events()
     data = list()
     for e in events:
@@ -91,6 +91,9 @@ def get_variable_definitions():
                 element.variable = variable
                 element.value = value
                 element.scene_args = get_scene_args(c)
+
+                if break_function(element):
+                    return data
 
                 data.append(element)
     return data

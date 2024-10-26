@@ -2,7 +2,7 @@
 
 if [ $(date +%H) -lt 12 ]
 then
-    wakeup -t2 3m
+    wakeup -t2 1m
 else
-    wakeup -s -t2 3m
+    wakeup -s -t2 1m
 fi
