@@ -33,7 +33,7 @@ def check(bri, setpoint):
 home_values = [
         ["Stehlampe", 0.212],
         ["Fensterlampe", 0.122],
-        ["Sofalampe Links", 0.043],
+        ["Sofalampe Links", 0.063],
         ["Sofalampe Rechts", 0.185],
     ]
 
@@ -41,7 +41,7 @@ home_values = [
 away_values = [
         ["Stehlampe", 0.035],
         ["Fensterlampe", 0.043],
-        ["Sofalampe Links", 0.244],
+        ["Sofalampe Links", 0.193],
         ["Sofalampe Rechts", 0.114],
     ]
 
