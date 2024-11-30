@@ -106,22 +106,20 @@ class Switch():
 class ButtonHandler():
     def __init__(self, room, update_offset=0.0):
         self.room = room
-        self.current_scene = data.all_scenes[len(data.all_scenes) // 2]
+        self.current_scene = "off"
         self.current_scene = self.get_current_scene()
         self.update_every = 15.0 * 60.0
         self.last_updated = time() + self.update_every + update_offset
 
     def get_current_scene(self):
         def difference(scene):
-            lights = getattr(data, self.room + "_lights")
-            lights = [lights[0]]
+            lights = data.get_light_attributes(self.room)
+            lights = {list(lights.keys())[0]: lights[list(lights.keys())[0]]}
             ret = 0.0
-            for l in lights:
-                light_name = l[0]
-                light_attributes = l[1]
+            for light_name, light_attributes in lights.items():
                 for a in light_attributes:
                     monitor = float(getattr(_phue, "get_" + a)(light_name))
-                    setpoint = float(getattr(data, scene + "_" + self.room)[light_name][a])
+                    setpoint = float(data.get_scene(scene, self.room)[light_name][a])
                     ret += abs(monitor - setpoint)
             return ret
 
@@ -167,7 +165,7 @@ class ButtonHandler():
         index += step
         index = max(0, index)
         index = min(index, len(data.all_scenes) - 1)
-        scene.transition(data.all_scenes[index] + "_" + self.room)
+        scene.transition(data.all_scenes[index], room=self.room)
         self.current_scene = data.all_scenes[index]
 
     def step_down(self):
@@ -185,35 +183,35 @@ def run_detached_shell(command):
 wbh = ButtonHandler("wohnzimmer")
 
 wohnzimmer_switch = Switch(84)
-wohnzimmer_switch.on_press_function = lambda: (scheduled_scene.transition_wohnzimmer(), wbh.force_update())
+wohnzimmer_switch.on_press_function = lambda: (scheduled_scene.transition(room="wohnzimmer"), wbh.force_update())
 wohnzimmer_switch.up_press_function = lambda: wbh.step_up()
 wohnzimmer_switch.down_press_function = lambda: wbh.step_down()
-wohnzimmer_switch.off_press_function = lambda: (scene.transition("off_wohnzimmer"), setattr(wbh, 'current_scene', 'off'))
+wohnzimmer_switch.off_press_function = lambda: (scene.transition(name="off", room="wohnzimmer"), setattr(wbh, 'current_scene', 'off'))
 
 wohnzimmer_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 3m")
-wohnzimmer_switch.off_long_press_function = lambda: scene.transition("off_wohnzimmer", time=30*60)
+wohnzimmer_switch.off_long_press_function = lambda: scene.transition(name="off", room="wohnzimmer", time=30*60)
 
 
 sbh = ButtonHandler("schlafzimmer", update_offset=7.5*60.0)
 
 schlafzimmer_bed_switch = Switch(87)
-schlafzimmer_bed_switch.on_press_function = lambda: (scheduled_scene.transition_schlafzimmer(), sbh.force_update())
+schlafzimmer_bed_switch.on_press_function = lambda: (scheduled_scene.transition(room="schlafzimmer"), sbh.force_update())
 schlafzimmer_bed_switch.up_press_function = lambda: sbh.step_up()
 schlafzimmer_bed_switch.down_press_function = lambda: sbh.step_down()
-schlafzimmer_bed_switch.off_press_function = lambda: (scene.transition("off_schlafzimmer"), setattr(sbh, 'current_scene', 'off'))
+schlafzimmer_bed_switch.off_press_function = lambda: (scene.transition(name="off", room="schlafzimmer"), setattr(sbh, 'current_scene', 'off'))
 
 schlafzimmer_bed_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
-schlafzimmer_bed_switch.off_long_press_function = lambda: (scene.transition("off_schlafzimmer", time=3*60), setattr(sbh, 'current_scene', 'off'))
+schlafzimmer_bed_switch.off_long_press_function = lambda: (scene.transition(name="off", room="schlafzimmer", time=3*60), setattr(sbh, 'current_scene', 'off'))
 
 
 schlafzimmer_door_switch = Switch(43)
-schlafzimmer_door_switch.on_press_function = lambda: (scheduled_scene.transition_schlafzimmer(), sbh.force_update())
+schlafzimmer_door_switch.on_press_function = lambda: (scheduled_scene.transition(room="schlafzimmer"), sbh.force_update())
 schlafzimmer_door_switch.up_press_function = lambda: sbh.step_up()
 schlafzimmer_door_switch.down_press_function = lambda: sbh.step_down()
-schlafzimmer_door_switch.off_press_function = lambda: (scene.transition("off_schlafzimmer"), setattr(sbh, 'current_scene', 'off'))
+schlafzimmer_door_switch.off_press_function = lambda: (scene.transition(name="off", room="schlafzimmer"), setattr(sbh, 'current_scene', 'off'))
 
 schlafzimmer_door_switch.on_long_press_function = lambda: run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
-schlafzimmer_door_switch.off_long_press_function = lambda: (scene.transition("off_schlafzimmer", time=3*60), setattr(sbh, 'current_scene', 'off'))
+schlafzimmer_door_switch.off_long_press_function = lambda: (scene.transition(name="off", room="schlafzimmer", time=3*60), setattr(sbh, 'current_scene', 'off'))
 
 
 def update():

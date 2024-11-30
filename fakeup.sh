@@ -2,14 +2,14 @@
 
 cd /home/pi/Programming/huecontrol
 
-sudo systemctl stop motionsensor.service
+sudo systemctl stop phue_server.service
 
 python <<EOF
 import _phue
 import data
 from time import sleep
 
-l = [j[0] for j in [*data.kuche_lights, *data.bad_lights]]
+l = [*data.kuche_lights, *data.bad_lights]
 _phue.set_lights(l, bri=_phue.min_bri(), ct=1.0)
 sleep(1.0)
 _phue.set_lights(l, bri=.4, ct=1.0, time=60.0)

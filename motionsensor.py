@@ -187,7 +187,7 @@ class Sensor():
 
 
 kuchen_sensor = Sensor(sensor_ids=[10],
-                       lights=[j[0] for j in [*data.kuche_lights]],
+                       lights=data.get_lights("kuche"),
                        turn_off_after=2*60,
                        mock_file="mock_kuche",
                        use_ambient_for_motion=True)
@@ -195,13 +195,13 @@ kuchen_sensor.fade_off_time = 120.0
 
 
 flur_sensor = Sensor(sensor_ids=[30,33],
-                     lights=[j[0] for j in [*data.flur_lights]],
+                     lights=data.get_lights("flur"),
                      turn_off_after=90,
                      use_ambient_for_brightness=True)
 
 
 bad_sensor = Sensor(sensor_ids=[81],
-                    lights=[j[0] for j in [*data.bad_lights]],
+                    lights=data.get_lights("bad"),
                     turn_off_after=15*60,
                     use_ambient_for_brightness=True)
 

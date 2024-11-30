@@ -5,232 +5,147 @@ HANGELAMPE = "Hängelampe"
 KUCHENLAMPE = "Küchenlampe"
 
 
-wohnzimmer_lights = [
-                     ["Stehlampe", ["bri", "ct"]],
-                     ["Fensterlampe", ["bri", "ct"]],
-                     ["Sofalampe Rechts", ["bri", "ct"]],
-                     ["Sofalampe Links", ["bri", "ct"]],
-                     ["Deckenlampe", ["bri"]],
-                     ["Filament", ["bri"]],
-                     ["Lichterkette", ["on"]],
-                    ]
-
-schlafzimmer_lights = [
-                       ["Nachttischlampe", ["bri", "ct"]],
-                       ["Wickeltischlampe", ["bri", "ct"]],
-                       ["Schlafzimmer " + HANGELAMPE, ["bri"]],
-                      ]
-
-all_lights = [
-              *wohnzimmer_lights,
-              *schlafzimmer_lights,
-             ]
-
-kuche_lights = [
-                [KUCHENLAMPE + " Links", ["bri", "ct"]],
-                [KUCHENLAMPE + " Rechts", ["bri", "ct"]],
-               ]
-
-bad_lights = [
-              ["Spiegellampe", ["bri", "ct"]],
-              ["Badlampe", ["bri", "ct"]],
-             ]
-
-flur_lights = [
-               ["Flurlampe 1", ["bri", "ct"]],
-               ["Flurlampe 2", ["bri", "ct"]],
-               ["Flurlampe 3", ["bri", "ct"]],
-              ]
+all_scene_attributes = {
+    "off": {"bri": 0.0, "ct": 1.0, "on": False},
+    "min": {"bri": min_bri(), "ct": 1.0, "on": False},
+    "dunkel": {"bri": 0.1, "ct": 1.0, "on": True},
+    "gemutlich": {"bri": 0.4, "ct": 1.0, "on": True},
+    "warm": {"bri": 0.8, "ct": 0.75, "on": True},
+    "halbwarm": {"bri": 1.0, "ct": 0.5, "on": True},
+    "hell": {"bri": 1.0, "ct": 0.25, "on": True},
+    "focus": {"bri": 1.0, "ct": 0.0, "on": True}
+}
+all_scenes = list(all_scene_attributes.keys())
 
 
-all_scenes = list()
+wohnzimmer_light_attributes = {
+  "Stehlampe": ["bri", "ct"],
+  "Fensterlampe": ["bri", "ct"],
+  "Sofalampe Rechts": ["bri", "ct"],
+  "Sofalampe Links": ["bri", "ct"],
+  "Deckenlampe": ["bri"],
+  "Filament": ["bri"],
+  "Lichterkette": ["on"]
+}
+wohnzimmer_lights = list(wohnzimmer_light_attributes.keys())
 
 
-all_scenes.append("off")
-
-off_wohnzimmer = dict()
-off_wohnzimmer["Stehlampe"] = {"bri": 0.0, "ct": 1.0}
-off_wohnzimmer["Fensterlampe"] = {"bri": 0.0, "ct": 1.0}
-off_wohnzimmer["Sofalampe Rechts"] = {"bri": 0.0, "ct": 1.0}
-off_wohnzimmer["Sofalampe Links"] = {"bri": 0.0, "ct": 1.0}
-off_wohnzimmer["Filament"] = {"bri": 0.0}
-off_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-off_wohnzimmer["Lichterkette"] = {"on": False}
-
-off_schlafzimmer = dict()
-off_schlafzimmer["Nachttischlampe"] = {"bri": 0.0, "ct": 1.0}
-off_schlafzimmer["Wickeltischlampe"] = {"bri": 0.0, "ct": 1.0}
-off_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-
-off = {**off_wohnzimmer, **off_schlafzimmer}
+schlafzimmer_light_attributes = {
+  "Wickeltischlampe": ["bri", "ct"],
+  "Nachttischlampe": ["bri", "ct"],
+  "Schlafzimmer " + HANGELAMPE: ["bri"]
+}
+schlafzimmer_lights = list(schlafzimmer_light_attributes.keys())
 
 
-all_scenes.append("nachtlicht")
-
-nachtlicht_wohnzimmer = dict()
-nachtlicht_wohnzimmer["Stehlampe"] = {"bri": 0.0, "ct": 1.0}
-nachtlicht_wohnzimmer["Fensterlampe"] = {"bri": 0.0, "ct": 1.0}
-nachtlicht_wohnzimmer["Sofalampe Rechts"] = {"bri": 0.0, "ct": 1.0}
-nachtlicht_wohnzimmer["Sofalampe Links"] = {"bri": 0.0, "ct": 1.0}
-nachtlicht_wohnzimmer["Filament"] = {"bri": 0.0}
-nachtlicht_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-nachtlicht_wohnzimmer["Lichterkette"] = {"on": False}
-
-nachtlicht_schlafzimmer = dict()
-nachtlicht_schlafzimmer["Nachttischlampe"] = {"bri": 0.0, "ct": 1.0}
-nachtlicht_schlafzimmer["Wickeltischlampe"] = {"bri": min_bri(), "ct": 1.0}
-nachtlicht_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-
-nachtlicht = {**nachtlicht_wohnzimmer, **nachtlicht_schlafzimmer}
+kinderzimmer_light_attributes = {
+  "Kinderzimmer " + HANGELAMPE: ["bri"]
+}
+kinderzimmer_lights = list(kinderzimmer_light_attributes.keys())
 
 
-all_scenes.append("min")
-
-min_wohnzimmer = dict()
-min_wohnzimmer["Stehlampe"] = {"bri": min_bri(), "ct": 1.0}
-min_wohnzimmer["Fensterlampe"] = {"bri": min_bri(), "ct": 1.0}
-min_wohnzimmer["Sofalampe Rechts"] = {"bri": min_bri(), "ct": 1.0}
-min_wohnzimmer["Sofalampe Links"] = {"bri": min_bri(), "ct": 1.0}
-min_wohnzimmer["Filament"] = {"bri": 0.0}
-min_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-min_wohnzimmer["Lichterkette"] = {"on": False}
-
-min_schlafzimmer = dict()
-min_schlafzimmer["Nachttischlampe"] = {"bri": min_bri(), "ct": 1.0}
-min_schlafzimmer["Wickeltischlampe"] = {"bri": min_bri(), "ct": 1.0}
-min_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-
-min = {**min_wohnzimmer, **min_schlafzimmer}
+all_light_attributes = {
+  **wohnzimmer_light_attributes,
+  **schlafzimmer_light_attributes,
+  **kinderzimmer_light_attributes
+}
+all_lights = list(all_light_attributes.keys())
 
 
-all_scenes.append("dunkel")
-
-dunkel_wohnzimmer = dict()
-dunkel_wohnzimmer["Stehlampe"] = {"bri": .1, "ct": 1.0}
-dunkel_wohnzimmer["Fensterlampe"] = {"bri": .1, "ct": 1.0}
-dunkel_wohnzimmer["Sofalampe Rechts"] = {"bri": .1, "ct": 1.0}
-dunkel_wohnzimmer["Sofalampe Links"] = {"bri": .1, "ct": 1.0}
-dunkel_wohnzimmer["Filament"] = {"bri": 0.0}
-dunkel_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-dunkel_wohnzimmer["Lichterkette"] = {"on": True}
-
-dunkel_schlafzimmer = dict()
-dunkel_schlafzimmer["Nachttischlampe"] = {"bri": .1, "ct": 1.0}
-dunkel_schlafzimmer["Wickeltischlampe"] = {"bri": .1, "ct": 1.0}
-dunkel_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-
-dunkel = {**dunkel_wohnzimmer, **dunkel_schlafzimmer}
+all_rooms = [
+    "wohnzimmer",
+    "schlafzimmer",
+    "kinderzimmer",
+]
 
 
-#all_scenes.append("lesen")
-#
-#lesen_wohnzimmer = dict()
-#lesen_wohnzimmer["Stehlampe"] = {"bri": .1, "ct": 1.0}
-#lesen_wohnzimmer["Fensterlampe"] = {"bri": .5, "ct": 1.0}
-#lesen_wohnzimmer["Sofalampe Rechts"] = {"bri": .1, "ct": 1.0}
-#lesen_wohnzimmer["Sofalampe Links"] = {"bri": .1, "ct": 1.0}
-#lesen_wohnzimmer["Filament"] = {"bri": 0.0}
-#lesen_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-#lesen_wohnzimmer["Lichterkette"] = {"on": True}
-#
-#lesen_schlafzimmer = dict()
-#lesen_schlafzimmer["Nachttischlampe"] = {"bri": .25, "ct": 1.0}
-#lesen_schlafzimmer["Wickeltischlampe"] = {"bri": min_bri(), "ct": 1.0}
-#lesen_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-#
-#lesen = {**lesen_wohnzimmer, **lesen_schlafzimmer}
+all_slave_rooms = [
+    "kuche",
+    "bad",
+    "flur",
+]
 
 
-all_scenes.append("gemutlich")
-
-gemutlich_wohnzimmer = dict()
-gemutlich_wohnzimmer["Stehlampe"] = {"bri": .4, "ct": 1.0}
-gemutlich_wohnzimmer["Fensterlampe"] = {"bri": .4, "ct": 1.0}
-gemutlich_wohnzimmer["Sofalampe Rechts"] = {"bri": .4, "ct": 1.0}
-gemutlich_wohnzimmer["Sofalampe Links"] = {"bri": .4, "ct": 1.0}
-gemutlich_wohnzimmer["Filament"] = {"bri": 0.0}
-gemutlich_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-gemutlich_wohnzimmer["Lichterkette"] = {"on": True}
-
-gemutlich_schlafzimmer = dict()
-gemutlich_schlafzimmer["Nachttischlampe"] = {"bri": .6, "ct": 1.0}
-gemutlich_schlafzimmer["Wickeltischlampe"] = {"bri": .6, "ct": 1.0}
-gemutlich_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-
-gemutlich = {**gemutlich_wohnzimmer, **gemutlich_schlafzimmer}
+kuche_light_attributes = {
+  KUCHENLAMPE + " Links": ["bri", "ct"],
+  KUCHENLAMPE + " Rechts": ["bri", "ct"]
+}
+kuche_lights = list(kuche_light_attributes.keys())
 
 
-all_scenes.append("warm")
-
-warm_wohnzimmer = dict()
-warm_wohnzimmer["Stehlampe"] = {"bri": .8, "ct": .75}
-warm_wohnzimmer["Fensterlampe"] = {"bri": .8, "ct": .75}
-warm_wohnzimmer["Sofalampe Rechts"] = {"bri": .8, "ct": .75}
-warm_wohnzimmer["Sofalampe Links"] = {"bri": .8, "ct": .75}
-warm_wohnzimmer["Filament"] = {"bri": 0.0}
-warm_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-warm_wohnzimmer["Lichterkette"] = {"on": True}
-
-warm_schlafzimmer = dict()
-warm_schlafzimmer["Nachttischlampe"] = {"bri": .8, "ct": .75}
-warm_schlafzimmer["Wickeltischlampe"] = {"bri": .8, "ct": .75}
-warm_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 0.0}
-
-warm = {**warm_wohnzimmer, **warm_schlafzimmer}
+bad_light_attributes = {
+  "Spiegellampe": ["bri", "ct"],
+  "Badlampe": ["bri", "ct"]
+}
+bad_lights = list(bad_light_attributes.keys())
 
 
-all_scenes.append("halbwarm")
-
-halbwarm_wohnzimmer = dict()
-halbwarm_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": .5}
-halbwarm_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": .5}
-halbwarm_wohnzimmer["Sofalampe Rechts"] = {"bri": 1.0, "ct": .5}
-halbwarm_wohnzimmer["Sofalampe Links"] = {"bri": 1.0, "ct": .5}
-halbwarm_wohnzimmer["Filament"] = {"bri": 0.5}
-halbwarm_wohnzimmer["Deckenlampe"] = {"bri": 0.0}
-halbwarm_wohnzimmer["Lichterkette"] = {"on": True}
-
-halbwarm_schlafzimmer = dict()
-halbwarm_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": .5}
-halbwarm_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": .5}
-halbwarm_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": .5}
-
-halbwarm = {**halbwarm_wohnzimmer, **halbwarm_schlafzimmer}
+flur_light_attributes = {
+  "Flurlampe 1": ["bri", "ct"],
+  "Flurlampe 2": ["bri", "ct"],
+  "Flurlampe 3": ["bri", "ct"]
+}
+flur_lights = list(flur_light_attributes.keys())
 
 
-all_scenes.append("hell")
+def get_scene(scene, room="all"):
+    if room not in [*all_rooms, "all"]:
+        raise ValueError(f"Room {room} not found")
 
-hell_wohnzimmer = dict()
-hell_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": .25}
-hell_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": .25}
-hell_wohnzimmer["Sofalampe Rechts"] = {"bri": 1.0, "ct": .25}
-hell_wohnzimmer["Sofalampe Links"] = {"bri": 1.0, "ct": .25}
-hell_wohnzimmer["Filament"] = {"bri": 1.0}
-hell_wohnzimmer["Deckenlampe"] = {"bri": 1.0}
-hell_wohnzimmer["Lichterkette"] = {"on": True}
+    exceptions = {
+        "gemutlich": {
+            "Nachttischlampe": {"bri": 0.6},
+            "Wickeltischlampe": {"bri": 0.6}
+        },
+        "min": {
+            "Filament": {"bri": 0.0},
+            "Deckenlampe": {"bri": 0.0},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+        },
+        "dunkel": {
+            "Filament": {"bri": 0.0},
+            "Deckenlampe": {"bri": 0.0},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+        },
+        "gemutlich": {
+            "Filament": {"bri": 0.0},
+            "Deckenlampe": {"bri": 0.0},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+        },
+        "warm": {
+            "Filament": {"bri": 0.0},
+            "Deckenlampe": {"bri": 0.0},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+        },
+        "halbwarm": {
+            "Filament": {"bri": 0.5},
+            "Deckenlampe": {"bri": 0.0},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.5}
+        }
+    }
 
-hell_schlafzimmer = dict()
-hell_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": .25}
-hell_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": .25}
-hell_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 1.0}
+    light_attributes = eval(room + "_light_attributes")
+    scene_attributes = all_scene_attributes[scene]
+    ret = {}
+    for light, attributes in light_attributes.items():
+        ret[light] = {}
+        for attr in attributes:
+            if attr in scene_attributes:
+                ret[light][attr] = scene_attributes[attr]
+        if scene in exceptions:
+            if light in exceptions[scene]:
+                ret[light].update(exceptions[scene][light])
+    return ret
 
-hell = {**hell_wohnzimmer, **hell_schlafzimmer}
+
+def get_lights(room):
+    # not 100% clear if slave rooms should be rooms
+    if room not in [*all_rooms, *all_slave_rooms, "all"]:
+        raise ValueError(f"Room {room} not found")
+    return eval(room + "_lights")
 
 
-all_scenes.append("focus")
-
-focus_wohnzimmer = dict()
-focus_wohnzimmer["Stehlampe"] = {"bri": 1.0, "ct": 0.0}
-focus_wohnzimmer["Fensterlampe"] = {"bri": 1.0, "ct": 0.0}
-focus_wohnzimmer["Sofalampe Rechts"] = {"bri": 1.0, "ct": 0.0}
-focus_wohnzimmer["Sofalampe Links"] = {"bri": 1.0, "ct": 0.0}
-focus_wohnzimmer["Filament"] = {"bri": 1.0}
-focus_wohnzimmer["Deckenlampe"] = {"bri": 1.0}
-focus_wohnzimmer["Lichterkette"] = {"on": True}
-
-focus_schlafzimmer = dict()
-focus_schlafzimmer["Nachttischlampe"] = {"bri": 1.0, "ct": 0.0}
-focus_schlafzimmer["Wickeltischlampe"] = {"bri": 1.0, "ct": 0.0}
-focus_schlafzimmer["Schlafzimmer " + HANGELAMPE] = {"bri": 1.0}
-
-focus = {**focus_wohnzimmer, **focus_schlafzimmer}
+def get_light_attributes(room):
+    if room not in [*all_rooms, *all_slave_rooms, "all"]:
+        raise ValueError(f"Room {room} not found")
+    return eval(room + "_light_attributes")

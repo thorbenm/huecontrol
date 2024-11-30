@@ -12,9 +12,9 @@ import scheduled_scene
 def home():
     # scheduled_scene.transition_schlafzimmer()
     if ambient.should_be_off():
-        scene.transition("off_wohnzimmer")
+        scene.transition(name="off", room="wohnzimmer")
     else:
-        scheduled_scene.transition_wohnzimmer()
+        scheduled_scene.transition(room="wohnzimmer")
     sleep(1.0)
     if ambient.auto_ct_enabled():
         ambient.auto_ct_fast_reduce_only()

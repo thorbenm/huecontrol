@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 from _phue import set_lights
 import argparse
-import motionsensor
 import data
 import toolbox
 
@@ -31,18 +30,12 @@ def transition_dicionary(d, time=.4, reduce_only=False, increase_only=False):
                    increase_only=increase_only)
 
 
-def transition(name, time=.4, reduce_only=False, increase_only=False,
+def transition(name, room="all", time=.4, reduce_only=False, increase_only=False,
               _override={}):
-    if name.endswith("zimmer"):
-        d = eval("data." + name)
-        d = {**d, **_override}
-        transition_dicionary(d, time=time, reduce_only=reduce_only,
-                             increase_only=increase_only)
-    else:
-        transition(name + "_wohnzimmer", time=time, reduce_only=reduce_only,
-                  increase_only=increase_only, _override=_override)
-        transition(name + "_schlafzimmer", time=time, reduce_only=reduce_only,
-                  increase_only=increase_only, _override=_override)
+    d = data.get_scene(name, room)
+    d = {**d, **_override}
+    transition_dicionary(d, time=time, reduce_only=reduce_only,
+                         increase_only=increase_only)
 
 
 def parse_args(input_args=None):
@@ -54,6 +47,7 @@ def parse_args(input_args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument(type=str, dest='scene')
+    parser.add_argument(type=str, dest='room', default="all", nargs='?')
     parser.add_argument('-t', type=str, default='0.4s', dest='time')
     parser.add_argument('-r', '--reduce-only', action='store_true', dest='reduce_only')
     parser.add_argument('-w', action='store_true', dest='write_scheduled',
@@ -66,7 +60,8 @@ def parse_args(input_args=None):
 
 def main(input_args=None):
     args = parse_args(input_args)
-    transition(args.scene, time=args.time, reduce_only=args.reduce_only)
+    transition(name=args.scene, room=args.room, time=args.time,
+               reduce_only=args.reduce_only)
 
 
 if __name__ == '__main__':
