@@ -4,11 +4,10 @@ import data
 
 
 def main():
-    lights = data.get_lights("schlafzimmer")
-    lights = [l for l in lights if l != "Wickeltischlampe"]
-    _phue.set_lights(lights, on=False)
-    _phue.set_lights("Wickeltischlampe", ct=1.0, time=30)
-    _phue.set_lights("Wickeltischlampe", bri=_phue.min_bri(), time=3*60)
+    lights = data.get_lights("kinderzimmer")
+    _phue.set_lights(lights[1:], on=False)
+    _phue.set_lights(lights[0], ct=1.0, time=30)
+    _phue.set_lights(lights[0], on=False, time=3*60)
 
 
 if __name__ == '__main__':

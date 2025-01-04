@@ -20,7 +20,6 @@ all_scenes = list(all_scene_attributes.keys())
 
 wohnzimmer_light_attributes = {
   "Stehlampe": ["bri", "ct"],
-  "Fensterlampe": ["bri", "ct"],
   "Sofalampe Rechts": ["bri", "ct"],
   "Sofalampe Links": ["bri", "ct"],
   "Deckenlampe": ["bri"],
@@ -31,14 +30,15 @@ wohnzimmer_lights = list(wohnzimmer_light_attributes.keys())
 
 
 schlafzimmer_light_attributes = {
-  "Wickeltischlampe": ["bri", "ct"],
-  "Nachttischlampe": ["bri", "ct"],
+  "Nachttischlampe Links": ["bri", "ct"],
+  "Nachttischlampe Rechts": ["bri", "ct"],
   "Schlafzimmer " + HANGELAMPE: ["bri"]
 }
 schlafzimmer_lights = list(schlafzimmer_light_attributes.keys())
 
 
 kinderzimmer_light_attributes = {
+  "Kinderlampe": ["bri", "ct"],
   "Kinderzimmer " + HANGELAMPE: ["bri"]
 }
 kinderzimmer_lights = list(kinderzimmer_light_attributes.keys())
@@ -94,33 +94,38 @@ def get_scene(scene, room="all"):
 
     exceptions = {
         "gemutlich": {
-            "Nachttischlampe": {"bri": 0.6},
-            "Wickeltischlampe": {"bri": 0.6}
+            "Nachttischlampe Links": {"bri": 0.6},
+            "Nachttischlampe Rechts": {"bri": 0.6},
         },
         "min": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
         },
         "dunkel": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
         },
         "gemutlich": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
         },
         "warm": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
         },
         "halbwarm": {
             "Filament": {"bri": 0.5},
             "Deckenlampe": {"bri": 0.0},
-            "Schlafzimmer " + HANGELAMPE: {"bri": 0.5}
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.5},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.5},
         }
     }
 
