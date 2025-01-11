@@ -93,8 +93,12 @@ def get_bri(light):
         return fake
 
 
+def convert_mirek_to_ct(mirek):
+    return toolbox.map(mirek, 153, 454, 0, 1)
+
+
 def __get_ct(light):
-    return (float(b.get_light(light, "ct")) - 153.0) / (454.0 - 153.0)
+    return convert_mirek_to_ct(b.get_light(light, "ct"))
 
 
 def get_ct(light):
