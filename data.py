@@ -10,6 +10,7 @@ all_scene_attributes = {
     "min": {"bri": min_bri(), "ct": 1.0, "on": False},
     "dunkel": {"bri": 0.1, "ct": 1.0, "on": True},
     "gemutlich": {"bri": 0.4, "ct": 1.0, "on": True},
+    "lounge": {"bri": 0.6, "ct": 1.0, "on": True},
     "warm": {"bri": 0.8, "ct": 0.75, "on": True},
     "halbwarm": {"bri": 1.0, "ct": 0.5, "on": True},
     "hell": {"bri": 1.0, "ct": 0.25, "on": True},
@@ -93,10 +94,6 @@ def get_scene(scene, room="all"):
         raise ValueError(f"Room {room} not found")
 
     exceptions = {
-        "gemutlich": {
-            "Nachttischlampe Links": {"bri": 0.6},
-            "Nachttischlampe Rechts": {"bri": 0.6},
-        },
         "min": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
@@ -110,6 +107,12 @@ def get_scene(scene, room="all"):
             "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
         },
         "gemutlich": {
+            "Filament": {"bri": 0.0},
+            "Deckenlampe": {"bri": 0.0},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
+        },
+        "lounge": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
