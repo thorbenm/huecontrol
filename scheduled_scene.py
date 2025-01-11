@@ -52,11 +52,13 @@ def parse_args(input_args=None):
     parser.add_argument('-t', type=str, default='0.4s', dest='time')
     parser.add_argument('-w', action='store_true', dest='wohnzimmer')
     parser.add_argument('-s', action='store_true', dest='schlafzimmer')
+    parser.add_argument('-k', action='store_true', dest='kinderzimmer')
     args = parser.parse_args(input_args if input_args else None)
     args.time = toolbox.convert_time_string(args.time)
-    if not args.wohnzimmer and not args.schlafzimmer:
+    if not args.wohnzimmer and not args.schlafzimmer and not args.kinderzimmer:
         args.wohnzimmer = True
         args.schlafzimmer = True
+        args.kinderzimmer = True
     return args
 
 
@@ -85,7 +87,12 @@ def transition(time=.4, room="all", hour=None, minute=None, dt=None):
 
 def main(input_args=None):
     args = parse_args(input_args)
-    transition(time=args.time, room="all")
+    if args.wohnzimmer:
+        transition(time=args.time, room="wohnzimmer")
+    if args.schlafzimmer:
+        transition(time=args.time, room="schlafzimmer")
+    if args.kinderzimmer:
+        transition(time=args.time, room="kinderzimmer")
 
 
 if __name__ == '__main__':
