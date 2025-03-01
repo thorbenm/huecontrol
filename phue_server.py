@@ -4,6 +4,7 @@ from aiohue.v2 import HueBridgeV2
 from hue_data import ip_address, user_id  # Import IP and API key
 from aiohue.v2.models.resource import ResourceTypes
 import _phue
+import light_ids
 import os
 import ambient
 import data
@@ -16,8 +17,8 @@ import scheduled_scene
 import systemd.journal
 
 
-MASTER_ID = {"wohnzimmer": "6db3c2f6-eb16-4e15-9b2b-3f5162450902", "schlafzimmer": "84489782-a02d-47d1-8689-d2af1e98a62e", "kinderzimmer": "a29b4150-040d-4d54-9d07-317c7c624820"}
-MASTER_NAME = {"wohnzimmer": "Stehlampe", "schlafzimmer": "Nachttischlampe Links", "kinderzimmer": "Kinderlampe"}
+MASTER_NAME = {r: data.get_lights(r)[0] for r in ["wohnzimmer", "schlafzimmer", "kinderzimmer"]}
+MASTER_ID = {r: light_ids.get_id(n) for r, n in MASTER_NAME.items()}
 AMBIENT_SENSOR_ID = "9dd345e1-d99a-40eb-8cfd-25209e90ebfd"
 
 
