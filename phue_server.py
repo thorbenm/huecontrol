@@ -495,59 +495,30 @@ async def main():
 
             # Handle dimming events
             if event["id"] == MASTER_ID["wohnzimmer"]:
-                if "dimming" in event:
-                    # stupid fake hack:
-                    fake_file_exists = os.path.exists(_phue.FAKE_VALUES_PATH)
-                    new_master_brightness = False
-                    
-                    if not fake_file_exists:
-                        new_master_brightness = True
-                    else:
-                        global last_file_mtime_bri
-                        current_mtime = os.path.getmtime(_phue.FAKE_VALUES_PATH)
-                        if current_mtime != last_file_mtime_bri:
-                            last_file_mtime_bri = current_mtime
-                        else:
-                            new_master_brightness = True
-                    
-                    if new_master_brightness:
+                if not _phue.fake_recently_changed():
+                    if "dimming" in event:
                         brightness = event["dimming"]["brightness"]
                         #print("New master brightness:", brightness)
                         for sensor in all_sensors:
                             sensor.set_master_bri(brightness / 100.0)
                         wbh.update_current_scene(bri=brightness / 100.0)
 
-                if "on" in event:
-                    if event['on']['on'] == False:
-                        for sensor in all_sensors:
-                            sensor.set_master_bri(0.0)
-                        wbh.update_current_scene(bri=0.0, ct=1.0)
+                    if "on" in event:
+                        if event['on']['on'] == False:
+                            for sensor in all_sensors:
+                                sensor.set_master_bri(0.0)
+                            wbh.update_current_scene(bri=0.0, ct=1.0)
 
-                # handle color temperature events
-                if "color_temperature" in event:
-                    if event["color_temperature"]["mirek_valid"]:
-                        # stupid fake hack, again:
-                        fake_file_exists = os.path.exists(_phue.FAKE_VALUES_PATH)
-                        new_master_ct = False
-                    
-                        if not fake_file_exists:
-                            new_master_ct = True
-                        else:
-                            global last_file_mtime_ct
-                            current_mtime = os.path.getmtime(_phue.FAKE_VALUES_PATH)
-                            if current_mtime != last_file_mtime_ct:
-                                last_file_mtime_ct = current_mtime
-                            else:
-                                new_master_ct = True
-                    
-                        if new_master_ct:
+                    # handle color temperature events
+                    if "color_temperature" in event:
+                        if event["color_temperature"]["mirek_valid"]:
                             mirek = event["color_temperature"]["mirek"]
                             ct = _phue.convert_mirek_to_ct(mirek)
                             for sensor in all_sensors:
                                 sensor.set_master_ct(ct)
                             wbh.update_current_scene(ct=ct)
-                    else:
-                        print("mirek not valid:", event)
+                        else:
+                            print("mirek not valid:", event)
 
             if event["id"] == MASTER_ID["schlafzimmer"]:
                 if "dimming" in event:

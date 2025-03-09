@@ -232,3 +232,10 @@ def get_fake_value(light, kind, real_value):
     # to support multiple FAKE_LAMPS remove should delete the entry of this one and
     # not delete the entire file
     return None
+
+
+def fake_recently_changed():
+    if os.path.exists(FAKE_VALUES_PATH):
+        mtime = os.path.getmtime(FAKE_VALUES_PATH)
+        return unix_time() - mtime < 5.0
+    return False
