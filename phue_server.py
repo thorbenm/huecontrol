@@ -15,6 +15,8 @@ import subprocess
 import scene
 import scheduled_scene
 import systemd.journal
+import time
+import sys
 
 
 MASTER_NAME = {r: data.get_lights(r)[0] for r in ["wohnzimmer", "schlafzimmer", "kinderzimmer"]}
@@ -22,11 +24,15 @@ MASTER_ID = {r: light_ids.get_id(n) for r, n in MASTER_NAME.items()}
 AMBIENT_SENSOR_ID = "9dd345e1-d99a-40eb-8cfd-25209e90ebfd"
 
 
-def log(message):
-    # Print to console
-    #print(message)
-    # Write to system journal
+def running_under_systemd():
+    return os.environ.get('INVOCATION_ID') is not None
+
+
+def log(*args, **kwargs):
+    message = " ".join(str(arg) for arg in args)
     systemd.journal.write(message)
+    if not running_under_systemd():
+        print(message, **kwargs)
 
 
 class Switch():
@@ -50,6 +56,8 @@ class Switch():
         self.up_hold_function = None
         self.down_hold_function = None
         self.off_hold_function = None
+
+        self.last_event = -float('inf')
 
     def set_on_short_press_function(self, f):
         self.on_short_press_function = f
@@ -104,6 +112,8 @@ class Switch():
         self.off_hold_function = f
 
     def button_event(self, button, event):
+        self.last_event = time.time()
+
         if event != "repeat":
             self.repeat_counter = 0
 
@@ -143,6 +153,9 @@ class Switch():
                     self.off_hold_function()
                 if self.off_long_press_function is not None and self.repeat_counter == self.long_press_duration:
                     self.off_long_press_function()
+
+    def button_recently_pressed(self):
+        return time.time() - self.last_event < 5.0
 
 class ButtonHandler():
     def __init__(self, room):
@@ -191,45 +204,121 @@ def run_detached_shell(command):
     subprocess.Popen(full_command, shell=True, executable="/bin/bash")
 
 
-all_button_handlers = list()
-
 wbh = ButtonHandler("wohnzimmer")
-all_button_handlers.append(wbh)
-
 wohnzimmer_switch = Switch()
-wohnzimmer_switch.set_on_short_press_function(lambda: (print("wohnzimmer on short press"), scheduled_scene.transition(room="wohnzimmer")))
-wohnzimmer_switch.set_up_short_press_function(lambda: (print("wohnzimmer up short press"), wbh.step_up()))
-wohnzimmer_switch.set_down_short_press_function(lambda: (print("wohnzimmer down short press"), wbh.step_down()))
-wohnzimmer_switch.set_off_short_press_function(lambda: (print("wohnzimmer off short press"), scene.transition(name="off", room="wohnzimmer")))
 
-wohnzimmer_switch.set_on_long_press_function(lambda: (print("wohnzimmer on long press"), run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 3m")))
-wohnzimmer_switch.set_off_long_press_function(lambda: (print("wohnzimmer off long press"), scene.transition(name="off", room="wohnzimmer", time=30*60)))
+def wohnzimmer_on_short_press():
+    log("wohnzimmer on short press")
+    s = scheduled_scene.transition(room="wohnzimmer")
+    bri = s[MASTER_NAME["wohnzimmer"]]["bri"]
+    ct = s[MASTER_NAME["wohnzimmer"]]["ct"]
+    wbh.update_current_scene(bri=bri, ct=ct)
+
+def wohnzimmer_up_short_press():
+    log("wohnzimmer up short press")
+    wbh.step_up()
+
+def wohnzimmer_down_short_press():
+    log("wohnzimmer down short press")
+    wbh.step_down()
+
+def wohnzimmer_off_short_press():
+    log("wohnzimmer off short press")
+    scene.transition(name="off", room="wohnzimmer")
+    wbh.update_current_scene(bri=0.0, ct=1.0)
+
+def wohnzimmer_on_long_press():
+    log("wohnzimmer on long press")
+    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 3m")
+
+def wohnzimmer_off_long_press():
+    log("wohnzimmer off long press")
+    scene.transition(name="off", room="wohnzimmer", time=30*60)
+
+wohnzimmer_switch.set_on_short_press_function(wohnzimmer_on_short_press)
+wohnzimmer_switch.set_up_short_press_function(wohnzimmer_up_short_press)
+wohnzimmer_switch.set_down_short_press_function(wohnzimmer_down_short_press)
+wohnzimmer_switch.set_off_short_press_function(wohnzimmer_off_short_press)
+wohnzimmer_switch.set_on_long_press_function(wohnzimmer_on_long_press)
+wohnzimmer_switch.set_off_long_press_function(wohnzimmer_off_long_press)
 
 
 sbh = ButtonHandler("schlafzimmer")
-all_button_handlers.append(sbh)
-
 schlafzimmer_switch = Switch()
-schlafzimmer_switch.set_on_short_press_function(lambda: (print("schlafzimmer bed on short press"), scheduled_scene.transition(room="schlafzimmer")))
-schlafzimmer_switch.set_up_short_press_function(lambda: (print("schlafzimmer bed up short press"), sbh.step_up()))
-schlafzimmer_switch.set_down_short_press_function(lambda: (print("schlafzimmer bed down short press"), sbh.step_down()))
-schlafzimmer_switch.set_off_short_press_function(lambda: (print("schlafzimmer bed off short press"), scene.transition(name="off", room="schlafzimmer")))
 
-schlafzimmer_switch.set_on_long_press_function(lambda: (print("schlafzimmer bed on long press"), run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")))
-schlafzimmer_switch.set_off_long_press_function(lambda: (print("schlafzimmer bed off long press"), scene.transition(name="off", room="schlafzimmer", time=3*60)))
+def schlafzimmer_on_short_press():
+    log("schlafzimmer bed on short press")
+    s = scheduled_scene.transition(room="schlafzimmer")
+    bri = s[MASTER_NAME["schlafzimmer"]]["bri"]
+    ct = s[MASTER_NAME["schlafzimmer"]]["ct"]
+    sbh.update_current_scene(bri=bri, ct=ct)
+
+def schlafzimmer_up_short_press():
+    log("schlafzimmer bed up short press")
+    sbh.step_up()
+
+def schlafzimmer_down_short_press():
+    log("schlafzimmer bed down short press")
+    sbh.step_down()
+
+def schlafzimmer_off_short_press():
+    log("schlafzimmer bed off short press")
+    scene.transition(name="off", room="schlafzimmer")
+    sbh.update_current_scene(bri=0.0, ct=1.0)
+
+def schlafzimmer_on_long_press():
+    log("schlafzimmer bed on long press")
+    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
+
+def schlafzimmer_off_long_press():
+    log("schlafzimmer bed off long press")
+    scene.transition(name="off", room="schlafzimmer", time=3*60)
+
+schlafzimmer_switch.set_on_short_press_function(schlafzimmer_on_short_press)
+schlafzimmer_switch.set_up_short_press_function(schlafzimmer_up_short_press)
+schlafzimmer_switch.set_down_short_press_function(schlafzimmer_down_short_press)
+schlafzimmer_switch.set_off_short_press_function(schlafzimmer_off_short_press)
+schlafzimmer_switch.set_on_long_press_function(schlafzimmer_on_long_press)
+schlafzimmer_switch.set_off_long_press_function(schlafzimmer_off_long_press)
 
 
 kbh = ButtonHandler("kinderzimmer")
-all_button_handlers.append(kbh)
-
 kinderzimmer_switch = Switch()
-kinderzimmer_switch.set_on_short_press_function(lambda: (print("kinderzimmer on short press"), scheduled_scene.transition(room="kinderzimmer")))
-kinderzimmer_switch.set_up_short_press_function(lambda: (print("kinderzimmer up short press"), kbh.step_up()))
-kinderzimmer_switch.set_down_short_press_function(lambda: (print("kinderzimmer down short press"), kbh.step_down()))
-kinderzimmer_switch.set_off_short_press_function(lambda: (print("kinderzimmer off short press"), scene.transition(name="off", room="kinderzimmer")))
 
-kinderzimmer_switch.set_on_long_press_function(lambda: (print("kinderzimmer on long press"), run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -k -t2 1m")))
-kinderzimmer_switch.set_off_long_press_function(lambda: (print("kinderzimmer off long press"), scene.transition(name="off", room="kinderzimmer", time=3*60)))
+def kinderzimmer_on_short_press():
+    log("kinderzimmer on short press")
+    s = scheduled_scene.transition(room="kinderzimmer")
+    bri = s[MASTER_NAME["kinderzimmer"]]["bri"]
+    ct = s[MASTER_NAME["kinderzimmer"]]["ct"]
+    kbh.update_current_scene(bri=bri, ct=ct)
+
+def kinderzimmer_up_short_press():
+    log("kinderzimmer up short press")
+    kbh.step_up()
+
+def kinderzimmer_down_short_press():
+    log("kinderzimmer down short press")
+    kbh.step_down()
+
+def kinderzimmer_off_short_press():
+    log("kinderzimmer off short press")
+    scene.transition(name="off", room="kinderzimmer")
+    kbh.update_current_scene(bri=0.0, ct=1.0)
+
+def kinderzimmer_on_long_press():
+    log("kinderzimmer on long press")
+    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -k -t2 1m")
+
+def kinderzimmer_off_long_press():
+    log("kinderzimmer off long press")
+    scene.transition(name="off", room="kinderzimmer", time=3*60)
+
+kinderzimmer_switch.set_on_short_press_function(kinderzimmer_on_short_press)
+kinderzimmer_switch.set_up_short_press_function(kinderzimmer_up_short_press)
+kinderzimmer_switch.set_down_short_press_function(kinderzimmer_down_short_press)
+kinderzimmer_switch.set_off_short_press_function(kinderzimmer_off_short_press)
+kinderzimmer_switch.set_on_long_press_function(kinderzimmer_on_long_press)
+kinderzimmer_switch.set_off_long_press_function(kinderzimmer_off_long_press)
 
 
 class MotionSensor():
@@ -333,7 +422,7 @@ class MotionSensor():
             bri = self.get_slave_bri()
         if ct is None:
             ct = self.get_slave_ct()
-        print("set_lights", self.lights, "bri=%.2f, ct=%.2f" % (bri, ct))
+        log("set_lights", self.lights, "bri=%.2f, ct=%.2f" % (bri, ct))
 
         t = 0.4
         if automatic_time and abs(bri - self.current_bri) < 0.2 and abs(ct - self.current_ct) < 0.2:
@@ -364,7 +453,7 @@ class MotionSensor():
         self.motion_detected[sensor_id] = False
 
         if not any(self.motion_detected.values()) and self.is_on:
-            print("no motion detected, turning off lights", self.lights)
+            log("no motion detected, turning off lights", self.lights)
             self.is_on = False
             self.turn_off_lights()
 
@@ -453,7 +542,7 @@ async def main():
     # Function to handle timeout after no motion is detected for 60 seconds
     async def motion_timeout(sensor_id, timeout):
         await asyncio.sleep(timeout)
-        #print(f"No motion detected for {timeout} seconds on sensor {sensor_id}.")
+        #log(f"No motion detected for {timeout} seconds on sensor {sensor_id}.")
         sensor = get_sensor_object(sensor_id)
         sensor.mark_motion_idle_timeout(sensor_id)
 
@@ -469,14 +558,14 @@ async def main():
         #]
 
         #if not motion_sensors_ids:
-        #    print("No motion sensors found.")
+        #    log("No motion sensors found.")
         #    return
 
         motion_timeout_tasks = dict()
 
-        #print("Detected motion sensors:")
+        #log("Detected motion sensors:")
         #for sensor_id in motion_sensors_ids:
-        #    print(f"Sensor ID: {sensor_id}")
+        #    log(f"Sensor ID: {sensor_id}")
 
         # create motion timeout tasks for all motion sensors
         # start them now to define motion just ended on all sensors
@@ -488,7 +577,7 @@ async def main():
 
         # Define a callback function for processing motion events
         async def handle_event(event_type, event):
-            #print(event)
+            #log(event)
 
             if event is None:
                 return
@@ -498,16 +587,18 @@ async def main():
                 if not _phue.fake_recently_changed():
                     if "dimming" in event:
                         brightness = event["dimming"]["brightness"]
-                        #print("New master brightness:", brightness)
+                        #log("New master brightness:", brightness)
                         for sensor in all_sensors:
                             sensor.set_master_bri(brightness / 100.0)
-                        wbh.update_current_scene(bri=brightness / 100.0)
+                        if not wohnzimmer_switch.button_recently_pressed():
+                            wbh.update_current_scene(bri=brightness / 100.0)
 
                     if "on" in event:
                         if event['on']['on'] == False:
                             for sensor in all_sensors:
                                 sensor.set_master_bri(0.0)
-                            wbh.update_current_scene(bri=0.0, ct=1.0)
+                            if not wohnzimmer_switch.button_recently_pressed():
+                                wbh.update_current_scene(bri=0.0, ct=1.0)
 
                     # handle color temperature events
                     if "color_temperature" in event:
@@ -516,39 +607,46 @@ async def main():
                             ct = _phue.convert_mirek_to_ct(mirek)
                             for sensor in all_sensors:
                                 sensor.set_master_ct(ct)
-                            wbh.update_current_scene(ct=ct)
+                            if not wohnzimmer_switch.button_recently_pressed():
+                                wbh.update_current_scene(ct=ct)
                         else:
-                            print("mirek not valid:", event)
+                            log("mirek not valid:", event)
 
             if event["id"] == MASTER_ID["schlafzimmer"]:
                 if "dimming" in event:
                     brightness = event["dimming"]["brightness"]
-                    sbh.update_current_scene(bri=brightness / 100.0)
+                    if not schlafzimmer_switch.button_recently_pressed():
+                        sbh.update_current_scene(bri=brightness / 100.0)
                 if "on" in event:
                     if event['on']['on'] == False:
-                        sbh.update_current_scene(bri=0.0, ct=1.0)
+                        if not schlafzimmer_switch.button_recently_pressed():
+                            sbh.update_current_scene(bri=0.0, ct=1.0)
                 if "color_temperature" in event:
                     if event["color_temperature"]["mirek_valid"]:
                         mirek = event["color_temperature"]["mirek"]
                         ct = _phue.convert_mirek_to_ct(mirek)
-                        sbh.update_current_scene(ct=ct)
+                        if not schlafzimmer_switch.button_recently_pressed():
+                            sbh.update_current_scene(ct=ct)
                     else:
-                        print("mirek not valid:", event)
+                        log("mirek not valid:", event)
 
             if event["id"] == MASTER_ID["kinderzimmer"]:
                 if "dimming" in event:
                     brightness = event["dimming"]["brightness"]
-                    kbh.update_current_scene(bri=brightness / 100.0)
+                    if not kinderzimmer_switch.button_recently_pressed():
+                        kbh.update_current_scene(bri=brightness / 100.0)
                 if "on" in event:
                     if event['on']['on'] == False:
-                        kbh.update_current_scene(bri=0.0, ct=1.0)
+                        if not kinderzimmer_switch.button_recently_pressed():
+                            kbh.update_current_scene(bri=0.0, ct=1.0)
                 if "color_temperature" in event:
                     if event["color_temperature"]["mirek_valid"]:
                         mirek = event["color_temperature"]["mirek"]
                         ct = _phue.convert_mirek_to_ct(mirek)
-                        kbh.update_current_scene(ct=ct)
+                        if not kinderzimmer_switch.button_recently_pressed():
+                            kbh.update_current_scene(ct=ct)
                     else:
-                        print("mirek not valid:", event)
+                        log("mirek not valid:", event)
 
             # Handle light level events
             if event['type'] == "light_level":
@@ -557,11 +655,11 @@ async def main():
                     bri = ambient.convert_sensor_value_to_bri(light_level)
                     for sensor in all_sensors:
                         sensor.set_ambient_bri(bri)
-                    # print(f"Light level changed: {light_level}")
+                    # log(f"Light level changed: {light_level}")
 
             # Handle motion events
             if event['type'] == "motion":
-                #print("motion event", event)
+                #log("motion event", event)
                 sensor_id = event['id']
 
                 if sensor_id not in motion_sensors_ids:
@@ -571,7 +669,7 @@ async def main():
                 motion_detected = event['motion']['motion']
 
                 if motion_detected:
-                    #print(f"Motion detected from sensor {sensor_id}")
+                    #log(f"Motion detected from sensor {sensor_id}")
                     sensor.mark_motion_detected(sensor_id)
 
                     # Cancel the current timeout task for this sensor if it exists
@@ -593,10 +691,15 @@ async def main():
 
             if "button" in event:
                 button_names = {
-                    '434e02f5-0679-47d8-afb7-7e74ba8b0f0a': ['wohnzimmer', 'on'],
-                    '9b85666c-ff81-4c8c-95d8-9034b74e9c57': ['wohnzimmer', 'up'],
-                    '2cdf8ceb-d272-44fb-ad7e-a9903045633a': ['wohnzimmer', 'down'],
-                    '86ccd746-e412-4089-81ab-882c4826bdaf': ['wohnzimmer', 'off'],
+                    '434e02f5-0679-47d8-afb7-7e74ba8b0f0a': ['wohnzimmer fridge', 'on'],
+                    '9b85666c-ff81-4c8c-95d8-9034b74e9c57': ['wohnzimmer fridge', 'up'],
+                    '2cdf8ceb-d272-44fb-ad7e-a9903045633a': ['wohnzimmer fridge', 'down'],
+                    '86ccd746-e412-4089-81ab-882c4826bdaf': ['wohnzimmer fridge', 'off'],
+
+                    '40d45630-a6a3-461c-bbb9-240788c87910': ['wohnzimmer door', 'on'],
+                    '49b46ed1-a774-4656-8456-ec262b07a375': ['wohnzimmer door', 'up'],
+                    'bdaf080a-e651-4e30-bfe6-1e169eb9b6f4': ['wohnzimmer door', 'down'],
+                    '6133ace3-7a9e-4de8-a1a6-ec0f6bf9c3c4': ['wohnzimmer door', 'off'],
 
                     '5610d840-191e-4ebb-9087-1db469842897': ['schlafzimmer door', 'on'],
                     'cacdfa45-d676-4c3f-af87-e144c1036d86': ['schlafzimmer door', 'up'],
@@ -618,7 +721,7 @@ async def main():
                 event_type = event['button']['button_report']['event']
                 
                 switch, button = button_names[button_id]
-                if switch == "wohnzimmer":
+                if switch.startswith("wohnzimmer"):
                     wohnzimmer_switch.button_event(button, event_type)
                 elif switch.startswith("schlafzimmer"):
                     schlafzimmer_switch.button_event(button, event_type)

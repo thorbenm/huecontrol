@@ -74,7 +74,9 @@ def transition(time=.4, room="all", hour=None, minute=None, dt=None):
     current, _ = __get_last_two_variables(dt)
 
     if current.when + datetime.timedelta(seconds=(current.scene_args.time-60)) < dt:
-        scene.transition_dicionary(data.get_scene(current.value, room), time=time)
+        s = data.get_scene(current.value, room)
+        scene.transition_dicionary(s, time=time)
+        return s
     else:
         s, adjusted_transition_time = get_scene_dict(dt, room)
         scene.transition_dicionary(s, time=time)
@@ -83,6 +85,7 @@ def transition(time=.4, room="all", hour=None, minute=None, dt=None):
         adjusted_transition_time = max(adjusted_transition_time, .4)
         scene.transition_dicionary(data.get_scene(current.value, room),
                                    time=adjusted_transition_time)
+        return s
 
 
 def main(input_args=None):
