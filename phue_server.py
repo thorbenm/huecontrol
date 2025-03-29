@@ -417,7 +417,7 @@ class MotionSensor():
                 return False
         return True
     
-    def set_lights(self, bri=None, ct=None, automatic_time=False):
+    def set_lights(self, bri=None, ct=None, force_fast=False):
         if bri is None:
             bri = self.get_slave_bri()
         if ct is None:
@@ -425,8 +425,8 @@ class MotionSensor():
         log("set_lights", self.lights, "bri=%.2f, ct=%.2f" % (bri, ct))
 
         t = 0.4
-        if automatic_time and abs(bri - self.current_bri) < 0.2 and abs(ct - self.current_ct) < 0.2:
-            t = 10.0
+        if not force_fast and scene.transition_in_progress('wohnzimmer'):
+            t = 20.0
 
         _phue.set_lights(self.lights, bri=bri, ct=ct, time=t)
         self.current_bri = bri
@@ -446,7 +446,7 @@ class MotionSensor():
         self.is_on = True
 
         if not self.lights_within_margin(bri, ct):
-            self.set_lights(bri, ct)
+            self.set_lights(bri, ct, force_fast=True)
     
     def mark_motion_idle_timeout(self, sensor_id):
         log("mark_motion_idle_timeout " + sensor_id)
@@ -462,14 +462,14 @@ class MotionSensor():
         self.master_bri = master_bri
         bri = self.get_slave_bri()
         if not self.lights_within_margin(bri=bri) and self.is_on:
-            self.set_lights(bri=bri, automatic_time=True)
+            self.set_lights(bri=bri)
 
     def set_master_ct(self, master_ct):
         log("set_master_ct " + str(master_ct))
         self.master_ct = master_ct
         ct = self.get_slave_ct()
         if not self.lights_within_margin(ct=ct) and self.is_on:
-            self.set_lights(ct=ct, automatic_time=True)
+            self.set_lights(ct=ct)
 
     def update_lights(self):
         bri = self.get_slave_bri()

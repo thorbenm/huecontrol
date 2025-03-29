@@ -1,62 +1,105 @@
 #!/usr/bin/python3
-import sys
-from time import sleep
-import _phue
 import argparse
 import scene
 import ambient
 import toolbox
 import data
+import os
+import time
+
+PROGRESS_FILE = "/home/pi/wakeup_in_progress"
+
+
+def _sleep(t, rooms):
+    rooms = rooms.copy()
+    start = time.time()
+    progress_file_last_read = -float("inf")
+    read_progress_file_every = 10.0
+    while True:
+        current_time = time.time()
+        if read_progress_file_every < current_time - progress_file_last_read:
+            for r in rooms:
+                if not os.path.exists(PROGRESS_FILE + "_" + r):
+                    rooms.remove(r)
+            progress_file_last_read = current_time
+        if t < current_time - start or len(rooms) == 0:
+            break
+        time.sleep(.1)
+    return rooms
 
 
 def wakeup(t1, t2, t3, t4, rooms):
-    master = dict()
-    master["schlafzimmer"] = data.get_lights("schlafzimmer")[0]
-    master["wohnzimmer"] = data.get_lights("wohnzimmer")[0]
-    master["kinderzimmer"] = data.get_lights("kinderzimmer")[0]
+    rooms = rooms.copy()
+    try:
+        for r in rooms:
+            if os.path.exists(PROGRESS_FILE + "_" + r):
+                rooms.remove(r)
 
-    if "schlafzimmer" in rooms:
-        override_attributes = data.get_scene("min")[master["schlafzimmer"]]
-        scene.transition(name="off", room="schlafzimmer", increase_only=True,
-                         _override={master["schlafzimmer"]: override_attributes})
-    if "wohnzimmer" in rooms:
-        scene.transition(name="min", room="wohnzimmer", increase_only=True)
-    if "kinderzimmer" in rooms:
-        scene.transition(name="min", room="kinderzimmer", increase_only=True)
+        if len(rooms) == 0:
+            return
 
-    sleep(t1 + .1)
+        for r in rooms:
+            os.mknod(PROGRESS_FILE + "_" + r)  # touch
 
-    s2 = "gemutlich"
-    if "schlafzimmer" in rooms and _phue.get_on(master["schlafzimmer"]):
-        override_attributes = data.get_scene(s2)[master["schlafzimmer"]]
-        scene.transition(name="off", room="schlafzimmer", time=t2, increase_only=True,
-                         _override={master["schlafzimmer"]: override_attributes})
-    if "wohnzimmer" in rooms and _phue.get_on(master["wohnzimmer"]):
-        scene.transition(name=s2, room="wohnzimmer", time=t2, increase_only=True,
-                         _override={"Lichterkette": {"on": False}})
-    if "kinderzimmer" in rooms and _phue.get_on(master["kinderzimmer"]):
-        scene.transition(name=s2, room="kinderzimmer", time=t2, increase_only=True)
+        master = dict()
+        master = dict()
+        master["schlafzimmer"] = data.get_lights("schlafzimmer")[0]
+        master["wohnzimmer"] = data.get_lights("wohnzimmer")[0]
+        master["kinderzimmer"] = data.get_lights("kinderzimmer")[0]
 
-    sleep(t2 + .1)
+        if "schlafzimmer" in rooms:
+            override_attributes = data.get_scene("min")[master["schlafzimmer"]]
+            scene.transition(name="off", room="schlafzimmer", increase_only=True, abort_wakeup=False,
+                             _override={master["schlafzimmer"]: override_attributes})
+        if "wohnzimmer" in rooms:
+            scene.transition(name="min", room="wohnzimmer", increase_only=True, abort_wakeup=False)
+        if "kinderzimmer" in rooms:
+            scene.transition(name="min", room="kinderzimmer", increase_only=True, abort_wakeup=False)
 
-    s3 = "halbwarm"
-    if "schlafzimmer" in rooms and _phue.get_on(master["schlafzimmer"]):
-        scene.transition(name=s3, room="schlafzimmer", time=t3, increase_only=True)
-    if "wohnzimmer" in rooms and _phue.get_on(master["wohnzimmer"]):
-        scene.transition(name=s3, room="wohnzimmer", time=t3, increase_only=True,
-                         _override={"Lichterkette": {"on": False}})
-    if "kinderzimmer" in rooms and _phue.get_on(master["kinderzimmer"]):
-        scene.transition(name=s3, room="kinderzimmer", time=t3, increase_only=True)
+        rooms = _sleep(t1, rooms)
 
-    sleep(t3 + .1)
+        if len(rooms) == 0:
+            return
 
-    s4 = "hell"
-    if "schlafzimmer" in rooms and _phue.get_on(master["schlafzimmer"]):
-        scene.transition(name=s4, room="schlafzimmer", time=t4, increase_only=True)
-    if "wohnzimmer" in rooms and _phue.get_on(master["wohnzimmer"]):
-        scene.transition(name=s4, room="wohnzimmer", time=t4, increase_only=True)
-    if "kinderzimmer" in rooms and _phue.get_on(master["kinderzimmer"]):
-        scene.transition(name=s4, room="kinderzimmer", time=t4, increase_only=True)
+        s2 = "gemutlich"
+        if "schlafzimmer" in rooms:
+            override_attributes = data.get_scene(s2)[master["schlafzimmer"]]
+            scene.transition(name="off", room="schlafzimmer", time=t2, increase_only=True, abort_wakeup=False,
+                             _override={master["schlafzimmer"]: override_attributes})
+        if "wohnzimmer" in rooms:
+            scene.transition(name=s2, room="wohnzimmer", time=t2, increase_only=True, abort_wakeup=False,
+                             _override={"Lichterkette": {"on": False}})
+        if "kinderzimmer" in rooms:
+            scene.transition(name=s2, room="kinderzimmer", time=t2, increase_only=True, abort_wakeup=False)
+
+        rooms = _sleep(t2, rooms)
+        if len(rooms) == 0:
+            return
+
+        s3 = "halbwarm"
+        if "schlafzimmer" in rooms:
+            scene.transition(name=s3, room="schlafzimmer", time=t3, increase_only=True, abort_wakeup=False)
+        if "wohnzimmer" in rooms:
+            scene.transition(name=s3, room="wohnzimmer", time=t3, increase_only=True, abort_wakeup=False,
+                             _override={"Lichterkette": {"on": False}})
+        if "kinderzimmer" in rooms:
+            scene.transition(name=s3, room="kinderzimmer", time=t3, increase_only=True, abort_wakeup=False)
+
+        rooms = _sleep(t3, rooms)
+        if len(rooms) == 0:
+            return
+
+        s4 = "hell"
+        if "schlafzimmer" in rooms:
+            scene.transition(name=s4, room="schlafzimmer", time=t4, increase_only=True, abort_wakeup=False)
+        if "wohnzimmer" in rooms:
+            scene.transition(name=s4, room="wohnzimmer", time=t4, increase_only=True, abort_wakeup=False)
+        if "kinderzimmer" in rooms:
+            scene.transition(name=s4, room="kinderzimmer", time=t4, increase_only=True, abort_wakeup=False)
+
+    finally:
+        for r in rooms:
+            os.remove(PROGRESS_FILE + "_" + r)
 
 
 def parse_args(input_args=None):

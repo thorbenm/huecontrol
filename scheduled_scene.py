@@ -74,18 +74,14 @@ def transition(time=.4, room="all", hour=None, minute=None, dt=None):
     current, _ = __get_last_two_variables(dt)
 
     if current.when + datetime.timedelta(seconds=(current.scene_args.time-60)) < dt:
-        s = data.get_scene(current.value, room)
-        scene.transition_dicionary(s, time=time)
-        return s
+        return scene.transition(current.value, time=time, room=room)
     else:
-        s, adjusted_transition_time = get_scene_dict(dt, room)
-        scene.transition_dicionary(s, time=time)
+        interpolated_scene, adjusted_transition_time = get_scene_dict(dt, room)
+        scene.transition_dicionary(interpolated_scene, time=time)
         sleep(1.0 + time)
         adjusted_transition_time -= 60  # to not run into next transition
         adjusted_transition_time = max(adjusted_transition_time, .4)
-        scene.transition_dicionary(data.get_scene(current.value, room),
-                                   time=adjusted_transition_time)
-        return s
+        return scene.transition(current.value, time=adjusted_transition_time, room=room)
 
 
 def main(input_args=None):

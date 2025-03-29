@@ -84,7 +84,7 @@ def get_simulated_bri():
     g = get_history_mean()
     bri = convert_sensor_value_to_bri(g)
     curvature_from = .6
-    curvature_to = .6
+    curvature_to = .25
     bri = bri ** (log(curvature_to)/log(curvature_from))
     return bri
 

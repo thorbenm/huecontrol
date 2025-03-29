@@ -157,3 +157,7 @@ def get_light_attributes(room):
     if room not in [*all_rooms, *all_slave_rooms, "all"]:
         raise ValueError(f"Room {room} not found")
     return eval(room + "_light_attributes")
+
+
+def get_rooms():
+    return all_rooms
