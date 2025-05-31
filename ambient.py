@@ -76,16 +76,17 @@ def get_history_mean(i=MASTER, number=10):
 def convert_sensor_value_to_bri(value):
     # snowy nights in winter can be up to 3500 in brightness,
     # so 4000 makes sure simulated brightness is 0 all night
-    # 29000 is a good upper limit
-    return toolbox.map(value, 4000, 29000, 0, 1, clamp=True)
+    # 28000 is a good upper limit
+    bri = toolbox.map(value, 4000, 28000, 0, 1, clamp=True)
+    curvature_from = .6
+    curvature_to = .3
+    bri = bri ** (log(curvature_to)/log(curvature_from))
+    return bri
 
 
 def get_simulated_bri():
     g = get_history_mean()
     bri = convert_sensor_value_to_bri(g)
-    curvature_from = .6
-    curvature_to = .25
-    bri = bri ** (log(curvature_to)/log(curvature_from))
     return bri
 
 

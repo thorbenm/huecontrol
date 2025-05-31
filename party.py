@@ -4,7 +4,7 @@ from random import choice
 from time import sleep
 
 
-lamps = ["Hue Go", "Fensterlampe", "LED Streifen", "Ananas"]
+lamps = ["Sofalampe Rechts", "Sofalampe Links"]
 settings = [[0.559, 0.960], [0.846, 0.640], [0.649, 0.759], [0.303, 0.472], [0.319, 0.0]]
 
 

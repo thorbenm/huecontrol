@@ -22,6 +22,7 @@ import sys
 MASTER_NAME = {r: data.get_lights(r)[0] for r in ["wohnzimmer", "schlafzimmer", "kinderzimmer"]}
 MASTER_ID = {r: light_ids.get_id(n) for r, n in MASTER_NAME.items()}
 AMBIENT_SENSOR_ID = "9dd345e1-d99a-40eb-8cfd-25209e90ebfd"
+BALCONY_MOTION_SENSOR = "dd4438ac-d357-4378-9b31-d4d92dd4911f"
 
 
 def running_under_systemd():
@@ -377,7 +378,7 @@ class MotionSensor():
         return self.idle_timeout
 
     def using_ambient_values(self):
-        return self.master_bri < self.ambient_bri and self.use_ambient_for_brightness
+        return self.master_bri < self.ambient_bri - .02 and self.use_ambient_for_brightness
 
     def get_slave_bri(self):
         if self.using_ambient_values():
@@ -428,7 +429,21 @@ class MotionSensor():
         if not force_fast and scene.transition_in_progress('wohnzimmer'):
             t = 20.0
 
-        _phue.set_lights(self.lights, bri=bri, ct=ct, time=t)
+        # hack
+        lights = self.lights.copy()
+        if "Flurlampe" in lights:
+            lights.remove("Flurlampe")
+            def f(bri):
+                if .8 <= bri:
+                    return bri
+                elif .41 <= bri:
+                    return toolbox.map(bri, .41, .8, 0.0, .8)
+                else:
+                    return 0.0
+            log("Flurlampe hack:", bri, "->", f(bri))
+            _phue.set_lights("Flurlampe", bri=f(bri), ct=ct, time=t)
+
+        _phue.set_lights(lights, bri=bri, ct=ct, time=t)
         self.current_bri = bri
         self.current_ct = ct
 
@@ -496,14 +511,13 @@ all_sensors = list()
 
 
 kuche_sensor = MotionSensor(sensor_ids=["96d931b2-ec53-4753-995a-129ee480d3d6"],
-                           lights=data.get_lights("kuche"),
-                           fade_off_time=120.0,
-                           use_ambient_for_motion=True)
+                            lights=data.get_lights("kuche"),
+                            idle_timeout=10*60,
+                            use_ambient_for_motion=True)
 all_sensors.append(kuche_sensor)
 
 
-flur_sensor = MotionSensor(sensor_ids=["ec5fe5f9-be48-4957-b37d-8ca3d2e1116a",
-                                       "dc49cc1e-0253-495e-896c-11531913ef23"],
+flur_sensor = MotionSensor(sensor_ids=["dc49cc1e-0253-495e-896c-11531913ef23"],
                            lights=data.get_lights("flur"),
                            use_ambient_for_brightness=True)
 all_sensors.append(flur_sensor)
@@ -514,6 +528,20 @@ bad_sensor = MotionSensor(sensor_ids=["dd4b1e47-1e63-477c-b3c6-544048d5c8e1"],
                          idle_timeout=15*60,
                          use_ambient_for_brightness=True)
 all_sensors.append(bad_sensor)
+
+
+diele_sensor = MotionSensor(sensor_ids=["ec5fe5f9-be48-4957-b37d-8ca3d2e1116a"],
+                            lights=data.get_lights("diele"),
+                            idle_timeout=5*60,
+                            use_ambient_for_brightness=True)
+all_sensors.append(diele_sensor)
+
+
+klo_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
+                          lights=data.get_lights("klo"),
+                          idle_timeout=15*60,
+                          use_ambient_for_brightness=True)
+all_sensors.append(klo_sensor)
 
 
 def get_sensor_object(sensor_id):
@@ -580,6 +608,10 @@ async def main():
             #log(event)
 
             if event is None:
+                return
+
+            if event['id'] == BALCONY_MOTION_SENSOR:
+                # only used for ambient data not as motion sensor
                 return
 
             # Handle dimming events
@@ -660,9 +692,11 @@ async def main():
             # Handle motion events
             if event['type'] == "motion":
                 #log("motion event", event)
+
                 sensor_id = event['id']
 
                 if sensor_id not in motion_sensors_ids:
+                    log("sensor id not known:", sensor_id, event)
                     return
 
                 sensor = get_sensor_object(sensor_id)
