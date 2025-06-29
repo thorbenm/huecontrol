@@ -390,13 +390,9 @@ class MotionSensor():
             return toolbox.map(self.master_bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
 
     def get_slave_ct(self):
-        if self.using_ambient_values():
-            if 0.01 < self.master_bri:
-                return self.master_ct
-            else:
-                return self.ambient_ct
-        else:
-            return toolbox.map(self.master_ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
+        if self.using_ambient_values() and self.master_bri < .01:
+            return self.ambient_ct
+        return toolbox.map(self.master_ct, 0.0, 1.0, self.minimum_ct, self.maximum_ct)
 
     def lights_within_margin(self, bri=None, ct=None):
         if isnan(self.current_bri) or isnan(self.current_ct):
