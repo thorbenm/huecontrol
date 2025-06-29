@@ -77,7 +77,7 @@ def convert_sensor_value_to_bri(value):
     # snowy nights in winter can be up to 3500 in brightness,
     # so 4000 makes sure simulated brightness is 0 all night
     # 28000 is a good upper limit
-    bri = toolbox.map(value, 4000, 28000, 0, 1, clamp=True)
+    bri = toolbox.map(value, 0, 27000, 0, 1, clamp=True)
     curvature_from = .6
     curvature_to = .3
     bri = bri ** (log(curvature_to)/log(curvature_from))
