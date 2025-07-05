@@ -81,7 +81,8 @@ def transition(time=.4, room="all", hour=None, minute=None, dt=None):
         sleep(1.0 + time)
         adjusted_transition_time -= 60  # to not run into next transition
         adjusted_transition_time = max(adjusted_transition_time, .4)
-        return scene.transition(current.value, time=adjusted_transition_time, room=room)
+        scene.transition(current.value, time=adjusted_transition_time, room=room)
+        return interpolated_scene
 
 
 def main(input_args=None):

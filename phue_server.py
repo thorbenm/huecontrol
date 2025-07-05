@@ -25,6 +25,9 @@ AMBIENT_SENSOR_ID = "9dd345e1-d99a-40eb-8cfd-25209e90ebfd"
 BALCONY_MOTION_SENSOR = "dd4438ac-d357-4378-9b31-d4d92dd4911f"
 
 
+all_sensors = list()
+
+
 def running_under_systemd():
     return os.environ.get('INVOCATION_ID') is not None
 
@@ -214,6 +217,9 @@ def wohnzimmer_on_short_press():
     bri = s[MASTER_NAME["wohnzimmer"]]["bri"]
     ct = s[MASTER_NAME["wohnzimmer"]]["ct"]
     wbh.update_current_scene(bri=bri, ct=ct)
+    for sensor in all_sensors:
+        sensor.set_master_bri(bri, time=.4)
+        sensor.set_master_ct(ct, time=.4)
 
 def wohnzimmer_up_short_press():
     log("wohnzimmer up short press")
@@ -312,7 +318,7 @@ def kinderzimmer_on_long_press():
 
 def kinderzimmer_off_long_press():
     log("kinderzimmer off long press")
-    scene.transition(name="off", room="kinderzimmer", time=3*60)
+    scene.transition(name="off", room="kinderzimmer", time=15*60)
 
 kinderzimmer_switch.set_on_short_press_function(kinderzimmer_on_short_press)
 kinderzimmer_switch.set_up_short_press_function(kinderzimmer_up_short_press)
@@ -414,16 +420,17 @@ class MotionSensor():
                 return False
         return True
     
-    def set_lights(self, bri=None, ct=None, force_fast=False):
+    def set_lights(self, bri=None, ct=None, time=None):
         if bri is None:
             bri = self.get_slave_bri()
         if ct is None:
             ct = self.get_slave_ct()
         log("set_lights", self.lights, "bri=%.2f, ct=%.2f" % (bri, ct))
 
-        t = 0.4
-        if not force_fast and scene.transition_in_progress('wohnzimmer'):
-            t = 20.0
+        if time is None:
+            time = 0.4
+            if scene.transition_in_progress('wohnzimmer'):
+                time = 20.0
 
         # hack
         lights = self.lights.copy()
@@ -437,9 +444,9 @@ class MotionSensor():
                 else:
                     return 0.0
             log("Flurlampe hack:", bri, "->", f(bri))
-            _phue.set_lights("Flurlampe", bri=f(bri), ct=ct, time=t)
+            _phue.set_lights("Flurlampe", bri=f(bri), ct=ct, time=time)
 
-        _phue.set_lights(lights, bri=bri, ct=ct, time=t)
+        _phue.set_lights(lights, bri=bri, ct=ct, time=time)
         self.current_bri = bri
         self.current_ct = ct
 
@@ -457,7 +464,7 @@ class MotionSensor():
         self.is_on = True
 
         if not self.lights_within_margin(bri, ct):
-            self.set_lights(bri, ct, force_fast=True)
+            self.set_lights(bri, ct, time=.4)
     
     def mark_motion_idle_timeout(self, sensor_id):
         log("mark_motion_idle_timeout " + sensor_id)
@@ -468,30 +475,30 @@ class MotionSensor():
             self.is_on = False
             self.turn_off_lights()
 
-    def set_master_bri(self, master_bri):
+    def set_master_bri(self, master_bri, time=None):
         log("set_master_bri " + str(master_bri))
         self.master_bri = master_bri
         bri = self.get_slave_bri()
         if not self.lights_within_margin(bri=bri) and self.is_on:
-            self.set_lights(bri=bri)
+            self.set_lights(bri=bri, time=time)
 
-    def set_master_ct(self, master_ct):
+    def set_master_ct(self, master_ct, time=None):
         log("set_master_ct " + str(master_ct))
         self.master_ct = master_ct
         ct = self.get_slave_ct()
         if not self.lights_within_margin(ct=ct) and self.is_on:
-            self.set_lights(ct=ct)
+            self.set_lights(ct=ct, time=time)
 
-    def update_lights(self):
+    def update_lights(self, time=None):
         bri = self.get_slave_bri()
         ct = self.get_slave_ct()
         if not self.lights_within_margin(bri=bri, ct=ct) and self.is_on:
-            self.set_lights(bri=bri, ct=ct)
+            self.set_lights(bri=bri, ct=ct, time=time)
 
     def set_ambient_bri(self, bri):
         log("set_ambient_bri " + str(bri))
         self.ambient_bri = bri
-        self.update_lights()
+        self.update_lights(time=5*60)
 
     def update_ambient_ct(self, update_lights=True):
         d, _ = scheduled_scene.get_scene_dict()
@@ -501,9 +508,6 @@ class MotionSensor():
         self.ambient_ct = ct
         if update_lights:
             self.update_lights()
-
-
-all_sensors = list()
 
 
 kuche_sensor = MotionSensor(sensor_ids=["96d931b2-ec53-4753-995a-129ee480d3d6"],
