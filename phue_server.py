@@ -63,6 +63,20 @@ class Switch():
 
         self.last_event = -float('inf')
 
+        self.number_of_short_presses_timestamps = 3
+        self.short_presses_timestamps = [-float('inf')] * self.number_of_short_presses_timestamps
+
+    def add_short_press_timestamp(self):
+        self.short_presses_timestamps.append(time.time())
+        if len(self.short_presses_timestamps) > self.number_of_short_presses_timestamps:
+            self.short_presses_timestamps.pop(0)
+
+    def is_double_press(self):
+        return sum(int(time.time() - t < 3.0) for t in self.short_presses_timestamps) == 2
+
+    def is_tripple_press(self):
+        return sum(int(time.time() - t < 3.0) for t in self.short_presses_timestamps) == 3
+
     def set_on_short_press_function(self, f):
         self.on_short_press_function = f
 
@@ -74,6 +88,12 @@ class Switch():
 
     def set_off_short_press_function(self, f):
         self.off_short_press_function = f
+
+    def set_off_double_press_function(self, f):
+        self.off_double_press_function = f
+
+    def set_off_tripple_press_function(self, f):
+        self.off_tripple_press_function = f
 
     def set_on_long_press_function(self, f):
         if self.on_hold_function is not None:
@@ -132,8 +152,16 @@ class Switch():
                 if self.down_short_press_function is not None:
                     self.down_short_press_function()
             elif button == "off":
-                if self.off_short_press_function is not None:
-                    self.off_short_press_function()
+                self.add_short_press_timestamp()
+                if self.is_tripple_press():
+                    if self.off_tripple_press_function is not None:
+                        self.off_tripple_press_function()
+                if self.is_double_press():
+                    if self.off_double_press_function is not None:
+                        self.off_double_press_function()
+                else:
+                    if self.off_short_press_function is not None:
+                        self.off_short_press_function()
 
         if event == "repeat":
             self.repeat_counter += 1
@@ -234,6 +262,14 @@ def wohnzimmer_off_short_press():
     scene.transition(name="off", room="wohnzimmer")
     wbh.update_current_scene(bri=0.0, ct=1.0)
 
+def wohnzimmer_off_double_press():
+    log("wohnzimmer off double press")
+    scene.transition(name="off")
+
+def wohnzimmer_off_tripple_press():
+    log("wohnzimmer off tripple press")
+    run_detached_shell("/home/pi/Programming/roomba/roomba.py --force-start")
+
 def wohnzimmer_on_long_press():
     log("wohnzimmer on long press")
     run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 3m")
@@ -246,6 +282,8 @@ wohnzimmer_switch.set_on_short_press_function(wohnzimmer_on_short_press)
 wohnzimmer_switch.set_up_short_press_function(wohnzimmer_up_short_press)
 wohnzimmer_switch.set_down_short_press_function(wohnzimmer_down_short_press)
 wohnzimmer_switch.set_off_short_press_function(wohnzimmer_off_short_press)
+wohnzimmer_switch.set_off_double_press_function(wohnzimmer_off_double_press)
+wohnzimmer_switch.set_off_tripple_press_function(wohnzimmer_off_tripple_press)
 wohnzimmer_switch.set_on_long_press_function(wohnzimmer_on_long_press)
 wohnzimmer_switch.set_off_long_press_function(wohnzimmer_off_long_press)
 
