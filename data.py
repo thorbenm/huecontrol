@@ -22,7 +22,7 @@ all_scenes = list(all_scene_attributes.keys())
 wohnzimmer_light_attributes = {
   "Stehlampe": ["bri", "ct"],
   "Sofalampe": ["bri", "ct"],
-  "Arbeitslampe": ["bri", "ct"],
+  "Globus": ["bri", "ct"],
   "Esstischlampe": ["bri"],
 }
 wohnzimmer_lights = list(wohnzimmer_light_attributes.keys())
