@@ -276,7 +276,7 @@ def wohnzimmer_on_long_press():
 
 def wohnzimmer_off_long_press():
     log("wohnzimmer off long press")
-    scene.transition(name="off", room="wohnzimmer", time=30*60)
+    scene.transition(name="off", room="wohnzimmer", time=60*60)
 
 wohnzimmer_switch.set_on_short_press_function(wohnzimmer_on_short_press)
 wohnzimmer_switch.set_up_short_press_function(wohnzimmer_up_short_press)
@@ -548,7 +548,7 @@ class MotionSensor():
             self.update_lights()
 
 
-kuche_sensor = MotionSensor(sensor_ids=["96d931b2-ec53-4753-995a-129ee480d3d6"],
+kuche_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
                             lights=data.get_lights("kuche"),
                             idle_timeout=10*60,
                             use_ambient_for_motion=True)
@@ -575,7 +575,7 @@ diele_sensor = MotionSensor(sensor_ids=["ec5fe5f9-be48-4957-b37d-8ca3d2e1116a"],
 all_sensors.append(diele_sensor)
 
 
-klo_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
+klo_sensor = MotionSensor(sensor_ids=["96d931b2-ec53-4753-995a-129ee480d3d6"],
                           lights=data.get_lights("klo"),
                           idle_timeout=15*60,
                           use_ambient_for_brightness=True)
