@@ -19,7 +19,7 @@ import time
 import sys
 
 
-MASTER_NAME = {r: data.get_lights(r)[0] for r in ["wohnzimmer", "schlafzimmer", "kinderzimmer"]}
+MASTER_NAME = {r: data.get_lights(r)[0] for r in data.get_rooms()}
 MASTER_ID = {r: light_ids.get_id(n) for r, n in MASTER_NAME.items()}
 AMBIENT_SENSOR_ID = "9dd345e1-d99a-40eb-8cfd-25209e90ebfd"
 BALCONY_MOTION_SENSOR = "dd4438ac-d357-4378-9b31-d4d92dd4911f"
@@ -220,7 +220,7 @@ class ButtonHandler():
         index += step
         index = max(0, index)
         index = min(index, len(data.all_scenes) - 1)
-        scene.transition(data.all_scenes[index], room=self.room)
+        scene.transition(data.all_scenes[index], rooms=self.room)
         self.current_scene = data.all_scenes[index]
     
     def step_up(self):
@@ -241,7 +241,7 @@ wohnzimmer_switch = Switch()
 
 def wohnzimmer_on_short_press():
     log("wohnzimmer on short press")
-    s = scheduled_scene.transition(room="wohnzimmer")
+    s = scheduled_scene.transition(rooms="wohnzimmer")
     bri = s[MASTER_NAME["wohnzimmer"]]["bri"]
     ct = s[MASTER_NAME["wohnzimmer"]]["ct"]
     wbh.update_current_scene(bri=bri, ct=ct)
@@ -259,7 +259,7 @@ def wohnzimmer_down_short_press():
 
 def wohnzimmer_off_short_press():
     log("wohnzimmer off short press")
-    scene.transition(name="off", room="wohnzimmer")
+    scene.transition(name="off", rooms="wohnzimmer")
     wbh.update_current_scene(bri=0.0, ct=1.0)
 
 def wohnzimmer_off_double_press():
@@ -272,11 +272,11 @@ def wohnzimmer_off_tripple_press():
 
 def wohnzimmer_on_long_press():
     log("wohnzimmer on long press")
-    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 3m")
+    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 2m")
 
 def wohnzimmer_off_long_press():
     log("wohnzimmer off long press")
-    scene.transition(name="off", room="wohnzimmer", time=60*60)
+    scene.transition(name="off", rooms="wohnzimmer", time=60*60)
 
 wohnzimmer_switch.set_on_short_press_function(wohnzimmer_on_short_press)
 wohnzimmer_switch.set_up_short_press_function(wohnzimmer_up_short_press)
@@ -293,7 +293,7 @@ schlafzimmer_switch = Switch()
 
 def schlafzimmer_on_short_press():
     log("schlafzimmer bed on short press")
-    s = scheduled_scene.transition(room="schlafzimmer")
+    s = scheduled_scene.transition(rooms="schlafzimmer")
     bri = s[MASTER_NAME["schlafzimmer"]]["bri"]
     ct = s[MASTER_NAME["schlafzimmer"]]["ct"]
     sbh.update_current_scene(bri=bri, ct=ct)
@@ -308,7 +308,7 @@ def schlafzimmer_down_short_press():
 
 def schlafzimmer_off_short_press():
     log("schlafzimmer bed off short press")
-    scene.transition(name="off", room="schlafzimmer")
+    scene.transition(name="off", rooms="schlafzimmer")
     sbh.update_current_scene(bri=0.0, ct=1.0)
 
 def schlafzimmer_on_long_press():
@@ -317,7 +317,7 @@ def schlafzimmer_on_long_press():
 
 def schlafzimmer_off_long_press():
     log("schlafzimmer bed off long press")
-    scene.transition(name="off", room="schlafzimmer", time=3*60)
+    scene.transition(name="off", rooms="schlafzimmer", time=3*60)
 
 schlafzimmer_switch.set_on_short_press_function(schlafzimmer_on_short_press)
 schlafzimmer_switch.set_up_short_press_function(schlafzimmer_up_short_press)
@@ -332,7 +332,7 @@ kinderzimmer_switch = Switch()
 
 def kinderzimmer_on_short_press():
     log("kinderzimmer on short press")
-    s = scheduled_scene.transition(room="kinderzimmer")
+    s = scheduled_scene.transition(rooms="kinderzimmer")
     bri = s[MASTER_NAME["kinderzimmer"]]["bri"]
     ct = s[MASTER_NAME["kinderzimmer"]]["ct"]
     kbh.update_current_scene(bri=bri, ct=ct)
@@ -347,7 +347,7 @@ def kinderzimmer_down_short_press():
 
 def kinderzimmer_off_short_press():
     log("kinderzimmer off short press")
-    scene.transition(name="off", room="kinderzimmer")
+    scene.transition(name="off", rooms="kinderzimmer")
     kbh.update_current_scene(bri=0.0, ct=1.0)
 
 def kinderzimmer_on_long_press():
@@ -356,7 +356,7 @@ def kinderzimmer_on_long_press():
 
 def kinderzimmer_off_long_press():
     log("kinderzimmer off long press")
-    scene.transition(name="off", room="kinderzimmer", time=15*60)
+    scene.transition(name="off", rooms="kinderzimmer", time=15*60)
 
 kinderzimmer_switch.set_on_short_press_function(kinderzimmer_on_short_press)
 kinderzimmer_switch.set_up_short_press_function(kinderzimmer_up_short_press)

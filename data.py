@@ -22,10 +22,9 @@ all_scenes = list(all_scene_attributes.keys())
 wohnzimmer_light_attributes = {
   "Stehlampe": ["bri", "ct"],
   "Sofalampe": ["bri", "ct"],
-  "Globus": ["bri", "ct"],
+  "Kaminlampe": ["bri", "ct"],
   "Esstischlampe": ["bri"],
 }
-wohnzimmer_lights = list(wohnzimmer_light_attributes.keys())
 
 
 schlafzimmer_light_attributes = {
@@ -33,30 +32,42 @@ schlafzimmer_light_attributes = {
   "Nachttischlampe Rechts": ["bri", "ct"],
   "Schlafzimmer " + HANGELAMPE: ["bri"],
 }
-schlafzimmer_lights = list(schlafzimmer_light_attributes.keys())
 
 
 kinderzimmer_light_attributes = {
   "Kinderlampe": ["bri", "ct"],
   "Kinderzimmer " + HANGELAMPE: ["bri"],
-  "Lichterkette": ["on"],
 }
-kinderzimmer_lights = list(kinderzimmer_light_attributes.keys())
 
+
+arbeitszimmer_light_attributes = {
+  "Bildschirm": ["bri", "ct"],
+  "Deckenlampe Arbeitszimmer": ["bri", "ct"],
+  "Globus": ["bri", "ct"],
+  "Play": ["bri", "ct"],
+}
 
 all_light_attributes = {
   **wohnzimmer_light_attributes,
   **schlafzimmer_light_attributes,
-  **kinderzimmer_light_attributes
+  **kinderzimmer_light_attributes,
+  **arbeitszimmer_light_attributes
 }
-all_lights = list(all_light_attributes.keys())
 
 
 all_rooms = [
     "wohnzimmer",
     "schlafzimmer",
     "kinderzimmer",
+    "arbeitszimmer"
 ]
+
+
+all_light_attributes = {}
+for r in all_rooms:
+    assert r + "_light_attributes" in globals(), f"{r}_lights not found"
+    all_light_attributes.update(eval(r + "_light_attributes"))
+    exec(f"{r}_lights = list(eval(r + '_light_attributes').keys())")
 
 
 all_slave_rooms = [
@@ -114,6 +125,7 @@ def get_scene(scene, room="all"):
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
             "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
             "Esstischlampe": {"bri": 0.0},
+            "Deckenlampe Arbeitszimmer": {"bri": 0.0},
         },
         "dunkel": {
             "Filament": {"bri": 0.0},
@@ -121,6 +133,7 @@ def get_scene(scene, room="all"):
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
             "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
             "Esstischlampe": {"bri": 0.0},
+            "Deckenlampe Arbeitszimmer": {"bri": 0.0},
         },
         "gemutlich": {
             "Filament": {"bri": 0.0},
@@ -128,20 +141,21 @@ def get_scene(scene, room="all"):
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
             "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
             "Esstischlampe": {"bri": 0.0},
+            "Deckenlampe Arbeitszimmer": {"bri": min_bri()},
         },
         "lounge": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
             "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
-            "Esstischlampe": {"bri": min_bri()},
+            "Esstischlampe": {"bri": 0.25},
         },
         "warm": {
             "Filament": {"bri": 0.0},
             "Deckenlampe": {"bri": 0.0},
             "Schlafzimmer " + HANGELAMPE: {"bri": 0.0},
             "Kinderzimmer " + HANGELAMPE: {"bri": 0.0},
-            "Esstischlampe": {"bri": 0.25},
+            "Esstischlampe": {"bri": 1.0},
         },
         "halbwarm": {
             "Filament": {"bri": 0.5},

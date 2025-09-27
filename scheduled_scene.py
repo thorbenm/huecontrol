@@ -62,7 +62,7 @@ def parse_args(input_args=None):
     return args
 
 
-def transition(time=.4, room="all", hour=None, minute=None, dt=None):
+def transition(time=.4, rooms="all", hour=None, minute=None, dt=None):
     if dt is None:
         dt = datetime.datetime.now()
     dt = dt.replace(second=0, microsecond=0)
@@ -74,25 +74,25 @@ def transition(time=.4, room="all", hour=None, minute=None, dt=None):
     current, _ = __get_last_two_variables(dt)
 
     if current.when + datetime.timedelta(seconds=(current.scene_args.time-60)) < dt:
-        return scene.transition(current.value, time=time, room=room)
+        return scene.transition(current.value, time=time, rooms=rooms)
     else:
-        interpolated_scene, adjusted_transition_time = get_scene_dict(dt, room)
+        interpolated_scene, adjusted_transition_time = get_scene_dict(dt, rooms)
         scene.transition_dicionary(interpolated_scene, time=time)
         sleep(1.0 + time)
         adjusted_transition_time -= 60  # to not run into next transition
         adjusted_transition_time = max(adjusted_transition_time, .4)
-        scene.transition(current.value, time=adjusted_transition_time, room=room)
+        scene.transition(current.value, time=adjusted_transition_time, rooms=rooms)
         return interpolated_scene
 
 
 def main(input_args=None):
     args = parse_args(input_args)
     if args.wohnzimmer:
-        transition(time=args.time, room="wohnzimmer")
+        transition(time=args.time, rooms="wohnzimmer")
     if args.schlafzimmer:
-        transition(time=args.time, room="schlafzimmer")
+        transition(time=args.time, rooms="schlafzimmer")
     if args.kinderzimmer:
-        transition(time=args.time, room="kinderzimmer")
+        transition(time=args.time, rooms="kinderzimmer")
 
 
 if __name__ == '__main__':

@@ -63,7 +63,7 @@ def is_variable_definition(command):
 def variable_definition_command_filter(command):
     if command.startswith("scene "):
         args = scene.parse_args(command)
-        if args.write_scheduled:
+        if args.update:
             return f"scheduled_scene = '{args.scene}'"
     return command
 

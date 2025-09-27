@@ -35,12 +35,14 @@ def transition_dicionary(d, time=.4, reduce_only=False, increase_only=False):
 TRANSITION_FILE = "/home/pi/transition"
 
 
-def transition(name, room="all", time=.4, reduce_only=False, increase_only=False,
+def transition(name, rooms="all", time=.4, reduce_only=False, increase_only=False,
                low_priority=False, abort_wakeup=True, _override={}):
-    if room == "all":
+    if rooms == "all":
         rooms = data.get_rooms()
+    elif isinstance(rooms, str):
+        rooms = [rooms]
     else:
-        rooms = [room]
+        rooms = rooms
 
     if low_priority:
         for r in rooms:
@@ -97,14 +99,23 @@ def parse_args(input_args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument(type=str, dest='scene')
-    parser.add_argument(type=str, dest='room', default="all", nargs='?')
-    parser.add_argument('-t', type=str, default='0.4s', dest='time')
-    parser.add_argument('-r', '--reduce-only', action='store_true', dest='reduce_only')
-    parser.add_argument('-w', action='store_true', dest='write_scheduled',
-                        help='store as scheduled scene')
-    parser.add_argument('-l', action='store_true', dest='low_priority',
+    parser.add_argument('-t', '--time', type=str, default='0.4s', dest='time',
+                        help='transition time')
+    parser.add_argument('-r', '--reduce-only', action='store_true', dest='reduce_only',
+                        help='only reduce the brightness')
+    parser.add_argument('-u', '--update', action='store_true', dest='update',
+                        help='update the scene in the calendar')
+    parser.add_argument('-l', '--low-priority', action='store_true', dest='low_priority',
                         help='will not abort ongoing transition')
+
+    for r in data.get_rooms():
+        parser.add_argument(f'--{r}', f'-{r[0]}', action='store_true', dest=r)
+
     args = parser.parse_args(input_args if input_args else None)
+
+    if not any(getattr(args, r) for r in data.get_rooms()):
+        for r in data.get_rooms():
+            setattr(args, r, True)
 
     args.time = toolbox.convert_time_string(args.time)
     return args
@@ -112,7 +123,8 @@ def parse_args(input_args=None):
 
 def main(input_args=None):
     args = parse_args(input_args)
-    transition(name=args.scene, room=args.room, time=args.time,
+    rooms = [r for r in data.get_rooms() if getattr(args, r)]
+    transition(name=args.scene, rooms=rooms, time=args.time,
                reduce_only=args.reduce_only, low_priority=args.low_priority)
 
 
