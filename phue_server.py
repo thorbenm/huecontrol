@@ -236,134 +236,68 @@ def run_detached_shell(command):
     subprocess.Popen(full_command, shell=True, executable="/bin/bash")
 
 
-wbh = ButtonHandler("wohnzimmer")
-wohnzimmer_switch = Switch()
+switches = {r: Switch() for r in data.get_rooms()}
+handlers = {r: ButtonHandler(r) for r in data.get_rooms()}
 
-def wohnzimmer_on_short_press():
-    log("wohnzimmer on short press")
-    s = scheduled_scene.transition(rooms="wohnzimmer")
-    bri = s[MASTER_NAME["wohnzimmer"]]["bri"]
-    ct = s[MASTER_NAME["wohnzimmer"]]["ct"]
-    wbh.update_current_scene(bri=bri, ct=ct)
-    for sensor in all_sensors:
-        sensor.set_master_bri(bri, time=.4)
-        sensor.set_master_ct(ct, time=.4)
 
-def wohnzimmer_up_short_press():
-    log("wohnzimmer up short press")
-    wbh.step_up()
+def _on_short_press(room, update_master):
+    log(f"{room} on short press")
+    s = scheduled_scene.transition(rooms=room)
+    bri = s[MASTER_NAME[room]]["bri"]
+    ct = s[MASTER_NAME[room]]["ct"]
+    handlers[room].update_current_scene(bri=bri, ct=ct)
+    if update_master:
+        for sensor in all_sensors:
+            sensor.set_master_bri(bri, time=.4)
+            sensor.set_master_ct(ct, time=.4)
 
-def wohnzimmer_down_short_press():
-    log("wohnzimmer down short press")
-    wbh.step_down()
+def _up_short_press(room):
+    log(f"{room} up short press")
+    handlers[room].step_up()
 
-def wohnzimmer_off_short_press():
-    log("wohnzimmer off short press")
-    scene.transition(name="off", rooms="wohnzimmer")
-    wbh.update_current_scene(bri=0.0, ct=1.0)
+def _down_short_press(room):
+    log(f"{room} down short press")
+    handlers[room].step_down()
 
-def wohnzimmer_off_double_press():
-    log("wohnzimmer off double press")
+def _off_short_press(room):
+    log(f"{room} off short press")
+    scene.transition(name="off", rooms=room)
+    handlers[room].update_current_scene(bri=0.0, ct=1.0)
+
+def _off_double_press(room):
+    log(f"{room} off double press")
     scene.transition(name="off")
 
-def wohnzimmer_off_tripple_press():
-    log("wohnzimmer off tripple press")
+def _off_tripple_press(room):
+    log(f"{room} off tripple press")
     run_detached_shell("/home/pi/Programming/roomba/roomba.py --force-start")
 
-def wohnzimmer_on_long_press():
-    log("wohnzimmer on long press")
-    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -w -t2 2m")
+def _on_long_press(room):
+    log(f"{room} on long press")
+    run_detached_shell(f"/home/pi/Programming/huecontrol/wakeup.py -{room[0]} -t2 1m")
 
-def wohnzimmer_off_long_press():
-    log("wohnzimmer off long press")
-    scene.transition(name="off", rooms="wohnzimmer", time=60*60)
-
-wohnzimmer_switch.set_on_short_press_function(wohnzimmer_on_short_press)
-wohnzimmer_switch.set_up_short_press_function(wohnzimmer_up_short_press)
-wohnzimmer_switch.set_down_short_press_function(wohnzimmer_down_short_press)
-wohnzimmer_switch.set_off_short_press_function(wohnzimmer_off_short_press)
-wohnzimmer_switch.set_off_double_press_function(wohnzimmer_off_double_press)
-wohnzimmer_switch.set_off_tripple_press_function(wohnzimmer_off_tripple_press)
-wohnzimmer_switch.set_on_long_press_function(wohnzimmer_on_long_press)
-wohnzimmer_switch.set_off_long_press_function(wohnzimmer_off_long_press)
+def _off_long_press(room, time):
+    log(f"{room} off long press")
+    scene.transition(name="off", rooms=room, time=time)
 
 
-sbh = ButtonHandler("schlafzimmer")
-schlafzimmer_switch = Switch()
+for r in data.get_rooms():
+    if r == "wohnzimmer":
+        switches[r].set_on_short_press_function(lambda room=r: _on_short_press(room, update_master=True))
+    else:
+        switches[r].set_on_short_press_function(lambda room=r: _on_short_press(room, update_master=False))
+    switches[r].set_up_short_press_function(lambda room=r: _up_short_press(room))
+    switches[r].set_down_short_press_function(lambda room=r: _down_short_press(room))
+    switches[r].set_off_short_press_function(lambda room=r: _off_short_press(room))
+    switches[r].set_on_long_press_function(lambda room=r: _on_long_press(room))
 
-def schlafzimmer_on_short_press():
-    log("schlafzimmer bed on short press")
-    s = scheduled_scene.transition(rooms="schlafzimmer")
-    bri = s[MASTER_NAME["schlafzimmer"]]["bri"]
-    ct = s[MASTER_NAME["schlafzimmer"]]["ct"]
-    sbh.update_current_scene(bri=bri, ct=ct)
+switches["wohnzimmer"].set_off_double_press_function(lambda: _off_double_press("wohnzimmer"))
+switches["wohnzimmer"].set_off_tripple_press_function(lambda: _off_tripple_press("wohnzimmer"))
 
-def schlafzimmer_up_short_press():
-    log("schlafzimmer bed up short press")
-    sbh.step_up()
-
-def schlafzimmer_down_short_press():
-    log("schlafzimmer bed down short press")
-    sbh.step_down()
-
-def schlafzimmer_off_short_press():
-    log("schlafzimmer bed off short press")
-    scene.transition(name="off", rooms="schlafzimmer")
-    sbh.update_current_scene(bri=0.0, ct=1.0)
-
-def schlafzimmer_on_long_press():
-    log("schlafzimmer bed on long press")
-    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -s -t2 1m")
-
-def schlafzimmer_off_long_press():
-    log("schlafzimmer bed off long press")
-    scene.transition(name="off", rooms="schlafzimmer", time=3*60)
-
-schlafzimmer_switch.set_on_short_press_function(schlafzimmer_on_short_press)
-schlafzimmer_switch.set_up_short_press_function(schlafzimmer_up_short_press)
-schlafzimmer_switch.set_down_short_press_function(schlafzimmer_down_short_press)
-schlafzimmer_switch.set_off_short_press_function(schlafzimmer_off_short_press)
-schlafzimmer_switch.set_on_long_press_function(schlafzimmer_on_long_press)
-schlafzimmer_switch.set_off_long_press_function(schlafzimmer_off_long_press)
-
-
-kbh = ButtonHandler("kinderzimmer")
-kinderzimmer_switch = Switch()
-
-def kinderzimmer_on_short_press():
-    log("kinderzimmer on short press")
-    s = scheduled_scene.transition(rooms="kinderzimmer")
-    bri = s[MASTER_NAME["kinderzimmer"]]["bri"]
-    ct = s[MASTER_NAME["kinderzimmer"]]["ct"]
-    kbh.update_current_scene(bri=bri, ct=ct)
-
-def kinderzimmer_up_short_press():
-    log("kinderzimmer up short press")
-    kbh.step_up()
-
-def kinderzimmer_down_short_press():
-    log("kinderzimmer down short press")
-    kbh.step_down()
-
-def kinderzimmer_off_short_press():
-    log("kinderzimmer off short press")
-    scene.transition(name="off", rooms="kinderzimmer")
-    kbh.update_current_scene(bri=0.0, ct=1.0)
-
-def kinderzimmer_on_long_press():
-    log("kinderzimmer on long press")
-    run_detached_shell("/home/pi/Programming/huecontrol/wakeup.py -k -t2 1m")
-
-def kinderzimmer_off_long_press():
-    log("kinderzimmer off long press")
-    scene.transition(name="off", rooms="kinderzimmer", time=15*60)
-
-kinderzimmer_switch.set_on_short_press_function(kinderzimmer_on_short_press)
-kinderzimmer_switch.set_up_short_press_function(kinderzimmer_up_short_press)
-kinderzimmer_switch.set_down_short_press_function(kinderzimmer_down_short_press)
-kinderzimmer_switch.set_off_short_press_function(kinderzimmer_off_short_press)
-kinderzimmer_switch.set_on_long_press_function(kinderzimmer_on_long_press)
-kinderzimmer_switch.set_off_long_press_function(kinderzimmer_off_long_press)
+switches["wohnzimmer"].set_off_long_press_function(lambda: _off_long_press("wohnzimmer", 60*60))
+switches["schlafzimmer"].set_off_long_press_function(lambda: _off_long_press("schlafzimmer", 3*60))
+switches["kinderzimmer"].set_off_long_press_function(lambda: _off_long_press("kinderzimmer", 15*60))
+switches["arbeitszimmer"].set_off_long_press_function(lambda: _off_long_press("arbeitszimmer", 60*60))
 
 
 class MotionSensor():
@@ -643,7 +577,7 @@ async def main():
 
         # Define a callback function for processing motion events
         async def handle_event(event_type, event):
-            #log(event)
+            # log(event)
 
             if event is None:
                 return
@@ -653,70 +587,36 @@ async def main():
                 return
 
             # Handle dimming events
-            if event["id"] == MASTER_ID["wohnzimmer"]:
-                if not _phue.fake_recently_changed():
+            if event["id"] in MASTER_ID.values():
+                room = [r for r, id in MASTER_ID.items() if id == event["id"]][0]
+                if not _phue.fake_recently_changed() or room != "wohnzimmer":
                     if "dimming" in event:
                         brightness = event["dimming"]["brightness"]
-                        #log("New master brightness:", brightness)
-                        for sensor in all_sensors:
-                            sensor.set_master_bri(brightness / 100.0)
-                        if not wohnzimmer_switch.button_recently_pressed():
-                            wbh.update_current_scene(bri=brightness / 100.0)
+                        if not switches[room].button_recently_pressed():
+                            handlers[room].update_current_scene(bri=brightness / 100.0)
+                        if room == "wohnzimmer":
+                            for sensor in all_sensors:
+                                sensor.set_master_bri(brightness / 100.0)
 
                     if "on" in event:
                         if event['on']['on'] == False:
-                            for sensor in all_sensors:
-                                sensor.set_master_bri(0.0)
-                            if not wohnzimmer_switch.button_recently_pressed():
-                                wbh.update_current_scene(bri=0.0, ct=1.0)
+                            if not switches[room].button_recently_pressed():
+                                handlers[room].update_current_scene(bri=0.0, ct=1.0)
+                            if room == "wohnzimmer":
+                                for sensor in all_sensors:
+                                    sensor.set_master_bri(0.0)
 
-                    # handle color temperature events
                     if "color_temperature" in event:
                         if event["color_temperature"]["mirek_valid"]:
                             mirek = event["color_temperature"]["mirek"]
                             ct = _phue.convert_mirek_to_ct(mirek)
-                            for sensor in all_sensors:
-                                sensor.set_master_ct(ct)
-                            if not wohnzimmer_switch.button_recently_pressed():
-                                wbh.update_current_scene(ct=ct)
+                            if not switches[room].button_recently_pressed():
+                                handlers[room].update_current_scene(ct=ct)
+                            if room == "wohnzimmer":
+                                for sensor in all_sensors:
+                                    sensor.set_master_ct(ct)
                         else:
                             log("mirek not valid:", event)
-
-            if event["id"] == MASTER_ID["schlafzimmer"]:
-                if "dimming" in event:
-                    brightness = event["dimming"]["brightness"]
-                    if not schlafzimmer_switch.button_recently_pressed():
-                        sbh.update_current_scene(bri=brightness / 100.0)
-                if "on" in event:
-                    if event['on']['on'] == False:
-                        if not schlafzimmer_switch.button_recently_pressed():
-                            sbh.update_current_scene(bri=0.0, ct=1.0)
-                if "color_temperature" in event:
-                    if event["color_temperature"]["mirek_valid"]:
-                        mirek = event["color_temperature"]["mirek"]
-                        ct = _phue.convert_mirek_to_ct(mirek)
-                        if not schlafzimmer_switch.button_recently_pressed():
-                            sbh.update_current_scene(ct=ct)
-                    else:
-                        log("mirek not valid:", event)
-
-            if event["id"] == MASTER_ID["kinderzimmer"]:
-                if "dimming" in event:
-                    brightness = event["dimming"]["brightness"]
-                    if not kinderzimmer_switch.button_recently_pressed():
-                        kbh.update_current_scene(bri=brightness / 100.0)
-                if "on" in event:
-                    if event['on']['on'] == False:
-                        if not kinderzimmer_switch.button_recently_pressed():
-                            kbh.update_current_scene(bri=0.0, ct=1.0)
-                if "color_temperature" in event:
-                    if event["color_temperature"]["mirek_valid"]:
-                        mirek = event["color_temperature"]["mirek"]
-                        ct = _phue.convert_mirek_to_ct(mirek)
-                        if not kinderzimmer_switch.button_recently_pressed():
-                            kbh.update_current_scene(ct=ct)
-                    else:
-                        log("mirek not valid:", event)
 
             # Handle light level events
             if event['type'] == "light_level":
@@ -762,43 +662,13 @@ async def main():
                     motion_timeout_tasks[sensor_id] = asyncio.create_task(motion_timeout(sensor_id, idle_timeout))
 
             if "button" in event:
-                button_names = {
-                    '434e02f5-0679-47d8-afb7-7e74ba8b0f0a': ['wohnzimmer fridge', 'on'],
-                    '9b85666c-ff81-4c8c-95d8-9034b74e9c57': ['wohnzimmer fridge', 'up'],
-                    '2cdf8ceb-d272-44fb-ad7e-a9903045633a': ['wohnzimmer fridge', 'down'],
-                    '86ccd746-e412-4089-81ab-882c4826bdaf': ['wohnzimmer fridge', 'off'],
-
-                    '40d45630-a6a3-461c-bbb9-240788c87910': ['wohnzimmer door', 'on'],
-                    '49b46ed1-a774-4656-8456-ec262b07a375': ['wohnzimmer door', 'up'],
-                    'bdaf080a-e651-4e30-bfe6-1e169eb9b6f4': ['wohnzimmer door', 'down'],
-                    '6133ace3-7a9e-4de8-a1a6-ec0f6bf9c3c4': ['wohnzimmer door', 'off'],
-
-                    '5610d840-191e-4ebb-9087-1db469842897': ['schlafzimmer door', 'on'],
-                    'cacdfa45-d676-4c3f-af87-e144c1036d86': ['schlafzimmer door', 'up'],
-                    '772ca980-dbdf-4c09-854c-52cd0054835e': ['schlafzimmer door', 'down'],
-                    '3105cbbd-9559-45f4-b470-591e75977014': ['schlafzimmer door', 'off'],
-                    
-                    '78a2ea22-6d24-44b8-8129-4628f8fc1486': ['schlafzimmer bed', 'on'],
-                    '4583c212-827e-44aa-b89f-91312f8b5d1c': ['schlafzimmer bed', 'up'],
-                    '42fc8925-9d12-4ee2-bcc9-daaa984689ec': ['schlafzimmer bed', 'down'],
-                    'bed51e86-48ef-4e72-a6ac-732a2d149703': ['schlafzimmer bed', 'off'],
-
-                    '7651940a-eadc-44b6-8757-75ac59df36bf': ['kinderzimmer', 'on'],
-                    'c2fa050b-7c44-45db-9df7-53c9fb5f23c1': ['kinderzimmer', 'up'],
-                    'da413bc1-b656-4679-a804-3a73e9ee146d': ['kinderzimmer', 'down'],
-                    'be2ac1af-410c-426d-a673-fcabcd317b61': ['kinderzimmer', 'off'],
-                }
-
                 button_id = event['id']
                 event_type = event['button']['button_report']['event']
                 
-                switch, button = button_names[button_id]
-                if switch.startswith("wohnzimmer"):
-                    wohnzimmer_switch.button_event(button, event_type)
-                elif switch.startswith("schlafzimmer"):
-                    schlafzimmer_switch.button_event(button, event_type)
-                elif switch.startswith("kinderzimmer"):
-                    kinderzimmer_switch.button_event(button, event_type)
+                print(button_id, event_type)
+                room, button = data.buttons[button_id]
+                print(room, button)
+                switches[room].button_event(button, event_type)
 
         # Subscribe to events
         log("Listening for events...")

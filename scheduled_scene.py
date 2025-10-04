@@ -20,7 +20,7 @@ def __get_last_two_variables(dt=None):
     return current, before
 
 
-def get_scene_dict(dt=None, room="all"):
+def get_scene_dict(dt=None, rooms="all"):
     if dt is None:
         dt = datetime.datetime.now()
 
@@ -34,11 +34,11 @@ def get_scene_dict(dt=None, room="all"):
     if .1 < current.scene_args.time:
         f = toolbox.map(dt.timestamp(), transition_start, transition_end, 0, 1, clamp=True)
         adjusted_transition_time = transition_end - dt.timestamp()
-        s = toolbox.scene_superposition(f, data.get_scene(current.value, room),
-                                        1 - f, data.get_scene(before.value, room))
+        s = toolbox.scene_superposition(f, data.get_scene(current.value, rooms),
+                                        1 - f, data.get_scene(before.value, rooms))
         return s, adjusted_transition_time
     else:
-        return data.get_scene(current.value, room), 0.0
+        return data.get_scene(current.value, rooms), 0.0
 
 
 def parse_args(input_args=None):
@@ -50,19 +50,29 @@ def parse_args(input_args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', type=str, default='0.4s', dest='time')
-    parser.add_argument('-w', action='store_true', dest='wohnzimmer')
-    parser.add_argument('-s', action='store_true', dest='schlafzimmer')
-    parser.add_argument('-k', action='store_true', dest='kinderzimmer')
+
+    for r in data.get_rooms():
+        parser.add_argument(f'--{r}', f'-{r[0]}', action='store_true', dest=r)
+
     args = parser.parse_args(input_args if input_args else None)
+
+    if not any(getattr(args, r) for r in data.get_rooms()):
+        for r in data.get_rooms():
+            setattr(args, r, True)
+
     args.time = toolbox.convert_time_string(args.time)
-    if not args.wohnzimmer and not args.schlafzimmer and not args.kinderzimmer:
-        args.wohnzimmer = True
-        args.schlafzimmer = True
-        args.kinderzimmer = True
+
     return args
 
 
 def transition(time=.4, rooms="all", hour=None, minute=None, dt=None):
+    if rooms == "all":
+        rooms = data.get_rooms()
+    elif isinstance(rooms, str):
+        rooms = [rooms]
+    else:
+        rooms = rooms
+
     if dt is None:
         dt = datetime.datetime.now()
     dt = dt.replace(second=0, microsecond=0)
@@ -87,12 +97,8 @@ def transition(time=.4, rooms="all", hour=None, minute=None, dt=None):
 
 def main(input_args=None):
     args = parse_args(input_args)
-    if args.wohnzimmer:
-        transition(time=args.time, rooms="wohnzimmer")
-    if args.schlafzimmer:
-        transition(time=args.time, rooms="schlafzimmer")
-    if args.kinderzimmer:
-        transition(time=args.time, rooms="kinderzimmer")
+    rooms = [r for r in data.get_rooms() if getattr(args, r)]
+    transition(time=args.time, rooms=rooms)
 
 
 if __name__ == '__main__':
