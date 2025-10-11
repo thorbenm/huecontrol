@@ -20,6 +20,9 @@ def map(x, in_min, in_max, out_min, out_max, clamp=False):
     return ret
 
 
+min_bri = 1.1/254.0
+
+
 def scene_superposition(factor1, scene1, factor2, scene2):
     lamps1 = set(scene1.keys())
     lamps2 = set(scene2.keys())
@@ -38,4 +41,7 @@ def scene_superposition(factor1, scene1, factor2, scene2):
             ret[l][p] = factor1 * scene1[l][p] + factor2 * scene2[l][p]
             if p == "on":
                 ret[l][p] = bool(ret[l][p])
+            if p == "bri":
+                if 1e-9 < ret[l][p] < min_bri:
+                    ret[l][p] = min_bri
     return ret

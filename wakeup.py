@@ -86,7 +86,7 @@ def parse_args(input_args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-t1', type=str, default='1s', dest='t1')
-    parser.add_argument('-t2', type=str, default='10m', dest='t2')
+    parser.add_argument('-t2', type=str, default='5m', dest='t2')
     parser.add_argument('-t3', type=str, default='5m', dest='t3')
     parser.add_argument('-t4', type=str, default='auto', dest='t4')
 
@@ -104,7 +104,7 @@ def parse_args(input_args=None):
     args.t3 = toolbox.convert_time_string(args.t3)
 
     if args.t4 == "auto":
-        args.t4 = toolbox.map(ambient.get_simulated_bri(), 0, .5, 90 * 60, 5 * 60, clamp=True)
+        args.t4 = toolbox.map(ambient.get_simulated_bri(), .1, .5, 109 * 60, 5 * 60, clamp=True)
     else:
         args.t4 = toolbox.convert_time_string(args.t4)
 

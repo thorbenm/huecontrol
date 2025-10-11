@@ -276,9 +276,9 @@ def _on_long_press(room):
     log(f"{room} on long press")
     run_detached_shell(f"/home/pi/Programming/huecontrol/wakeup.py -{room[0]} -t2 1m")
 
-def _off_long_press(room, time):
+def _off_long_press(room, time, scene_name="off"):
     log(f"{room} off long press")
-    scene.transition(name="off", rooms=room, time=time)
+    scene.transition(name=scene_name, rooms=room, time=time)
 
 
 for r in data.get_rooms():
@@ -296,7 +296,7 @@ switches["wohnzimmer"].set_off_tripple_press_function(lambda: _off_tripple_press
 
 switches["wohnzimmer"].set_off_long_press_function(lambda: _off_long_press("wohnzimmer", 60*60))
 switches["schlafzimmer"].set_off_long_press_function(lambda: _off_long_press("schlafzimmer", 3*60))
-switches["kinderzimmer"].set_off_long_press_function(lambda: _off_long_press("kinderzimmer", 15*60))
+switches["kinderzimmer"].set_off_long_press_function(lambda: _off_long_press("kinderzimmer", 10*60, scene_name="min"))
 switches["arbeitszimmer"].set_off_long_press_function(lambda: _off_long_press("arbeitszimmer", 60*60))
 
 

@@ -115,11 +115,6 @@ def get_variable(name, hour=None, minute=None, dt=None):
 
 
 def test():
-    assert get_variable("auto_ct", 11, 59) == False
-    assert get_variable("auto_ct", 12, 00) == True
-    assert get_variable("auto_ct", 16, 59) == True
-    assert get_variable("auto_ct", 17, 00) == False
-
     assert get_variable("scheduled_scene", 6, 59) == "gemutlich"
     assert get_variable("scheduled_scene", 7, 00) == "hell"
     assert get_variable("scheduled_scene", 16, 59) == "hell"

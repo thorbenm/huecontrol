@@ -153,30 +153,11 @@ def turn_off_if_ambient_above_limit():
         scene.transition('off_wohnzimmer')
 
 
-def auto_ct_slow_reduce_only(transition_time=14*60):
-    if transition_time is None:
-        transition_time = AUTO_CT_TRANSITION_TIME - 1.0
-    bri = get_simulated_bri()
-    s = toolbox.scene_superposition(bri, data.get_scene("hell"),
-                                    1.0 - bri, data.get_scene("halbwarm"))
-    scene.transition_dicionary(s, time=transition_time, reduce_only=True)
-
-
-def auto_ct_fast_reduce_only(transition_time=.4):
-    auto_ct_slow_reduce_only(transition_time=transition_time)
-
-
-def auto_ct_enabled():
-    return schedule.get_variable("auto_ct")
-
-
 def main():
     log_all()
     turn_off_if_ambient_above_limit()
     trim_logs()
     minute = datetime.now().minute
-    if auto_ct_enabled() and minute % 15 == 0:
-        auto_ct_slow_reduce_only()
 
 
 if __name__ == "__main__":
