@@ -310,6 +310,7 @@ class MotionSensor():
                  maximum_bri=1.0,
                  minimum_ct=0.3,
                  maximum_ct=1.0,
+                 bri_masks=dict(),
                  use_ambient_for_brightness=False,
                  use_ambient_for_motion=False):
 
@@ -324,6 +325,7 @@ class MotionSensor():
         self.maximum_bri = maximum_bri
         self.minimum_ct = minimum_ct
         self.maximum_ct = maximum_ct
+        self.bri_masks = bri_masks
 
         self.fade_off_time = fade_off_time
 
@@ -404,21 +406,14 @@ class MotionSensor():
             if scene.transition_in_progress('wohnzimmer'):
                 time = 20.0
 
-        # hack
-        lights = self.lights.copy()
-        if "Flurlampe" in lights:
-            lights.remove("Flurlampe")
-            def f(bri):
-                if .8 <= bri:
-                    return bri
-                elif .41 <= bri:
-                    return toolbox.map(bri, .41, .8, 0.0, .8)
-                else:
-                    return 0.0
-            log("Flurlampe hack:", bri, "->", f(bri))
-            _phue.set_lights("Flurlampe", bri=f(bri), ct=ct, time=time)
-
-        _phue.set_lights(lights, bri=bri, ct=ct, time=time)
+        if self.bri_masks:
+            non_mask_lights = [l for l in self.lights if l not in self.bri_masks]
+            mask_lights = [l for l in self.lights if l in self.bri_masks]
+            for l in mask_lights:
+                _phue.set_lights(l, bri=self.bri_masks[l](bri), ct=ct, time=time)
+            _phue.set_lights(non_mask_lights, bri=bri, ct=ct, time=time)
+        else:
+            _phue.set_lights(self.lights, bri=bri, ct=ct, time=time)
         self.current_bri = bri
         self.current_ct = ct
 
@@ -489,8 +484,18 @@ kuche_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
 all_sensors.append(kuche_sensor)
 
 
+def flurlampe_mask(bri):
+    if .8 <= bri:
+        return bri
+    elif .41 <= bri:
+        return toolbox.map(bri, .41, .8, _phue.min_bri(), .8)
+    else:
+        return _phue.min_bri()
+
+
 flur_sensor = MotionSensor(sensor_ids=["dc49cc1e-0253-495e-896c-11531913ef23"],
                            lights=data.get_lights("flur"),
+                           bri_masks={"Flurlampe": flurlampe_mask},
                            use_ambient_for_brightness=True)
 all_sensors.append(flur_sensor)
 

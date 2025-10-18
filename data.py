@@ -197,8 +197,8 @@ def get_scene(scene, rooms="all"):
         "halbwarm": {
             "Filament": {"bri": 0.5},
             "Deckenlampe": {"bri": 0.0},
-            "Schlafzimmer " + HANGELAMPE: {"bri": 0.5},
-            "Kinderzimmer " + HANGELAMPE: {"bri": 0.5},
+            "Schlafzimmer " + HANGELAMPE: {"bri": 0.8},
+            "Kinderzimmer " + HANGELAMPE: {"bri": 0.8},
         }
     }
 
