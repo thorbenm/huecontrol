@@ -296,7 +296,7 @@ switches["wohnzimmer"].set_off_tripple_press_function(lambda: _off_tripple_press
 
 switches["wohnzimmer"].set_off_long_press_function(lambda: _off_long_press("wohnzimmer", 60*60))
 switches["schlafzimmer"].set_off_long_press_function(lambda: _off_long_press("schlafzimmer", 3*60))
-switches["kinderzimmer"].set_off_long_press_function(lambda: _off_long_press("kinderzimmer", 10*60, scene_name="min"))
+switches["kinderzimmer"].set_off_long_press_function(lambda: _off_long_press("kinderzimmer", 15*60, scene_name="min"))
 switches["arbeitszimmer"].set_off_long_press_function(lambda: _off_long_press("arbeitszimmer", 60*60))
 
 
@@ -312,7 +312,8 @@ class MotionSensor():
                  maximum_ct=1.0,
                  bri_masks=dict(),
                  use_ambient_for_brightness=False,
-                 use_ambient_for_motion=False):
+                 use_ambient_for_motion=False,
+                 sensor_minimum_bri=dict()):
 
         self.sensor_ids = sensor_ids
         self.lights = lights
@@ -326,8 +327,8 @@ class MotionSensor():
         self.minimum_ct = minimum_ct
         self.maximum_ct = maximum_ct
         self.bri_masks = bri_masks
-
         self.fade_off_time = fade_off_time
+        self.sensor_minimum_bri = sensor_minimum_bri
 
         self.use_ambient_for_brightness = use_ambient_for_brightness
         self.use_ambient_for_motion = use_ambient_for_motion
@@ -362,12 +363,19 @@ class MotionSensor():
 
     def get_slave_bri(self):
         if self.using_ambient_values():
-            return self.ambient_bri
+            ret = self.ambient_bri
         else:
             minimum_bri = self.minimum_bri
             if self.use_ambient_for_motion and ambient.get_schmitt_trigger():
                 minimum_bri = 0.0
-            return toolbox.map(self.master_bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
+            ret = toolbox.map(self.master_bri, 0.0, 1.0, minimum_bri, self.maximum_bri)
+
+        motion_active_sensors = [id for id, detected in self.motion_detected.items() if detected]
+        for m in motion_active_sensors:
+            if m in self.sensor_minimum_bri:
+                ret = max(ret, self.sensor_minimum_bri[m])
+
+        return ret
 
     def get_slave_ct(self):
         if self.using_ambient_values() and self.master_bri < .01:
@@ -507,10 +515,13 @@ bad_sensor = MotionSensor(sensor_ids=["dd4b1e47-1e63-477c-b3c6-544048d5c8e1"],
 all_sensors.append(bad_sensor)
 
 
-diele_sensor = MotionSensor(sensor_ids=["ec5fe5f9-be48-4957-b37d-8ca3d2e1116a"],
+diele_sensor = MotionSensor(sensor_ids=["ec5fe5f9-be48-4957-b37d-8ca3d2e1116a",
+                                        "3482ecac-1562-413a-b519-46ec7b5e5883"],
                             lights=data.get_lights("diele"),
                             idle_timeout=5*60,
-                            use_ambient_for_brightness=True)
+                            use_ambient_for_brightness=True,
+                            sensor_minimum_bri={"3482ecac-1562-413a-b519-46ec7b5e5883":
+                                                data.all_scene_attributes["gemutlich"]["bri"]})
 all_sensors.append(diele_sensor)
 
 
@@ -633,7 +644,7 @@ async def main():
                     # log(f"Light level changed: {light_level}")
 
             # Handle motion events
-            if event['type'] == "motion":
+            if event["type"] == "motion" or event["type"] == "contact":
                 #log("motion event", event)
 
                 sensor_id = event['id']
@@ -643,9 +654,13 @@ async def main():
                     return
 
                 sensor = get_sensor_object(sensor_id)
-                motion_detected = event['motion']['motion']
 
-                if motion_detected:
+                if event['type'] == 'motion':
+                    on = event['motion']['motion']
+                elif event['type'] == 'contact':
+                    on = event['contact_report']['state'] == 'no_contact'
+
+                if on:
                     #log(f"Motion detected from sensor {sensor_id}")
                     sensor.mark_motion_detected(sensor_id)
 

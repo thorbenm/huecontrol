@@ -66,11 +66,12 @@ def wakeup(t1, t2, t3, t4, rooms):
 
         scene.transition(name="halbwarm", rooms=rooms, time=t3, increase_only=True, abort_wakeup=False)
 
-        rooms = _sleep(t3, rooms)
-        if len(rooms) == 0:
-            return
+        if t4 is not None:
+            rooms = _sleep(t3, rooms)
+            if len(rooms) == 0:
+                return
 
-        scene.transition(name="hell", rooms=rooms, time=t4, increase_only=True, abort_wakeup=False)
+            scene.transition(name="hell", rooms=rooms, time=t4, increase_only=True, abort_wakeup=False)
 
     finally:
         for r in rooms:
@@ -104,7 +105,12 @@ def parse_args(input_args=None):
     args.t3 = toolbox.convert_time_string(args.t3)
 
     if args.t4 == "auto":
-        args.t4 = toolbox.map(ambient.get_simulated_bri(), .1, .5, 109 * 60, 5 * 60, clamp=True)
+        simulated_bri = ambient.get_simulated_bri()
+        if simulated_bri < .02:
+            args.t4 = None
+        else:
+            args.t4 = toolbox.map(simulated_bri, .02, .5, 109 * 60, 5 * 60, clamp=True)
+        print(f"t4={args.t4}")
     else:
         args.t4 = toolbox.convert_time_string(args.t4)
 
