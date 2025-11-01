@@ -42,9 +42,19 @@ def is_now(dt):
             now.minute == dt.minute)
 
 
+def apply_duration_variable(events):
+    pattern = '$d'
+    for e in events:
+        if pattern in e.name:
+            duration = max(int((e.end - e.start).total_seconds()) - 60, 1)
+            e.name = e.name.replace(pattern, str(duration))
+    return events
+
+
 def get_calendar_events():
     threshold = datetime.datetime.now() - datetime.timedelta(days=7)
-    return get_events(calendar_url, threshold=threshold, bunch_reoccuring=False)
+    events = get_events(calendar_url, threshold=threshold, bunch_reoccuring=False)
+    return apply_duration_variable(events)
 
 
 def run_current_commands():
@@ -124,7 +134,15 @@ def test():
     print("all tests passed")
 
 
+def print_events():
+    for j in get_calendar_events():
+        print("name", j.name, "start", j.start, "end", j.end)
+
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "print":
+        print_events()
     if len(sys.argv) > 1 and sys.argv[1] == "update":
         force_update_buffered()
     else:
