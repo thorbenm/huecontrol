@@ -6,6 +6,7 @@ import toolbox
 import data
 import os
 import time
+import schedule
 
 
 PROGRESS_FILE = "/home/pi/wakeup_in_progress"
@@ -106,10 +107,11 @@ def parse_args(input_args=None):
 
     if args.t4 == "auto":
         simulated_bri = ambient.get_simulated_bri()
-        if simulated_bri < .02:
-            args.t4 = None
-        else:
+        print(f"simulated_bri={simulated_bri}")
+        if (.02 < simulated_bri and schedule.get_variable("scheduled_scene") == "hell"):
             args.t4 = toolbox.map(simulated_bri, .02, .5, 109 * 60, 5 * 60, clamp=True)
+        else:
+            args.t4 = None
         print(f"t4={args.t4}")
     else:
         args.t4 = toolbox.convert_time_string(args.t4)

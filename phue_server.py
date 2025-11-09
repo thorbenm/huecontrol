@@ -17,7 +17,7 @@ import scheduled_scene
 import systemd.journal
 import time
 import sys
-from datetime import datetime, timedelta
+import datetime
 
 
 MASTER_NAME = {r: data.get_lights(r)[0] for r in data.get_rooms()}
@@ -29,6 +29,10 @@ BALCONY_MOTION_SENSOR = "dd4438ac-d357-4378-9b31-d4d92dd4911f"
 all_sensors = list()
 
 
+global_brightness = {k: _phue.get_bri(k) for k in data.get_lights("all")}
+global_brightness["ambient"] = ambient.get_simulated_bri()
+
+
 def running_under_systemd():
     return os.environ.get('INVOCATION_ID') is not None
 
@@ -38,7 +42,6 @@ def log(*args, **kwargs):
     systemd.journal.write(message)
     if not running_under_systemd():
         print(message, **kwargs)
-
 
 class Switch():
     def __init__(self, ):
@@ -305,7 +308,7 @@ class MotionSensor():
     def __init__(self,
                  sensor_ids,
                  lights,
-                 idle_timeout=120.0,
+                 idle_timeout,
                  fade_off_time=20.0,
                  minimum_bri=None,
                  maximum_bri=1.0,
@@ -465,11 +468,10 @@ class MotionSensor():
         if not self.lights_within_margin(ct=ct) and self.is_on:
             self.set_lights(ct=ct, time=time)
 
-    def update_lights(self, time=None, force=False):
-        # force is on ugly hack because of masked values being saved as non-masked values
+    def update_lights(self, time=None):
         bri = self.get_slave_bri()
         ct = self.get_slave_ct()
-        if (not self.lights_within_margin(bri=bri, ct=ct) or force) and self.is_on:
+        if not self.lights_within_margin(bri=bri, ct=ct) and self.is_on:
             self.set_lights(bri=bri, ct=ct, time=time)
 
     def set_ambient_bri(self, bri):
@@ -494,21 +496,26 @@ kuche_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
 all_sensors.append(kuche_sensor)
 
 
-schlafzimmer_has_been_on_today = True
-kinderzimmer_has_been_on_today = True
+def flurlampe_mask(master):
+    max_kinderzimmer_bri = max([global_brightness[k] for k in data.get_lights("kinderzimmer")])
+    max_schlafzimmer_bri = max([global_brightness[k] for k in data.get_lights("schlafzimmer")])
+    ret = min(max_kinderzimmer_bri, max_schlafzimmer_bri, master)
+    ret = max(ret, global_brightness["ambient"])
 
+    allow_off = (handlers["wohnzimmer"].current_scene == "off" and
+                 handlers["schlafzimmer"].current_scene == "off" and
+                 handlers["arbeitszimmer"].current_scene == "off" and
+                 (handlers["kinderzimmer"].current_scene == "off" or
+                  handlers["kinderzimmer"].current_scene == "min"))
+    if not allow_off:
+        ret = max(ret, _phue.min_bri())
 
-def flurlampe_mask(bri):
-    if schlafzimmer_has_been_on_today and kinderzimmer_has_been_on_today:
-        if .8 <= bri:
-            return bri
-        elif .41 <= bri:
-            return toolbox.map(bri, .41, .8, _phue.min_bri(), .8)
-    return _phue.min_bri()
+    return ret
 
 
 flur_sensor = MotionSensor(sensor_ids=["dc49cc1e-0253-495e-896c-11531913ef23"],
                            lights=data.get_lights("flur"),
+                           idle_timeout=90,
                            bri_masks={"Flurlampe": flurlampe_mask},
                            use_ambient_for_brightness=True)
 all_sensors.append(flur_sensor)
@@ -561,25 +568,6 @@ async def main():
                 sensor.update_ambient_ct()
     periodic_update_task = asyncio.create_task(periodic_update())
 
-    async def reset_has_been_on_function():
-        reset_time = datetime.now().replace(hour=3, minute=0, second=0, microsecond=0)
-
-        if reset_time < datetime.now():
-            reset_time += timedelta(days=1)
-
-        seconds = int((reset_time - datetime.now()).total_seconds())
-
-        log(f"initial has_been_on_today delay: {seconds/60/60:.2f} hours ({reset_time})")
-        await asyncio.sleep(seconds)
-
-        while True:
-            global kinderzimmer_has_been_on_today, schlafzimmer_has_been_on_today
-            log("has_been_on_today = False")
-            schlafzimmer_has_been_on_today = False
-            kinderzimmer_has_been_on_today = False
-            await asyncio.sleep(24 * 60 * 60)
-    reset_has_been_on_task = asyncio.create_task(reset_has_been_on_function())
-
     # Function to handle timeout after no motion is detected for 60 seconds
     async def motion_timeout(sensor_id, timeout):
         await asyncio.sleep(timeout)
@@ -619,14 +607,24 @@ async def main():
         # Define a callback function for processing motion events
         async def handle_event(event_type, event):
             # log(event)
-            global kinderzimmer_has_been_on_today, schlafzimmer_has_been_on_today
-
             if event is None:
                 return
 
             if event['id'] == BALCONY_MOTION_SENSOR:
                 # only used for ambient data not as motion sensor
                 return
+
+            if "dimming" in event:
+                name = light_ids.get_name(event["id"])
+                if name is not None:
+                    bri = event["dimming"]["brightness"] / 100.0
+                    global_brightness[name] = bri
+
+            if "on" in event:
+                name = light_ids.get_name(event["id"])
+                if name is not None:
+                    if event['on']['on'] == False:
+                        global_brightness[name] = 0.0
 
             # Handle dimming events
             if event["id"] in MASTER_ID.values():
@@ -667,6 +665,7 @@ async def main():
                     bri = ambient.convert_sensor_value_to_bri(light_level)
                     for sensor in all_sensors:
                         sensor.set_ambient_bri(bri)
+                    global_brightness["ambient"] = bri
                     # log(f"Light level changed: {light_level}")
 
             # Handle motion events
@@ -711,26 +710,17 @@ async def main():
                 button_id = event['id']
                 event_type = event['button']['button_report']['event']
                 
-                print(button_id, event_type)
+                log(button_id, event_type)
                 room, button = data.buttons[button_id]
-                print(room, button)
+                log(room, button)
                 switches[room].button_event(button, event_type)
 
-            if event['id'] == light_ids.get_id("Kinderzimmer " + data.HANGELAMPE):
-                if "dimming" in event:
-                    brightness = event["dimming"]["brightness"] / 100.0
-                    if 0.02 < brightness and not kinderzimmer_has_been_on_today:
-                        log("kinderzimmer_has_been_on_today = True")
-                        kinderzimmer_has_been_on_today = True
-                        flur_sensor.update_lights(time=60.0, force=True)
+            if event["id"] == "3482ecac-1562-413a-b519-46ec7b5e5883":
+                if event['contact_report']['state'] == 'no_contact':
+                    if datetime.time(6, 0) <= datetime.datetime.now().time() < datetime.time(6, 30):
+                        scene.transition(name="off", rooms=["wohnzimmer", "arbeitszimmer"])
+                        log("wohnzimmer, arbeitszimmer off triggered by door")
 
-            if event['id'] == light_ids.get_id("Schlafzimmer " + data.HANGELAMPE):
-                if "dimming" in event:
-                    brightness = event["dimming"]["brightness"] / 100.0
-                    if 0.02 < brightness and not schlafzimmer_has_been_on_today:
-                        log("schlafzimmer_has_been_on_today = True")
-                        schlafzimmer_has_been_on_today = True
-                        flur_sensor.update_lights(time=60.0, force=True)
 
         # Subscribe to events
         log("Listening for events...")

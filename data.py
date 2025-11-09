@@ -53,6 +53,7 @@ all_light_attributes = {
   **kinderzimmer_light_attributes,
   **arbeitszimmer_light_attributes
 }
+all_lights = list(all_light_attributes.keys())
 
 
 all_rooms = [
