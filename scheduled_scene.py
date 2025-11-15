@@ -9,7 +9,8 @@ from time import sleep
 
 
 def __get_last_two_variables(dt=None):
-    definitions = schedule.get_variable_definitions(lambda d: dt <= d.when)
+    definitions = schedule.get_variable_definitions()
+    definitions = [d for d in definitions if d.when <= dt]
     definitions = [d for d in definitions if d.variable == "scheduled_scene"]
     for d in definitions[-2:]:
         if d.scene_args is None:

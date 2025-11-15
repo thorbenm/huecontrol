@@ -492,7 +492,7 @@ class MotionSensor():
 kuche_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
                             lights=data.get_lights("kuche"),
                             idle_timeout=10*60,
-                            use_ambient_for_motion=True)
+                            use_ambient_for_brightness=True)
 all_sensors.append(kuche_sensor)
 
 
@@ -554,6 +554,28 @@ def get_sensor_object(sensor_id):
 
 last_file_mtime_bri = 0
 last_file_mtime_ct = 0
+
+try:
+    with open("/home/pi/turn_off_lights_when_door_opens", "r") as f:
+        content = f.read().strip()
+        start_time, end_time = content.split("-")
+        start_hour, start_minute = [int(x) for x in start_time.split(":")]
+        end_hour, end_minute = [int(x) for x in end_time.split(":")]
+
+    def turn_off_lights_when_door_opens():
+        now = datetime.datetime.now().time()
+        start = datetime.time(start_hour, start_minute)
+        end = datetime.time(end_hour, end_minute)
+        return start <= now <= end
+
+    log(f"turn off lights when door opens: {start_hour}:{start_minute:02d} - {end_hour}:{end_minute:02d}")
+
+except Exception as e:
+    log(f"error reading turn_off_lights_when_door_opens: {e}")
+
+    def turn_off_lights_when_door_opens():
+        return False
+
 
 async def main():
     # Connect to the Hue Bridge
@@ -717,7 +739,7 @@ async def main():
 
             if event["id"] == "3482ecac-1562-413a-b519-46ec7b5e5883":
                 if event['contact_report']['state'] == 'no_contact':
-                    if datetime.time(6, 0) <= datetime.datetime.now().time() < datetime.time(6, 30):
+                    if turn_off_lights_when_door_opens():
                         scene.transition(name="off", rooms=["wohnzimmer", "arbeitszimmer"])
                         log("wohnzimmer, arbeitszimmer off triggered by door")
 

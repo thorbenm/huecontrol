@@ -7,6 +7,7 @@ from systemd import journal
 import scene
 sys.path.insert(1, '/home/pi/Programming/frame')
 from _calendar import get_events
+import time
 
 
 ALLOWED_MODULES = ["scene", "wakeup", "wait_until_on"]
@@ -52,8 +53,11 @@ def apply_duration_variable(events):
 
 
 def get_calendar_events():
-    threshold = datetime.datetime.now() - datetime.timedelta(days=7)
-    events = get_events(calendar_url, threshold=threshold, bunch_reoccuring=False)
+    begin = datetime.datetime.now() - datetime.timedelta(days=2)
+    end = datetime.datetime.now() + datetime.timedelta(days=2)
+
+    events = get_events(calendar_url, threshold=begin, bunch_reoccuring=False)
+    events = [e for e in events if e.start <= end]
     return apply_duration_variable(events)
 
 
@@ -85,7 +89,7 @@ def get_scene_args(command):
     return None
 
 
-def get_variable_definitions(break_function=lambda _: None):
+def get_variable_definitions():
     events = get_calendar_events()
     data = list()
     for e in events:
@@ -101,9 +105,6 @@ def get_variable_definitions(break_function=lambda _: None):
                 element.variable = variable
                 element.value = value
                 element.scene_args = get_scene_args(c)
-
-                if break_function(element):
-                    return data
 
                 data.append(element)
     return data
@@ -125,19 +126,20 @@ def get_variable(name, hour=None, minute=None, dt=None):
 
 
 def test():
-    assert get_variable("scheduled_scene", 6, 59) == "gemutlich"
-    assert get_variable("scheduled_scene", 7, 00) == "hell"
-    assert get_variable("scheduled_scene", 16, 59) == "hell"
-    assert get_variable("scheduled_scene", 17, 00) == "warm"
-    assert get_variable("scheduled_scene", 18, 29) == "warm"
-    assert get_variable("scheduled_scene", 18, 30) == "gemutlich"
+    s = time.time()
+    assert get_variable("scheduled_scene", 5, 00) == "halbwarm"
+    print(time.time() - s)
+
+    s = time.time()
+    assert get_variable("scheduled_scene", 19, 30) == "gemutlich"
+    print(time.time() - s)
+
     print("all tests passed")
 
 
 def print_events():
     for j in get_calendar_events():
         print("name", j.name, "start", j.start, "end", j.end)
-
 
 
 def main():

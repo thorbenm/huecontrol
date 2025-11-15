@@ -90,26 +90,26 @@ def transition_in_progress(room):
     return False
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument(type=str, dest='scene')
+parser.add_argument('-t', '--time', type=str, default='0.4s', dest='time',
+                    help='transition time')
+parser.add_argument('-r', '--reduce-only', action='store_true', dest='reduce_only',
+                    help='only reduce the brightness')
+parser.add_argument('-u', '--update', action='store_true', dest='update',
+                    help='update the scene in the calendar')
+parser.add_argument('-l', '--low-priority', action='store_true', dest='low_priority',
+                    help='will not abort ongoing transition')
+for r in data.get_rooms():
+    parser.add_argument(f'--{r}', f'-{r[0]}', action='store_true', dest=r)
+
+
 def parse_args(input_args=None):
     if isinstance(input_args, str):
         input_args = input_args.split()
         this_file = __file__.split("/")[-1].removesuffix(".py")
         if input_args[0].startswith(this_file):
             input_args = input_args[1:]
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(type=str, dest='scene')
-    parser.add_argument('-t', '--time', type=str, default='0.4s', dest='time',
-                        help='transition time')
-    parser.add_argument('-r', '--reduce-only', action='store_true', dest='reduce_only',
-                        help='only reduce the brightness')
-    parser.add_argument('-u', '--update', action='store_true', dest='update',
-                        help='update the scene in the calendar')
-    parser.add_argument('-l', '--low-priority', action='store_true', dest='low_priority',
-                        help='will not abort ongoing transition')
-
-    for r in data.get_rooms():
-        parser.add_argument(f'--{r}', f'-{r[0]}', action='store_true', dest=r)
 
     args = parser.parse_args(input_args if input_args else None)
 
