@@ -10,7 +10,12 @@ import scheduled_scene
 
 
 def away():
-    scene.transition("off")
+    scene.transition("off", rooms=["wohnzimmer", "kinderzimmer", "arbeitszimmer"])
+
+
+def home():
+    scheduled_scene.transition(rooms=["wohnzimmer"])
+    roomba.stop()
 
 
 def check(bri, setpoint):
@@ -23,16 +28,20 @@ away_values = [
         [46, 0.055],
     ]
 
+home_values = [
+        [27, 0.055],
+        [32, 0.224],
+        [46, 0.094],
+    ]
+
 
 def main():
-    for lamp, value in away_values:
-        if not check(_phue.get_bri(lamp), value):
-            break
-        sleep(.1)
-    else:
+    if all(check(_phue.get_bri(lamp), value) for lamp, value in away_values):
         print("away")
         away()
-        exit()
+    elif all(check(_phue.get_bri(lamp), value) for lamp, value in home_values):
+        print("home")
+        home()
 
 
 if __name__ == "__main__":

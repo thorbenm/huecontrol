@@ -89,7 +89,7 @@ def transition(time=.4, rooms="all", hour=None, minute=None, dt=None):
     else:
         interpolated_scene, adjusted_transition_time = get_scene_dict(dt, rooms)
         scene.transition_dicionary(interpolated_scene, time=time)
-        sleep(1.0 + time)
+        sleep(time + 0.1)
         adjusted_transition_time -= 60  # to not run into next transition
         adjusted_transition_time = max(adjusted_transition_time, .4)
         scene.transition(current.value, time=adjusted_transition_time, rooms=rooms)

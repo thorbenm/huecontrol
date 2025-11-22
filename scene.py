@@ -64,7 +64,7 @@ def transition(name, rooms="all", time=.4, reduce_only=False, increase_only=Fals
                          increase_only=increase_only)
 
     if 1.0 < time:
-        transition_end = now() + time
+        transition_end = now() + time + 30.0
         for r in rooms:
             with open(TRANSITION_FILE + "_" + r, "w") as f:
                 f.write(str(transition_end))

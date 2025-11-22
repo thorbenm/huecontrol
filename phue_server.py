@@ -65,24 +65,42 @@ class Switch():
         self.down_hold_function = None
         self.off_hold_function = None
 
-        self.last_event = -float('inf')
+        self.on_double_press_function = None
+        self.up_double_press_function = None
+        self.down_double_press_function = None
+        self.off_double_press_function = None
 
-        self.number_of_short_presses_timestamps = 3
-        self.short_presses_timestamps = [-float('inf')] * self.number_of_short_presses_timestamps
+        self.on_tripple_press_function = None
+        self.up_tripple_press_function = None
+        self.down_tripple_press_function = None
+        self.off_tripple_press_function = None
 
-    def add_short_press_timestamp(self):
-        self.short_presses_timestamps.append(time.time())
-        if len(self.short_presses_timestamps) > self.number_of_short_presses_timestamps:
-            self.short_presses_timestamps.pop(0)
+        self.multi_press_time_threshold = 5.0
 
-    def is_double_press(self):
-        return sum(int(time.time() - t < 3.0) for t in self.short_presses_timestamps) == 2
+        self.button_history = list()
+        self.button_history_max_length = 10
 
-    def is_tripple_press(self):
-        return sum(int(time.time() - t < 3.0) for t in self.short_presses_timestamps) == 3
+    def add_to_button_history(self, button):
+        self.button_history.append({"button": button, "timestamp": time.time()})
+        self.button_history = self.button_history[-self.button_history_max_length:]
+
+    def get_button_matches(self, button):
+        return len([b for b in self.button_history if b["button"] == button and time.time() - self.multi_press_time_threshold < b["timestamp"]])
+
+    def is_double_press(self, button):
+        return self.get_button_matches(button) == 2
+
+    def is_tripple_press(self, button):
+        return self.get_button_matches(button) == 3
 
     def set_on_short_press_function(self, f):
         self.on_short_press_function = f
+
+    def set_on_double_press_function(self, f):
+        self.on_double_press_function = f
+
+    def set_on_tripple_press_function(self, f):
+        self.on_tripple_press_function = f
 
     def set_up_short_press_function(self, f):
         self.up_short_press_function = f
@@ -140,29 +158,64 @@ class Switch():
         self.off_hold_function = f
 
     def button_event(self, button, event):
-        self.last_event = time.time()
-
         if event != "repeat":
             self.repeat_counter = 0
 
         if event == "short_release":
+            self.add_to_button_history(button)
             if button == "on":
-                if self.on_short_press_function is not None:
-                    self.on_short_press_function()
+                if self.is_tripple_press(button):
+                    if self.on_tripple_press_function is not None:
+                        self.on_tripple_press_function()
+                    else:
+                        self.on_short_press_function()
+                if self.is_double_press(button):
+                    if self.on_double_press_function is not None:
+                        self.on_double_press_function()
+                    else:
+                        self.on_short_press_function()
+                else:
+                    if self.on_short_press_function is not None:
+                        self.on_short_press_function()
             elif button == "up":
-                if self.up_short_press_function is not None:
-                    self.up_short_press_function()
+                if self.is_tripple_press(button):
+                    if self.up_tripple_press_function is not None:
+                        self.up_tripple_press_function()
+                    else:
+                        self.up_short_press_function()
+                if self.is_double_press(button):
+                    if self.up_double_press_function is not None:
+                        self.up_double_press_function()
+                    else:
+                        self.up_short_press_function()
+                else:
+                    if self.up_short_press_function is not None:
+                        self.up_short_press_function()
             elif button == "down":
-                if self.down_short_press_function is not None:
-                    self.down_short_press_function()
+                if self.is_tripple_press(button):
+                    if self.down_tripple_press_function is not None:
+                        self.down_tripple_press_function()
+                    else:
+                        self.down_short_press_function()
+                if self.is_double_press(button):
+                    if self.down_double_press_function is not None:
+                        self.down_double_press_function()
+                    else:
+                        self.down_short_press_function()
+                else:
+                    if self.down_short_press_function is not None:
+                        self.down_short_press_function()
             elif button == "off":
-                self.add_short_press_timestamp()
-                if self.is_tripple_press():
+                if self.is_tripple_press(button):
                     if self.off_tripple_press_function is not None:
                         self.off_tripple_press_function()
-                if self.is_double_press():
+                    else:
+                        self.off_short_press_function()
+                if self.is_double_press(button):
                     if self.off_double_press_function is not None:
                         self.off_double_press_function()
+                    else:
+                        self.off_short_press_function()
                 else:
                     if self.off_short_press_function is not None:
                         self.off_short_press_function()
@@ -191,7 +244,9 @@ class Switch():
                     self.off_long_press_function()
 
     def button_recently_pressed(self):
-        return time.time() - self.last_event < 5.0
+        if not self.button_history:
+            return False
+        return time.time() - [b["timestamp"] for b in self.button_history][-1] < 5.0
 
 class ButtonHandler():
     def __init__(self, room):
@@ -255,6 +310,14 @@ def _on_short_press(room, update_master):
             sensor.set_master_bri(bri, time=.4)
             sensor.set_master_ct(ct, time=.4)
 
+def _on_double_press(room):
+    log(f"{room} on double press")
+    scheduled_scene.transition(rooms=["arbeitszimmer"])
+
+def _on_tripple_press(room):
+    log(f"{room} on tripple press")
+    scheduled_scene.transition(rooms=["kinderzimmer", "schlafzimmer"])
+
 def _up_short_press(room):
     log(f"{room} up short press")
     handlers[room].step_up()
@@ -297,6 +360,9 @@ for r in data.get_rooms():
 
 switches["wohnzimmer"].set_off_double_press_function(lambda: _off_double_press("wohnzimmer"))
 switches["wohnzimmer"].set_off_tripple_press_function(lambda: _off_tripple_press("wohnzimmer"))
+
+switches["wohnzimmer"].set_on_double_press_function(lambda: _on_double_press("wohnzimmer"))
+switches["wohnzimmer"].set_on_tripple_press_function(lambda: _on_tripple_press("wohnzimmer"))
 
 switches["wohnzimmer"].set_off_long_press_function(lambda: _off_long_press("wohnzimmer", 60*60))
 switches["schlafzimmer"].set_off_long_press_function(lambda: _off_long_press("schlafzimmer", 3*60))
@@ -416,7 +482,7 @@ class MotionSensor():
         if time is None:
             time = 0.4
             if scene.transition_in_progress('wohnzimmer'):
-                time = 20.0
+                time = 60.0
 
         if self.bri_masks:
             non_mask_lights = [l for l in self.lights if l not in self.bri_masks]
