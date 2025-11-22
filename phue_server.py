@@ -169,7 +169,7 @@ class Switch():
                         self.on_tripple_press_function()
                     else:
                         self.on_short_press_function()
-                if self.is_double_press(button):
+                elif self.is_double_press(button):
                     if self.on_double_press_function is not None:
                         self.on_double_press_function()
                     else:
@@ -183,7 +183,7 @@ class Switch():
                         self.up_tripple_press_function()
                     else:
                         self.up_short_press_function()
-                if self.is_double_press(button):
+                elif self.is_double_press(button):
                     if self.up_double_press_function is not None:
                         self.up_double_press_function()
                     else:
@@ -197,7 +197,7 @@ class Switch():
                         self.down_tripple_press_function()
                     else:
                         self.down_short_press_function()
-                if self.is_double_press(button):
+                elif self.is_double_press(button):
                     if self.down_double_press_function is not None:
                         self.down_double_press_function()
                     else:
@@ -211,7 +211,7 @@ class Switch():
                         self.off_tripple_press_function()
                     else:
                         self.off_short_press_function()
-                if self.is_double_press(button):
+                elif self.is_double_press(button):
                     if self.off_double_press_function is not None:
                         self.off_double_press_function()
                     else:
