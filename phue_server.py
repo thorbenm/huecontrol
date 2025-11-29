@@ -18,6 +18,7 @@ import systemd.journal
 import time
 import sys
 import datetime
+import traceback
 
 
 MASTER_NAME = {r: data.get_lights(r)[0] for r in data.get_rooms()}
@@ -29,8 +30,9 @@ BALCONY_MOTION_SENSOR = "dd4438ac-d357-4378-9b31-d4d92dd4911f"
 all_sensors = list()
 
 
-global_brightness = {k: _phue.get_bri(k) for k in data.get_lights("all")}
-global_brightness["ambient"] = ambient.get_simulated_bri()
+global_brightness_values = {k: _phue.get_bri(k) for k in data.get_lights("all", include_slaves=True) if k != "Lichterkette"}
+global_on_values = {k: _phue.get_on(k) for k in data.get_lights("all", include_slaves=True) if k != "Lichterkette"}
+global_ambient_value = ambient.get_simulated_bri()
 
 
 def running_under_systemd():
@@ -42,6 +44,10 @@ def log(*args, **kwargs):
     systemd.journal.write(message)
     if not running_under_systemd():
         print(message, **kwargs)
+
+
+log(f"ambient brightness: {global_ambient_value:.3g}")
+
 
 class Switch():
     def __init__(self, ):
@@ -75,6 +81,11 @@ class Switch():
         self.down_tripple_press_function = None
         self.off_tripple_press_function = None
 
+        self.on_quadruple_press_function = None
+        self.up_quadruple_press_function = None
+        self.down_quadruple_press_function = None
+        self.off_quadruple_press_function = None
+
         self.multi_press_time_threshold = 5.0
 
         self.button_history = list()
@@ -93,6 +104,9 @@ class Switch():
     def is_tripple_press(self, button):
         return self.get_button_matches(button) == 3
 
+    def is_quadruple_press(self, button):
+        return self.get_button_matches(button) == 4
+
     def set_on_short_press_function(self, f):
         self.on_short_press_function = f
 
@@ -101,6 +115,9 @@ class Switch():
 
     def set_on_tripple_press_function(self, f):
         self.on_tripple_press_function = f
+
+    def set_on_quadruple_press_function(self, f):
+        self.on_quadruple_press_function = f
 
     def set_up_short_press_function(self, f):
         self.up_short_press_function = f
@@ -116,6 +133,9 @@ class Switch():
 
     def set_off_tripple_press_function(self, f):
         self.off_tripple_press_function = f
+
+    def set_off_quadruple_press_function(self, f):
+        self.off_quadruple_press_function = f
 
     def set_on_long_press_function(self, f):
         if self.on_hold_function is not None:
@@ -164,7 +184,12 @@ class Switch():
         if event == "short_release":
             self.add_to_button_history(button)
             if button == "on":
-                if self.is_tripple_press(button):
+                if self.is_quadruple_press(button):
+                    if self.on_quadruple_press_function is not None:
+                        self.on_quadruple_press_function()
+                    else:
+                        self.on_short_press_function()
+                elif self.is_tripple_press(button):
                     if self.on_tripple_press_function is not None:
                         self.on_tripple_press_function()
                     else:
@@ -178,7 +203,12 @@ class Switch():
                     if self.on_short_press_function is not None:
                         self.on_short_press_function()
             elif button == "up":
-                if self.is_tripple_press(button):
+                if self.is_quadruple_press(button):
+                    if self.up_quadruple_press_function is not None:
+                        self.up_quadruple_press_function()
+                    else:
+                        self.up_short_press_function()
+                elif self.is_tripple_press(button):
                     if self.up_tripple_press_function is not None:
                         self.up_tripple_press_function()
                     else:
@@ -192,7 +222,12 @@ class Switch():
                     if self.up_short_press_function is not None:
                         self.up_short_press_function()
             elif button == "down":
-                if self.is_tripple_press(button):
+                if self.is_quadruple_press(button):
+                    if self.down_quadruple_press_function is not None:
+                        self.down_quadruple_press_function()
+                    else:
+                        self.down_short_press_function()
+                elif self.is_tripple_press(button):
                     if self.down_tripple_press_function is not None:
                         self.down_tripple_press_function()
                     else:
@@ -206,7 +241,12 @@ class Switch():
                     if self.down_short_press_function is not None:
                         self.down_short_press_function()
             elif button == "off":
-                if self.is_tripple_press(button):
+                if self.is_quadruple_press(button):
+                    if self.off_quadruple_press_function is not None:
+                        self.off_quadruple_press_function()
+                    else:
+                        self.off_short_press_function()
+                elif self.is_tripple_press(button):
                     if self.off_tripple_press_function is not None:
                         self.off_tripple_press_function()
                     else:
@@ -295,6 +335,16 @@ def run_detached_shell(command):
     subprocess.Popen(full_command, shell=True, executable="/bin/bash")
 
 
+turn_on_roomba_when_door_opens_until_time = -float('inf')
+
+
+def start_roomba_now():
+    global turn_on_roomba_when_door_opens_until_time
+    turn_on_roomba_when_door_opens_until_time = -float('inf')
+    log("starting roomba now")
+    run_detached_shell("/home/pi/Programming/roomba/roomba.py --force-start")
+
+
 switches = {r: Switch() for r in data.get_rooms()}
 handlers = {r: ButtonHandler(r) for r in data.get_rooms()}
 
@@ -337,7 +387,12 @@ def _off_double_press(room):
 
 def _off_tripple_press(room):
     log(f"{room} off tripple press")
-    run_detached_shell("/home/pi/Programming/roomba/roomba.py --force-start")
+    global turn_on_roomba_when_door_opens_until_time
+    turn_on_roomba_when_door_opens_until_time = time.time() + 2 * 60 * 60
+
+def _off_quadruple_press(room):
+    log(f"{room} off quadruple press")
+    start_roomba_now()
 
 def _on_long_press(room):
     log(f"{room} on long press")
@@ -360,6 +415,7 @@ for r in data.get_rooms():
 
 switches["wohnzimmer"].set_off_double_press_function(lambda: _off_double_press("wohnzimmer"))
 switches["wohnzimmer"].set_off_tripple_press_function(lambda: _off_tripple_press("wohnzimmer"))
+switches["wohnzimmer"].set_off_quadruple_press_function(lambda: _off_quadruple_press("wohnzimmer"))
 
 switches["wohnzimmer"].set_on_double_press_function(lambda: _on_double_press("wohnzimmer"))
 switches["wohnzimmer"].set_on_tripple_press_function(lambda: _on_tripple_press("wohnzimmer"))
@@ -521,14 +577,14 @@ class MotionSensor():
             self.turn_off_lights()
 
     def set_master_bri(self, master_bri, time=None):
-        log("set_master_bri " + str(master_bri))
+        log(f"set_master_bri {master_bri:.3g}")
         self.master_bri = master_bri
         bri = self.get_slave_bri()
         if not self.lights_within_margin(bri=bri) and self.is_on:
             self.set_lights(bri=bri, time=time)
 
     def set_master_ct(self, master_ct, time=None):
-        log("set_master_ct " + str(master_ct))
+        log(f"set_master_ct {master_ct:.3g}")
         self.master_ct = master_ct
         ct = self.get_slave_ct()
         if not self.lights_within_margin(ct=ct) and self.is_on:
@@ -541,7 +597,7 @@ class MotionSensor():
             self.set_lights(bri=bri, ct=ct, time=time)
 
     def set_ambient_bri(self, bri):
-        log("set_ambient_bri " + str(bri))
+        log(f"set_ambient_bri {bri:.3g}")
         self.ambient_bri = bri
         self.update_lights(time=5*60)
 
@@ -549,7 +605,7 @@ class MotionSensor():
         d, _ = scheduled_scene.get_scene_dict()
         ct = d[MASTER_NAME["wohnzimmer"]]["ct"]
         ct = toolbox.map(ct, 1.0, 0.0, self.maximum_ct, self.minimum_ct)
-        log("update_ambient_ct " + str(ct))
+        log(f"update_ambient_ct {ct:.3g}")
         self.ambient_ct = ct
         if update_lights:
             self.update_lights()
@@ -563,18 +619,37 @@ all_sensors.append(kuche_sensor)
 
 
 def flurlampe_mask(master):
-    max_kinderzimmer_bri = max([global_brightness[k] for k in data.get_lights("kinderzimmer")])
-    max_schlafzimmer_bri = max([global_brightness[k] for k in data.get_lights("schlafzimmer")])
-    ret = min(max_kinderzimmer_bri, max_schlafzimmer_bri, master)
-    ret = max(ret, global_brightness["ambient"])
+    max_kinderzimmer_bri = max([global_brightness_values[k] for k in data.get_lights("kinderzimmer")])
+    max_schlafzimmer_bri = max([global_brightness_values[k] for k in data.get_lights("schlafzimmer")])
+    min_rooms = min(max_kinderzimmer_bri, max_schlafzimmer_bri, master)
+    max_ambient = max(min_rooms, global_ambient_value)
 
-    allow_off = (handlers["wohnzimmer"].current_scene == "off" and
-                 handlers["schlafzimmer"].current_scene == "off" and
-                 handlers["arbeitszimmer"].current_scene == "off" and
-                 (handlers["kinderzimmer"].current_scene == "off" or
-                  handlers["kinderzimmer"].current_scene == "min"))
-    if not allow_off:
-        ret = max(ret, _phue.min_bri())
+    allow_off = (
+        handlers["wohnzimmer"].current_scene == "off"
+        and handlers["schlafzimmer"].current_scene == "off"
+        and handlers["arbeitszimmer"].current_scene == "off"
+        and (
+            handlers["kinderzimmer"].current_scene == "off"
+            or handlers["kinderzimmer"].current_scene == "min"
+        )
+    )
+
+    if allow_off:
+        ret = max_ambient
+    else:
+        ret = max(max_ambient, _phue.min_bri())
+
+    log(
+        f"flurlampe mask: "
+        f"master={master:.3g}, "
+        f"max_kinderzimmer_bri={max_kinderzimmer_bri:.3g}, "
+        f"max_schlafzimmer_bri={max_schlafzimmer_bri:.3g}, "
+        f"min_rooms={min_rooms:.3g}, "
+        f"global_ambient_value={global_ambient_value:.3g}, "
+        f"max_ambient={max_ambient:.3g}, "
+        f"allow_off={allow_off}, "
+        f"ret={ret:.3g}"
+    )
 
     return ret
 
@@ -694,9 +769,35 @@ async def main():
 
         # Define a callback function for processing motion events
         async def handle_event(event_type, event):
+            try:
+                await _handle_event(event_type, event)
+            except Exception as e:
+                traceback.print_exc()
+                os._exit(1)
+
+        async def _handle_event(event_type, event):
+            global global_ambient_value
+
             # log(event)
             if event is None:
                 return
+
+            if event["type"] == "grouped_light":
+                # no idea what this is but it has ids that cant be found by light_ids.get_name(), so ignore
+                return
+
+            if "on" in event:
+                name = light_ids.get_name(event["id"])
+                global_on_values[name] = event["on"]["on"]
+
+            if "dimming" in event:
+                name = light_ids.get_name(event["id"])
+                if not global_on_values[name]:
+                    # when turning off lights in apple home app it only writes to on
+                    # and doesnt override the bri value. that means if there is a transition
+                    # ongoing and you turn it off, you keep getting events of the transition.
+                    # so we need to to ignore these events.
+                    return
 
             if event['id'] == BALCONY_MOTION_SENSOR:
                 # only used for ambient data not as motion sensor
@@ -706,13 +807,13 @@ async def main():
                 name = light_ids.get_name(event["id"])
                 if name is not None:
                     bri = event["dimming"]["brightness"] / 100.0
-                    global_brightness[name] = bri
+                    global_brightness_values[name] = bri
 
             if "on" in event:
                 name = light_ids.get_name(event["id"])
                 if name is not None:
                     if event['on']['on'] == False:
-                        global_brightness[name] = 0.0
+                        global_brightness_values[name] = 0.0
 
             # Handle dimming events
             if event["id"] in MASTER_ID.values():
@@ -753,7 +854,7 @@ async def main():
                     bri = ambient.convert_sensor_value_to_bri(light_level)
                     for sensor in all_sensors:
                         sensor.set_ambient_bri(bri)
-                    global_brightness["ambient"] = bri
+                    global_ambient_value = bri
                     # log(f"Light level changed: {light_level}")
 
             # Handle motion events
@@ -808,6 +909,8 @@ async def main():
                     if turn_off_lights_when_door_opens():
                         scene.transition(name="off", rooms=["wohnzimmer", "arbeitszimmer"])
                         log("wohnzimmer, arbeitszimmer off triggered by door")
+                    if time.time() < turn_on_roomba_when_door_opens_until_time:
+                        start_roomba_now()
 
 
         # Subscribe to events

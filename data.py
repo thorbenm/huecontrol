@@ -8,8 +8,8 @@ KUCHENLAMPE = "Küchenlampe"
 all_scene_attributes = {
     "off": {"bri": 0.0, "ct": 1.0, "on": False},
     "min": {"bri": min_bri(), "ct": 1.0, "on": False},
-    "dunkel": {"bri": 0.1, "ct": 1.0, "on": False},
-    "gemutlich": {"bri": 0.4, "ct": 1.0, "on": False},
+    "dunkel": {"bri": 0.1, "ct": 1.0, "on": True},
+    "gemutlich": {"bri": 0.4, "ct": 1.0, "on": True},
     "lounge": {"bri": 0.6, "ct": 1.0, "on": True},
     "warm": {"bri": 0.8, "ct": 0.75, "on": True},
     "halbwarm": {"bri": 1.0, "ct": 0.5, "on": True},
@@ -25,6 +25,7 @@ wohnzimmer_light_attributes = {
   "Sofalampe": ["bri", "ct"],
   "Kaminlampe": ["bri", "ct"],
   "Esstischlampe": ["bri"],
+  "Lichterkette": ["on"],
 }
 
 
@@ -113,6 +114,9 @@ klo_light_attributes = {
   "Spiegellampe" : ["bri", "ct"],
 }
 klo_lights = list(klo_light_attributes.keys())
+
+
+all_slave_lights = [*kuche_lights, *bad_lights, *flur_lights, *diele_lights, *klo_lights]
 
 
 buttons = {
@@ -219,11 +223,14 @@ def get_scene(scene, rooms="all"):
     return ret
 
 
-def get_lights(room):
+def get_lights(room, include_slaves=False):
     # not 100% clear if slave rooms should be rooms
     if room not in [*all_rooms, *all_slave_rooms, "all"]:
         raise ValueError(f"Room {room} not found")
-    return eval(room + "_lights")
+    if include_slaves and room is "all":
+        return eval(room + "_lights") + all_slave_lights
+    else:
+        return eval(room + "_lights")
 
 
 def get_light_attributes(room):

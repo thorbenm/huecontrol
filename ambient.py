@@ -85,9 +85,7 @@ def convert_sensor_value_to_bri(value):
 
 
 def get_simulated_bri():
-    g = get_history_mean()
-    bri = convert_sensor_value_to_bri(g)
-    return bri
+    return convert_sensor_value_to_bri(__get_new())
 
 
 def get_schmitt_trigger(low=16000, high=20000):
