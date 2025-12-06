@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import asyncio
 from aiohue.v2 import HueBridgeV2
-from hue_data import ip_address, user_id  # Import IP and API key
+from hue_data import ip_address, user_id
 from aiohue.v2.models.resource import ResourceTypes
 import _phue
 import light_ids
@@ -13,10 +13,8 @@ import scheduled_scene
 from math import isnan
 import subprocess
 import scene
-import scheduled_scene
 import systemd.journal
 import time
-import sys
 import datetime
 import traceback
 
@@ -50,243 +48,63 @@ log(f"ambient brightness: {global_ambient_value:.3g}")
 
 
 class Switch():
-    def __init__(self, ):
-        self.long_press_duration = 1
-        if not isinstance(self.long_press_duration, int):
-            raise RuntimeError("long_press_duration must be an integer")
-        self.repeat_counter = 0
+    def __init__(self):
+        self.allowed_events = ["short_release", "long_release"]
 
-        self.on_short_press_function = None
-        self.up_short_press_function = None
-        self.down_short_press_function = None
-        self.off_short_press_function = None
+        self.functions = dict()
+        self.history = list()
+        self.history_duration = 5.0
 
-        self.on_long_press_function = None
-        self.up_long_press_function = None
-        self.down_long_press_function = None
-        self.off_long_press_function = None
+        self.lock = False
+        self.unlock_until = -float('inf')
+        self.unlock_duration = 10.0
+        self.unlock_pattern = [["down", "short"], ["down", "short"], ["up", "short"], ["up", "short"]]
 
-        self.on_hold_function = None
-        self.up_hold_function = None
-        self.down_hold_function = None
-        self.off_hold_function = None
+    def activate_lock(self):
+        self.lock = True
 
-        self.on_double_press_function = None
-        self.up_double_press_function = None
-        self.down_double_press_function = None
-        self.off_double_press_function = None
+    def add_to_history(self, button, event):
+        self.history.append({"button": button, "event": event, "timestamp": time.time()})
+        self.history = [b for b in self.history if time.time() - b["timestamp"] < self.history_duration]
+        return self.history
 
-        self.on_tripple_press_function = None
-        self.up_tripple_press_function = None
-        self.down_tripple_press_function = None
-        self.off_tripple_press_function = None
-
-        self.on_quadruple_press_function = None
-        self.up_quadruple_press_function = None
-        self.down_quadruple_press_function = None
-        self.off_quadruple_press_function = None
-
-        self.multi_press_time_threshold = 5.0
-
-        self.button_history = list()
-        self.button_history_max_length = 10
-
-    def add_to_button_history(self, button):
-        self.button_history.append({"button": button, "timestamp": time.time()})
-        self.button_history = self.button_history[-self.button_history_max_length:]
-
-    def get_button_matches(self, button):
-        return len([b for b in self.button_history if b["button"] == button and time.time() - self.multi_press_time_threshold < b["timestamp"]])
-
-    def is_double_press(self, button):
-        return self.get_button_matches(button) == 2
-
-    def is_tripple_press(self, button):
-        return self.get_button_matches(button) == 3
-
-    def is_quadruple_press(self, button):
-        return self.get_button_matches(button) == 4
-
-    def set_on_short_press_function(self, f):
-        self.on_short_press_function = f
-
-    def set_on_double_press_function(self, f):
-        self.on_double_press_function = f
-
-    def set_on_tripple_press_function(self, f):
-        self.on_tripple_press_function = f
-
-    def set_on_quadruple_press_function(self, f):
-        self.on_quadruple_press_function = f
-
-    def set_up_short_press_function(self, f):
-        self.up_short_press_function = f
-
-    def set_down_short_press_function(self, f):
-        self.down_short_press_function = f
-
-    def set_off_short_press_function(self, f):
-        self.off_short_press_function = f
-
-    def set_off_double_press_function(self, f):
-        self.off_double_press_function = f
-
-    def set_off_tripple_press_function(self, f):
-        self.off_tripple_press_function = f
-
-    def set_off_quadruple_press_function(self, f):
-        self.off_quadruple_press_function = f
-
-    def set_on_long_press_function(self, f):
-        if self.on_hold_function is not None:
-            raise RuntimeError("on_long_press_function and on_hold_function cannot both be set")
-        self.on_long_press_function = f
-
-    def set_up_long_press_function(self, f):
-        if self.up_hold_function is not None:
-            raise RuntimeError("up_long_press_function and up_hold_function cannot both be set")
-        self.up_long_press_function = f
-
-    def set_down_long_press_function(self, f):
-        if self.down_hold_function is not None:
-            raise RuntimeError("down_long_press_function and down_hold_function cannot both be set")
-        self.down_long_press_function = f
-
-    def set_off_long_press_function(self, f):
-        if self.off_hold_function is not None:
-            raise RuntimeError("off_long_press_function and off_hold_function cannot both be set")
-        self.off_long_press_function = f
-
-    def set_on_hold_function(self, f):
-        if self.on_long_press_function is not None:
-            raise RuntimeError("on_long_press_function and on_hold_function cannot both be set")
-        self.on_hold_function = f
-
-    def set_up_hold_function(self, f):
-        if self.up_long_press_function is not None:
-            raise RuntimeError("up_long_press_function and up_hold_function cannot both be set")
-        self.up_hold_function = f
-
-    def set_down_hold_function(self, f):
-        if self.down_long_press_function is not None:
-            raise RuntimeError("down_long_press_function and down_hold_function cannot both be set")
-        self.down_hold_function = f
-
-    def set_off_hold_function(self, f):
-        if self.off_long_press_function is not None:
-            raise RuntimeError("off_long_press_function and off_hold_function cannot both be set")
-        self.off_hold_function = f
-
-    def button_event(self, button, event):
-        if event != "repeat":
-            self.repeat_counter = 0
-
-        if event == "short_release":
-            self.add_to_button_history(button)
-            if button == "on":
-                if self.is_quadruple_press(button):
-                    if self.on_quadruple_press_function is not None:
-                        self.on_quadruple_press_function()
-                    else:
-                        self.on_short_press_function()
-                elif self.is_tripple_press(button):
-                    if self.on_tripple_press_function is not None:
-                        self.on_tripple_press_function()
-                    else:
-                        self.on_short_press_function()
-                elif self.is_double_press(button):
-                    if self.on_double_press_function is not None:
-                        self.on_double_press_function()
-                    else:
-                        self.on_short_press_function()
-                else:
-                    if self.on_short_press_function is not None:
-                        self.on_short_press_function()
-            elif button == "up":
-                if self.is_quadruple_press(button):
-                    if self.up_quadruple_press_function is not None:
-                        self.up_quadruple_press_function()
-                    else:
-                        self.up_short_press_function()
-                elif self.is_tripple_press(button):
-                    if self.up_tripple_press_function is not None:
-                        self.up_tripple_press_function()
-                    else:
-                        self.up_short_press_function()
-                elif self.is_double_press(button):
-                    if self.up_double_press_function is not None:
-                        self.up_double_press_function()
-                    else:
-                        self.up_short_press_function()
-                else:
-                    if self.up_short_press_function is not None:
-                        self.up_short_press_function()
-            elif button == "down":
-                if self.is_quadruple_press(button):
-                    if self.down_quadruple_press_function is not None:
-                        self.down_quadruple_press_function()
-                    else:
-                        self.down_short_press_function()
-                elif self.is_tripple_press(button):
-                    if self.down_tripple_press_function is not None:
-                        self.down_tripple_press_function()
-                    else:
-                        self.down_short_press_function()
-                elif self.is_double_press(button):
-                    if self.down_double_press_function is not None:
-                        self.down_double_press_function()
-                    else:
-                        self.down_short_press_function()
-                else:
-                    if self.down_short_press_function is not None:
-                        self.down_short_press_function()
-            elif button == "off":
-                if self.is_quadruple_press(button):
-                    if self.off_quadruple_press_function is not None:
-                        self.off_quadruple_press_function()
-                    else:
-                        self.off_short_press_function()
-                elif self.is_tripple_press(button):
-                    if self.off_tripple_press_function is not None:
-                        self.off_tripple_press_function()
-                    else:
-                        self.off_short_press_function()
-                elif self.is_double_press(button):
-                    if self.off_double_press_function is not None:
-                        self.off_double_press_function()
-                    else:
-                        self.off_short_press_function()
-                else:
-                    if self.off_short_press_function is not None:
-                        self.off_short_press_function()
-
-        if event == "repeat":
-            self.repeat_counter += 1
-            if button == "on":
-                if self.on_hold_function is not None:
-                    self.on_hold_function()
-                if self.on_long_press_function is not None and self.repeat_counter == self.long_press_duration:
-                    self.on_long_press_function()
-            elif button == "up":
-                if self.up_hold_function is not None:
-                    self.up_hold_function()
-                if self.up_long_press_function is not None and self.repeat_counter == self.long_press_duration:
-                    self.up_long_press_function()
-            elif button == "down":
-                if self.down_hold_function is not None:
-                    self.down_hold_function()
-                if self.down_long_press_function is not None and self.repeat_counter == self.long_press_duration:
-                    self.down_long_press_function()
-            elif button == "off":
-                if self.off_hold_function is not None:
-                    self.off_hold_function()
-                if self.off_long_press_function is not None and self.repeat_counter == self.long_press_duration:
-                    self.off_long_press_function()
+    def get_history(self):
+        self.history = [b for b in self.history if time.time() - b["timestamp"] < self.history_duration]
+        return self.history
 
     def button_recently_pressed(self):
-        if not self.button_history:
-            return False
-        return time.time() - [b["timestamp"] for b in self.button_history][-1] < 5.0
+        return 0 < len(self.get_history())
+
+    def add_function(self, pattern, function):
+        key = tuple(item for p in pattern for item in (p[0], p[1] + "_release"))
+        self.functions[key] = function
+
+    def lock_active(self):
+        history = self.get_history()
+        history_slice = history[-len(self.unlock_pattern):]
+        pattern = tuple(item for h in history_slice for item in (h["button"], h["event"]))
+        if pattern == tuple(item for p in self.unlock_pattern for item in (p[0], p[1] + "_release")):
+            self.unlock_until = time.time() + self.unlock_duration
+            log(f"lock deactivated for {self.unlock_duration} seconds")
+            self.history = []
+            return True
+        if self.lock and self.unlock_until < time.time():
+            log("lock is active, ignoring button event")
+            return True
+        return False
+
+    def button_event(self, button, event):
+        if event in self.allowed_events:
+            history = self.add_to_history(button, event)
+            if self.lock_active():
+                return
+            for length in reversed(range(len(history) + 1)):
+                history_slice = history[-length:]
+                pattern = tuple(item for h in history_slice for item in (h["button"], h["event"]))
+                if pattern in self.functions:
+                    self.functions[pattern]()
+                    return
+
 
 class ButtonHandler():
     def __init__(self, room):
@@ -330,9 +148,25 @@ class ButtonHandler():
         self.__step(-1)
         log("stepping down in %s to %s" % (self.room, self.current_scene))
 
+
 def run_detached_shell(command):
     full_command = f"( (nohup {command} > /dev/null 2> /dev/null < /dev/null) & )"
     subprocess.Popen(full_command, shell=True, executable="/bin/bash")
+
+
+def indicator(lamp="Esstischlampe"):
+    log(f"indicator {lamp} {global_brightness_values[lamp]:.3g}")
+    bri1 = global_brightness_values[lamp]
+    if bri1 < .5:
+        bri2 = bri1 + .2
+    else:
+        bri2 = bri1 - .2
+    delay = 0.05
+    for _ in range(2):
+        _phue.set_lights(lamp, bri=bri2, time=delay)
+        time.sleep(delay)
+        _phue.set_lights(lamp, bri=bri1, time=delay)
+        time.sleep(delay)
 
 
 turn_on_roomba_when_door_opens_until_time = -float('inf')
@@ -345,85 +179,102 @@ def start_roomba_now():
     run_detached_shell("/home/pi/Programming/roomba/roomba.py --force-start")
 
 
-switches = {r: Switch() for r in data.get_rooms()}
+def set_roomba_when_door_opens(duration=2 * 60 * 60):
+    global turn_on_roomba_when_door_opens_until_time
+    log("starting roomba when door opens")
+    turn_on_roomba_when_door_opens_until_time = time.time() + duration
+
+
+switches = {(room, switch): Switch() for room, switch, _ in data.buttons.values()}
 handlers = {r: ButtonHandler(r) for r in data.get_rooms()}
 
 
-def _on_short_press(room, update_master):
-    log(f"{room} on short press")
-    s = scheduled_scene.transition(rooms=room)
-    bri = s[MASTER_NAME[room]]["bri"]
-    ct = s[MASTER_NAME[room]]["ct"]
-    handlers[room].update_current_scene(bri=bri, ct=ct)
-    if update_master:
-        for sensor in all_sensors:
-            sensor.set_master_bri(bri, time=.4)
-            sensor.set_master_ct(ct, time=.4)
-
-def _on_double_press(room):
-    log(f"{room} on double press")
-    scheduled_scene.transition(rooms=["arbeitszimmer"])
-
-def _on_tripple_press(room):
-    log(f"{room} on tripple press")
-    scheduled_scene.transition(rooms=["kinderzimmer", "schlafzimmer"])
-
-def _up_short_press(room):
-    log(f"{room} up short press")
-    handlers[room].step_up()
-
-def _down_short_press(room):
-    log(f"{room} down short press")
-    handlers[room].step_down()
-
-def _off_short_press(room):
-    log(f"{room} off short press")
-    scene.transition(name="off", rooms=room)
-    handlers[room].update_current_scene(bri=0.0, ct=1.0)
-
-def _off_double_press(room):
-    log(f"{room} off double press")
-    scene.transition(name="off")
-
-def _off_tripple_press(room):
-    log(f"{room} off tripple press")
-    global turn_on_roomba_when_door_opens_until_time
-    turn_on_roomba_when_door_opens_until_time = time.time() + 2 * 60 * 60
-
-def _off_quadruple_press(room):
-    log(f"{room} off quadruple press")
-    start_roomba_now()
-
-def _on_long_press(room):
-    log(f"{room} on long press")
-    run_detached_shell(f"/home/pi/Programming/huecontrol/wakeup.py -{room[0]} -t2 1m")
-
-def _off_long_press(room, time, scene_name="off"):
-    log(f"{room} off long press")
-    scene.transition(name=scene_name, rooms=room, time=time)
-
-
-for r in data.get_rooms():
-    if r == "wohnzimmer":
-        switches[r].set_on_short_press_function(lambda room=r: _on_short_press(room, update_master=True))
+for room, switch, _ in data.buttons.values():
+    if room == "wohnzimmer":
+        switches[("wohnzimmer", switch)].add_function([["on", "short"]], lambda: (
+            log("wohnzimmer on short press"),
+            handlers["wohnzimmer"].update_current_scene(
+                bri=(s := scheduled_scene.transition(rooms="wohnzimmer"))[MASTER_NAME["wohnzimmer"]]["bri"],
+                ct=s[MASTER_NAME["wohnzimmer"]]["ct"]
+            ),
+            [sensor.set_master_bri(s[MASTER_NAME["wohnzimmer"]]["bri"], time=.4) for sensor in all_sensors],
+            [sensor.set_master_ct(s[MASTER_NAME["wohnzimmer"]]["ct"], time=.4) for sensor in all_sensors],
+        ))
     else:
-        switches[r].set_on_short_press_function(lambda room=r: _on_short_press(room, update_master=False))
-    switches[r].set_up_short_press_function(lambda room=r: _up_short_press(room))
-    switches[r].set_down_short_press_function(lambda room=r: _down_short_press(room))
-    switches[r].set_off_short_press_function(lambda room=r: _off_short_press(room))
-    switches[r].set_on_long_press_function(lambda room=r: _on_long_press(room))
+        switches[(room, switch)].add_function([["on", "short"]], lambda room=room: (
+            log(f"{room} on short press"),
+            handlers[room].update_current_scene(
+                bri=(s := scheduled_scene.transition(rooms=room))[MASTER_NAME[room]]["bri"],
+                ct=s[MASTER_NAME[room]]["ct"]
+            ),
+        ))
+    switches[(room, switch)].add_function([["up", "short"]], lambda room=room: (
+        log(f"{room} up short press"),
+        handlers[room].step_up(),
+    ))
+    switches[(room, switch)].add_function([["down", "short"]], lambda room=room: (
+        log(f"{room} down short press"),
+        handlers[room].step_down(),
+    ))
+    switches[(room, switch)].add_function([["off", "short"]], lambda room=room: (
+        log(f"{room} off short press"),
+        scene.transition(name="off", rooms=room),
+        handlers[room].update_current_scene(bri=0.0, ct=1.0),
+    ))
+    switches[(room, switch)].add_function([["on", "long"]], lambda room=room: (
+        log(f"{room} on long press"),
+        run_detached_shell(f"/home/pi/Programming/huecontrol/wakeup.py -{room[0]} -t2 1m"),
+    ))
 
-switches["wohnzimmer"].set_off_double_press_function(lambda: _off_double_press("wohnzimmer"))
-switches["wohnzimmer"].set_off_tripple_press_function(lambda: _off_tripple_press("wohnzimmer"))
-switches["wohnzimmer"].set_off_quadruple_press_function(lambda: _off_quadruple_press("wohnzimmer"))
 
-switches["wohnzimmer"].set_on_double_press_function(lambda: _on_double_press("wohnzimmer"))
-switches["wohnzimmer"].set_on_tripple_press_function(lambda: _on_tripple_press("wohnzimmer"))
+for switch in ["1", "2"]:
+    switches[("wohnzimmer", switch)].add_function([["off", "short"], ["off", "short"]], lambda: (
+        log("wohnzimmer off double press"),
+        scene.transition(name="off"),
+    ))
+    switches[("wohnzimmer", switch)].add_function([["off", "short"], ["off", "short"], ["off", "short"]], lambda: (
+        log("wohnzimmer off triple press"),
+        start_roomba_now(),
+    ))
+    switches[("wohnzimmer", switch)].add_function([["off", "short"], ["down", "short"], ["up", "short"], ["on", "short"]], lambda: (
+        log("wohnzimmer off down up on pattern"),
+        scheduled_scene.transition(),
+    ))
+    switches[("wohnzimmer", switch)].add_function([["down", "short"], ["up", "short"], ["down", "short"], ["up", "long"]], lambda: (
+        log("wohnzimmer down up down up long pattern"),
+        set_roomba_when_door_opens(),
+        indicator(),
+    ))
+    switches[("wohnzimmer", switch)].add_function([["off", "long"]], lambda: (
+        log("wohnzimmer off long press"),
+        scene.transition(name="off", rooms="wohnzimmer", time=60*60),
+    ))
 
-switches["wohnzimmer"].set_off_long_press_function(lambda: _off_long_press("wohnzimmer", 60*60))
-switches["schlafzimmer"].set_off_long_press_function(lambda: _off_long_press("schlafzimmer", 3*60))
-switches["kinderzimmer"].set_off_long_press_function(lambda: _off_long_press("kinderzimmer", 15*60, scene_name="min"))
-switches["arbeitszimmer"].set_off_long_press_function(lambda: _off_long_press("arbeitszimmer", 60*60))
+for switch in ["bed", "door"]:
+    switches[("schlafzimmer", switch)].add_function([["off", "long"]], lambda: (
+        log("schlafzimmer off long press"),
+        scene.transition(name="off", rooms="schlafzimmer", time=3*60),
+    ))
+
+switches[("kinderzimmer", "")].add_function([["off", "long"]], lambda: (
+    log("kinderzimmer off long press"),
+    scene.transition(name="min", rooms="kinderzimmer", time=15*60),
+))
+switches[("arbeitszimmer", "")].add_function([["off", "long"]], lambda: (
+    log("arbeitszimmer off long press"),
+    scene.transition(name="off", rooms="arbeitszimmer", time=60*60),
+))
+
+switches[("schlafzimmer", "bed")].activate_lock()
+
+
+def button_recently_pressed(room):
+    ret = False
+    for room, switch, _ in data.buttons.values():
+        if room == room and switches[(room, switch)].button_recently_pressed():
+            ret = True
+            break
+    return ret
 
 
 class MotionSensor():
@@ -821,7 +672,7 @@ async def main():
                 if not _phue.fake_recently_changed() or room != "wohnzimmer":
                     if "dimming" in event:
                         brightness = event["dimming"]["brightness"]
-                        if not switches[room].button_recently_pressed():
+                        if not button_recently_pressed(room):
                             handlers[room].update_current_scene(bri=brightness / 100.0)
                         if room == "wohnzimmer":
                             for sensor in all_sensors:
@@ -829,7 +680,7 @@ async def main():
 
                     if "on" in event:
                         if event['on']['on'] == False:
-                            if not switches[room].button_recently_pressed():
+                            if not button_recently_pressed(room):
                                 handlers[room].update_current_scene(bri=0.0, ct=1.0)
                             if room == "wohnzimmer":
                                 for sensor in all_sensors:
@@ -839,7 +690,7 @@ async def main():
                         if event["color_temperature"]["mirek_valid"]:
                             mirek = event["color_temperature"]["mirek"]
                             ct = _phue.convert_mirek_to_ct(mirek)
-                            if not switches[room].button_recently_pressed():
+                            if not button_recently_pressed(room):
                                 handlers[room].update_current_scene(ct=ct)
                             if room == "wohnzimmer":
                                 for sensor in all_sensors:
@@ -899,10 +750,10 @@ async def main():
                 button_id = event['id']
                 event_type = event['button']['button_report']['event']
                 
-                log(button_id, event_type)
-                room, button = data.buttons[button_id]
-                log(room, button)
-                switches[room].button_event(button, event_type)
+                # log(button_id, event_type)
+                room, switch, button = data.buttons[button_id]
+                # log(room, button)
+                switches[(room, switch)].button_event(button, event_type)
 
             if event["id"] == "3482ecac-1562-413a-b519-46ec7b5e5883":
                 if event['contact_report']['state'] == 'no_contact':
