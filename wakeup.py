@@ -50,7 +50,11 @@ def wakeup(t1, t2, t3, t4, rooms):
             os.mknod(PROGRESS_FILE + "_" + r)  # touch
 
         ingnore_on_start = ["Nachttischlampe Rechts"]
+        ingnore_on_start = []
         override_attributes = {i: {"bri": 0.0} for i in ingnore_on_start}
+
+        if "wohnzimmer" in rooms:
+            override_attributes["Lichterkette"] = {"on": False}
 
         scene.transition(name="min", rooms=rooms, increase_only=True, abort_wakeup=False, _override=override_attributes)
 
@@ -58,6 +62,10 @@ def wakeup(t1, t2, t3, t4, rooms):
 
         if len(rooms) == 0:
             return
+
+        if "schlafzimmer" in rooms:
+            override_attributes["Nachttischlampe Rechts"] = {"bri": .8}
+            override_attributes["Nachttischlampe Links"] = {"bri": .8}
 
         scene.transition(name="gemutlich", rooms=rooms, time=t2, increase_only=True, abort_wakeup=False, _override=override_attributes)
 

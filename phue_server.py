@@ -236,7 +236,7 @@ for switch in ["1", "2"]:
         log("wohnzimmer off triple press"),
         start_roomba_now(),
     ))
-    switches[("wohnzimmer", switch)].add_function([["off", "short"], ["down", "short"], ["up", "short"], ["on", "short"]], lambda: (
+    switches[("wohnzimmer", switch)].add_function([["on", "short"], ["up", "short"], ["down", "short"], ["off", "short"]], lambda: (
         log("wohnzimmer off down up on pattern"),
         scheduled_scene.transition(),
     ))

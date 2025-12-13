@@ -8,7 +8,7 @@ KUCHENLAMPE = "Küchenlampe"
 all_scene_attributes = {
     "off": {"bri": 0.0, "ct": 1.0, "on": False},
     "min": {"bri": min_bri(), "ct": 1.0, "on": False},
-    "dunkel": {"bri": 0.1, "ct": 1.0, "on": True},
+    "dunkel": {"bri": 0.1, "ct": 1.0, "on": False},
     "gemutlich": {"bri": 0.4, "ct": 1.0, "on": True},
     "lounge": {"bri": 0.6, "ct": 1.0, "on": True},
     "warm": {"bri": 0.8, "ct": 0.75, "on": True},
