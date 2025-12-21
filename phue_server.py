@@ -478,7 +478,6 @@ def flurlampe_mask(master):
     allow_off = (
         handlers["wohnzimmer"].current_scene == "off"
         and handlers["schlafzimmer"].current_scene == "off"
-        and handlers["arbeitszimmer"].current_scene == "off"
         and (
             handlers["kinderzimmer"].current_scene == "off"
             or handlers["kinderzimmer"].current_scene == "min"
@@ -507,7 +506,7 @@ def flurlampe_mask(master):
 
 flur_sensor = MotionSensor(sensor_ids=["dc49cc1e-0253-495e-896c-11531913ef23"],
                            lights=data.get_lights("flur"),
-                           idle_timeout=90,
+                           idle_timeout=120,
                            bri_masks={"Flurlampe": flurlampe_mask},
                            use_ambient_for_brightness=True)
 all_sensors.append(flur_sensor)
