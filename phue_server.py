@@ -249,10 +249,22 @@ for switch in ["1", "2"]:
         log("wohnzimmer off long press"),
         scene.transition(name="off", rooms="wohnzimmer", time=60*60),
     ))
+    switches[("wohnzimmer", switch)].add_function([["off", "long"], ["off", "long"]], lambda: (
+        log("wohnzimmer off double long press"),
+        scene.transition(name="off", rooms="wohnzimmer", time=10*60),
+    ))
+    switches[("wohnzimmer", switch)].add_function([["on", "long"], ["on", "long"]], lambda: (
+        log("wohnzimmer on double long press"),
+        run_detached_shell(f"/home/pi/Programming/huecontrol/wakeup.py -t2 1m"),
+    ))
 
 for switch in ["bed", "door"]:
     switches[("schlafzimmer", switch)].add_function([["off", "long"]], lambda: (
         log("schlafzimmer off long press"),
+        scene.transition(name="off", rooms="schlafzimmer", time=60*60),
+    ))
+    switches[("schlafzimmer", switch)].add_function([["off", "long"], ["off", "long"]], lambda: (
+        log("schlafzimmer off double long press"),
         scene.transition(name="off", rooms="schlafzimmer", time=3*60),
     ))
 
@@ -260,9 +272,17 @@ switches[("kinderzimmer", "")].add_function([["off", "long"]], lambda: (
     log("kinderzimmer off long press"),
     scene.transition(name="min", rooms="kinderzimmer", time=15*60),
 ))
+switches[("kinderzimmer", "")].add_function([["off", "long"], ["off", "long"]], lambda: (
+    log("kinderzimmer off double long press"),
+    scene.transition(name="min", rooms="kinderzimmer", time=1*60),
+))
 switches[("arbeitszimmer", "")].add_function([["off", "long"]], lambda: (
     log("arbeitszimmer off long press"),
     scene.transition(name="off", rooms="arbeitszimmer", time=60*60),
+))
+switches[("arbeitszimmer", "")].add_function([["off", "long"], ["off", "long"]], lambda: (
+    log("arbeitszimmer off double long press"),
+    scene.transition(name="off", rooms="arbeitszimmer", time=10*60),
 ))
 
 switches[("schlafzimmer", "bed")].activate_lock()
