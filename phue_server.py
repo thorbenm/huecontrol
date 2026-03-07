@@ -274,7 +274,7 @@ switches[("kinderzimmer", "")].add_function([["off", "long"]], lambda: (
 ))
 switches[("kinderzimmer", "")].add_function([["off", "long"], ["off", "long"]], lambda: (
     log("kinderzimmer off double long press"),
-    scene.transition(name="min", rooms="kinderzimmer", time=1*60),
+    scene.transition(name="min", rooms="kinderzimmer", time=30),
 ))
 switches[("arbeitszimmer", "")].add_function([["off", "long"]], lambda: (
     log("arbeitszimmer off long press"),
@@ -301,7 +301,7 @@ class MotionSensor():
     def __init__(self,
                  sensor_ids,
                  lights,
-                 idle_timeout,
+                 idle_timeouts,
                  fade_off_time=20.0,
                  minimum_bri=None,
                  maximum_bri=1.0,
@@ -314,7 +314,7 @@ class MotionSensor():
 
         self.sensor_ids = sensor_ids
         self.lights = lights
-        self.idle_timeout = idle_timeout
+        self.idle_timeouts = idle_timeouts
 
         if minimum_bri is None:
             self.minimum_bri = _phue.min_bri()
@@ -352,8 +352,8 @@ class MotionSensor():
     def get_sensor_ids(self):
         return self.sensor_ids
 
-    def get_idle_timeout(self):
-        return self.idle_timeout
+    def get_idle_timeout(self, sensor_id):
+        return self.idle_timeouts[self.sensor_ids.index(sensor_id)]
 
     def using_ambient_values(self):
         return self.master_bri < self.ambient_bri - .02 and self.use_ambient_for_brightness
@@ -446,6 +446,8 @@ class MotionSensor():
             log("no motion detected, turning off lights", self.lights)
             self.is_on = False
             self.turn_off_lights()
+        else:
+            self.update_lights(time=60.0)
 
     def set_master_bri(self, master_bri, time=None):
         log(f"set_master_bri {master_bri:.3g}")
@@ -484,7 +486,7 @@ class MotionSensor():
 
 kuche_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
                             lights=data.get_lights("kuche"),
-                            idle_timeout=10*60,
+                            idle_timeouts=[10*60],
                             use_ambient_for_brightness=True)
 all_sensors.append(kuche_sensor)
 
@@ -526,7 +528,7 @@ def flurlampe_mask(master):
 
 flur_sensor = MotionSensor(sensor_ids=["dc49cc1e-0253-495e-896c-11531913ef23"],
                            lights=data.get_lights("flur"),
-                           idle_timeout=120,
+                           idle_timeouts=[2*60],
                            bri_masks={"Flurlampe": flurlampe_mask},
                            use_ambient_for_brightness=True)
 all_sensors.append(flur_sensor)
@@ -534,7 +536,7 @@ all_sensors.append(flur_sensor)
 
 bad_sensor = MotionSensor(sensor_ids=["dd4b1e47-1e63-477c-b3c6-544048d5c8e1"],
                          lights=data.get_lights("bad"),
-                         idle_timeout=15*60,
+                         idle_timeouts=[15*60],
                          use_ambient_for_brightness=True)
 all_sensors.append(bad_sensor)
 
@@ -542,7 +544,7 @@ all_sensors.append(bad_sensor)
 diele_sensor = MotionSensor(sensor_ids=["ec5fe5f9-be48-4957-b37d-8ca3d2e1116a",
                                         "3482ecac-1562-413a-b519-46ec7b5e5883"],
                             lights=data.get_lights("diele"),
-                            idle_timeout=5*60,
+                            idle_timeouts=[5*60, 30],
                             use_ambient_for_brightness=True,
                             sensor_minimum_bri={"3482ecac-1562-413a-b519-46ec7b5e5883":
                                                 data.all_scene_attributes["gemutlich"]["bri"]})
@@ -551,7 +553,7 @@ all_sensors.append(diele_sensor)
 
 klo_sensor = MotionSensor(sensor_ids=["96d931b2-ec53-4753-995a-129ee480d3d6"],
                           lights=data.get_lights("klo"),
-                          idle_timeout=15*60,
+                          idle_timeouts=[3*60],
                           use_ambient_for_brightness=True)
 all_sensors.append(klo_sensor)
 
@@ -634,7 +636,7 @@ async def main():
         for sensor_id in motion_sensors_ids:
             sensor_object = get_sensor_object(sensor_id)
             motion_timeout_tasks[sensor_id] = asyncio.create_task(
-                motion_timeout(sensor_id, sensor_object.get_idle_timeout())
+                motion_timeout(sensor_id, sensor_object.get_idle_timeout(sensor_id))
             )
 
         # Define a callback function for processing motion events
@@ -761,8 +763,7 @@ async def main():
                     motion_timeout_tasks[sensor_id] = None
 
                 else:
-                    # Schedule a timeout task for this sensor
-                    idle_timeout = sensor.get_idle_timeout()
+                    idle_timeout = sensor.get_idle_timeout(sensor_id)
                     motion_timeout_tasks[sensor_id] = asyncio.create_task(motion_timeout(sensor_id, idle_timeout))
 
             if "button" in event:

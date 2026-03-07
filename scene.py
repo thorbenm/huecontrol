@@ -32,6 +32,22 @@ def transition_dicionary(d, time=.4, reduce_only=False, increase_only=False):
                    increase_only=increase_only)
 
 
+ARBEITSZIMMER_FOLLOW_WOHNZIMMER = False
+
+
+follow_file = "/home/pi/arbeitszimmer_follow_wohnzimmer"
+if os.path.exists(follow_file):
+    with open(follow_file, "r") as f:
+        ARBEITSZIMMER_FOLLOW_WOHNZIMMER = f.read().strip().lower() == "true"
+
+
+def following_rooms(rooms):
+    s = now()
+    if "wohnzimmer" in rooms and "arbeitszimmer" not in rooms and ARBEITSZIMMER_FOLLOW_WOHNZIMMER:
+        rooms.append("arbeitszimmer")
+    return rooms
+
+
 TRANSITION_FILE = "/home/pi/transition"
 
 
@@ -43,6 +59,8 @@ def transition(name, rooms="all", time=.4, reduce_only=False, increase_only=Fals
         rooms = [rooms]
     else:
         rooms = rooms
+
+    rooms = following_rooms(rooms)
 
     if low_priority:
         for r in rooms:

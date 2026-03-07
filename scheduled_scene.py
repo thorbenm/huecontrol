@@ -74,6 +74,8 @@ def transition(time=.4, rooms="all", hour=None, minute=None, dt=None):
     else:
         rooms = rooms
 
+    rooms = scene.following_rooms(rooms)
+
     if dt is None:
         dt = datetime.datetime.now()
     dt = dt.replace(second=0, microsecond=0)
