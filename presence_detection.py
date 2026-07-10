@@ -14,7 +14,11 @@ def away():
 
 
 def home():
-    scheduled_scene.transition(rooms=["wohnzimmer"])
+    if ambient.get_simulated_bri() < 0.95:
+        scheduled_scene.transition(rooms=["wohnzimmer"])
+    else:
+        scene.transition("off")
+
     roomba.stop()
 
 

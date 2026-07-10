@@ -57,7 +57,7 @@ class Switch():
 
         self.lock = False
         self.unlock_until = -float('inf')
-        self.unlock_duration = 10.0
+        self.unlock_duration = 4.0
         self.unlock_pattern = [["down", "short"], ["down", "short"], ["up", "short"], ["up", "short"]]
 
     def activate_lock(self):
@@ -261,7 +261,7 @@ for switch in ["1", "2"]:
 for switch in ["bed", "door"]:
     switches[("schlafzimmer", switch)].add_function([["off", "long"]], lambda: (
         log("schlafzimmer off long press"),
-        scene.transition(name="off", rooms="schlafzimmer", time=60*60),
+        scene.transition(name="off", rooms="schlafzimmer", time=7*60),
     ))
     switches[("schlafzimmer", switch)].add_function([["off", "long"], ["off", "long"]], lambda: (
         log("schlafzimmer off double long press"),
@@ -285,6 +285,7 @@ switches[("arbeitszimmer", "")].add_function([["off", "long"], ["off", "long"]],
     scene.transition(name="off", rooms="arbeitszimmer", time=10*60),
 ))
 
+switches[("kinderzimmer", "")].activate_lock()
 switches[("schlafzimmer", "bed")].activate_lock()
 
 
@@ -481,13 +482,15 @@ class MotionSensor():
         log(f"update_ambient_ct {ct:.3g}")
         self.ambient_ct = ct
         if update_lights:
-            self.update_lights()
+            self.update_lights(time=5*60)
 
+summer = datetime.datetime.now().month in range(4, 10)
 
 kuche_sensor = MotionSensor(sensor_ids=["9b8f4c05-d103-4fd9-930c-5ba824ae8f45"],
                             lights=data.get_lights("kuche"),
                             idle_timeouts=[10*60],
-                            use_ambient_for_brightness=True)
+                            use_ambient_for_brightness=not summer,
+                            use_ambient_for_motion=summer)
 all_sensors.append(kuche_sensor)
 
 
@@ -553,7 +556,7 @@ all_sensors.append(diele_sensor)
 
 klo_sensor = MotionSensor(sensor_ids=["96d931b2-ec53-4753-995a-129ee480d3d6"],
                           lights=data.get_lights("klo"),
-                          idle_timeouts=[3*60],
+                          idle_timeouts=[15*60],
                           use_ambient_for_brightness=True)
 all_sensors.append(klo_sensor)
 
